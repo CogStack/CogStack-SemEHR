@@ -12,6 +12,7 @@ prospector_query_temp="""
 
 def query_prospector(query):
     q = prospector_query_temp.format(query)
+    print q
     r = utils.http_post_result(prospector_url, q)
     print r
 
