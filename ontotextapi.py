@@ -23,6 +23,11 @@ SELECT ?inst_full WHERE {{
 }}
 """
 
+# mimir query template
+mimir_query_temp = """
+{{Mention sparql = "{}"}}
+"""
+
 
 top_freq_concepts = {"immunodeficiency ": "C0021051",
     "retinopathy": "C0035309",
@@ -54,7 +59,7 @@ def query_result(q):
 
 
 # generate prospector/mimir queries
-def generate_prospector_query(concept_id):
+def generate_prospector_query(concept_id, sparql_only=None):
     query2 = """
     select * where {{
         <http://linkedlifedata.com/resource/umls/id/{}> <http://www.w3.org/2008/05/skos-xl#prefLabel> ?mesh .
@@ -63,12 +68,15 @@ def generate_prospector_query(concept_id):
     ret = query_result(query2)
     labels = [r['mesh']['value'] for r in ret]
     if len(labels) > 0:
-        return query_tmp.format(labels[0])
+        if sparql_only is not None:
+            return query_tmp.format(labels[0])
+        else:
+            return mimir_query_temp.format(query_tmp.format(labels[0]))
 
 
 # query to get all instances of a concept
 def query_instances(concept_id):
-    q = generate_prospector_query(concept_id)
+    q = generate_prospector_query(concept_id, sparql_only=True)
     # print q
     ret = query_result(q)
     return [r['inst_full']['value'] for r in ret]
@@ -83,11 +91,20 @@ def get_all_instances():
 
 def generate_top_queries():
     for c in top_freq_concepts:
-        print '{}\n--{}\n\n'.format(c, generate_prospector_query(top_freq_concepts[c]))
+        print '{}\n--{}\n\n'.format(c, generate_prospector_query(top_freq_concepts[c], sparql_only=True))
+
+
+def generate_all_queries():
+    concepts = utils.load_json_data('./resources/autoimmune-concepts.json')
+    concept2queries = {}
+    for c in concepts:
+        concept2queries[c] = generate_prospector_query(concepts[c])
+        print '%s done' % c
+    utils.save_json_array(concept2queries, './resources/mimir_queries.json')
 
 
 def main():
-    generate_top_queries()
+    generate_all_queries()
 
 if __name__ == "__main__":
     main()
