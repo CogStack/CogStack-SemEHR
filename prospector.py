@@ -27,8 +27,9 @@ def query_all_concepts():
         print 'querying %s' % c
         r = query_mimir('postQuery', {'queryString': concept2query[c]})
         print r
-        e = xml.etree.ElementTree.fromstring(r)
-        print e.find('queryId')
+        e = xml.etree.ElementTree.ElementTree(xml.etree.ElementTree.fromstring(r))
+        print e.getroot()
+        print e.getroot().find('message/data/queryId')
         break
 
 
@@ -37,8 +38,8 @@ def query_mimir(action, data):
 
 
 def main():
-    #query_all_concepts()
-    query_mimir('postQuery', {'queryString': 'mental'})
+    query_all_concepts()
+    #query_mimir('postQuery', {'queryString': 'mental'})
 
 if __name__ == "__main__":
     main()
