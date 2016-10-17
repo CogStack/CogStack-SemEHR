@@ -4,7 +4,7 @@ import utils
 prospector_url = 'http://192.168.100.101:8080/gwt/gate.prospector.rpc.ProspectorRpc/rpc'
 
 # Mimir Web Service
-mimir_service_url = ''
+mimir_service_url = 'http://192.168.100.101:8080/dcf68f8f-14b1-49e9-ab44-3380eec0a22f/search'
 
 
 # the strange prospector query template
@@ -34,7 +34,8 @@ def query_mimir(action, data):
 
 
 def main():
-    query_all_concepts()
+    #query_all_concepts()
+    query_mimir('postQuery', {'queryString': 'mental'})
 
 if __name__ == "__main__":
     main()
