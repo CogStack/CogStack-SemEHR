@@ -32,15 +32,25 @@ def query_all_concepts():
         print 'query id: %s' % qid
 
         r = query_mimir('documentsCount', {'queryId': qid})
-        documentCount = get_xml_data(r, 'm:data/m:value', mimir_ns)
-        print 'documentCount: %s' % documentCount
-        if documentCount != '':
-            documentCount = int(documentCount)
-            if documentCount > 0:
-                doc = int(math.ceil(random.random() * documentCount - 1))
-                r = query_mimir('renderDocument', {'queryId': qid, 'rank': doc})
-                print r
-        	break
+        document_count = get_xml_data(r, 'm:data/m:value', mimir_ns)
+        print 'documentCount: %s' % document_count
+        if document_count != '':
+            document_count = int(document_count)
+            if document_count > 0:
+                random_pick_results(c, qid, document_count, min(5, document_count))
+            break
+
+
+def random_pick_results(concept, qid, document_count, num):
+    docs = []
+    dids = []
+    for i in range(num):
+        doc = int(math.ceil(random.random() * document_count - 1))
+        while doc in dids:
+            doc = int(math.ceil(random.random() * document_count - 1))
+        dids.append(doc)
+        docs.append( query_mimir('renderDocument', {'queryId': qid, 'rank': doc}) )
+    utils.save_json_array({'c': concept, 'docs': docs}, './samples/' + concept + '.json')
 
 
 def get_xml_data(x, path, namespace=None):
@@ -59,10 +69,7 @@ def query_mimir(action, data):
 
 
 def main():
-    # x = "<message xmlns='http://gate.ac.uk/ns/mimir'><state>SUCCESS</state><data><queryId>a93566d8-574c-406d-86ce-4442e8c6407b</queryId></data></message>"
-    # print get_xml_data(x, 'm:data/m:queryId', mimir_ns)
     query_all_concepts()
-    #query_mimir('postQuery', {'queryString': 'mental'})
 
 if __name__ == "__main__":
     main()
