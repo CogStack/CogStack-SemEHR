@@ -3,6 +3,9 @@ import utils
 # gate prospector rpc url
 prospector_url = 'http://192.168.100.101:8080/gwt/gate.prospector.rpc.ProspectorRpc/rpc'
 
+# Mimir Web Service
+mimir_service_url = ''
+
 
 # the strange prospector query template
 prospector_query_temp="""
@@ -23,6 +26,11 @@ def query_all_concepts():
         print 'querying %s' % c
         query_prospector(concept2query[c])
         break
+
+
+def query_mimir(action, data):
+    r = utils.http_post_result('{}/{}'.format(mimir_service_url, action), data)
+    print r
 
 
 def main():
