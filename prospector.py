@@ -1,5 +1,7 @@
 import utils
 import xml.etree.ElementTree
+import random
+import math
 
 # gate prospector rpc url
 prospector_url = 'http://192.168.100.101:8080/gwt/gate.prospector.rpc.ProspectorRpc/rpc'
@@ -26,11 +28,28 @@ def query_all_concepts():
     for c in concept2query:
         print 'querying %s' % c
         r = query_mimir('postQuery', {'queryString': concept2query[c]})
-        print r
-        e = xml.etree.ElementTree.ElementTree(xml.etree.ElementTree.fromstring(r))
-        print e.getroot()
-        print e.getroot().find('message/data/queryId')
+        qid = get_xml_data(r, 'data/queryId')
+        print 'query id: %s' % qid
+
+        r = query_mimir('documentsCount', {'queryId': qid})
+        documentCount = get_xml_data(r, 'data/value')
+        print 'documentCount: %s' % documentCount
+        if documentCount != '':
+            documentCount = int(documentCount)
+            if documentCount > 0:
+                doc = math.ceil(random.random() * documentCount - 1)
+                r = query_mimir('documentsCount', {'queryId': qid, 'rank': doc})
+                print r
         break
+
+
+def get_xml_data(x, path):
+    e = xml.etree.ElementTree.ElementTree(xml.etree.ElementTree.fromstring(x))
+    elem = e.getroot().find(path)
+    if elem is not None:
+        return elem.text
+    else:
+        return ''
 
 
 def query_mimir(action, data):
@@ -38,6 +57,8 @@ def query_mimir(action, data):
 
 
 def main():
+    # x = '<message><data><queryId>1234</queryId></data></message>'
+    # print get_xml_data(x, 'data/queryId')
     query_all_concepts()
     #query_mimir('postQuery', {'queryString': 'mental'})
 
