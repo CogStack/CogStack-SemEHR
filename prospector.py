@@ -38,7 +38,7 @@ def query_all_concepts():
             document_count = int(document_count)
             if document_count > 0:
                 random_pick_results(c, qid, document_count, min(5, document_count))
-            break
+                break
 
 
 def random_pick_results(concept, qid, document_count, num):
