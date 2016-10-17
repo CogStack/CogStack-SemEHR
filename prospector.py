@@ -8,7 +8,7 @@ prospector_url = 'http://192.168.100.101:8080/gwt/gate.prospector.rpc.Prospector
 
 # Mimir Web Service
 mimir_service_url = 'http://192.168.100.101:8080/dcf68f8f-14b1-49e9-ab44-3380eec0a22f/search'
-
+mimir_ns = {'m': 'http://gate.ac.uk/ns/mimir'}
 
 # the strange prospector query template
 prospector_query_temp="""
@@ -28,24 +28,26 @@ def query_all_concepts():
     for c in concept2query:
         print 'querying %s' % c
         r = query_mimir('postQuery', {'queryString': concept2query[c]})
-        qid = get_xml_data(r, 'data/queryId')
+        qid = get_xml_data(r, 'm:data/m:queryId', mimir_ns)
         print 'query id: %s' % qid
 
         r = query_mimir('documentsCount', {'queryId': qid})
-        documentCount = get_xml_data(r, 'data/value')
+        documentCount = get_xml_data(r, 'm:data/m:value', mimir_ns)
         print 'documentCount: %s' % documentCount
         if documentCount != '':
             documentCount = int(documentCount)
             if documentCount > 0:
-                doc = math.ceil(random.random() * documentCount - 1)
-                r = query_mimir('documentsCount', {'queryId': qid, 'rank': doc})
+                doc = int(math.ceil(random.random() * documentCount - 1))
+                r = query_mimir('renderDocument', {'queryId': qid, 'rank': doc})
                 print r
-        break
+        	break
 
 
-def get_xml_data(x, path):
+def get_xml_data(x, path, namespace=None):
+    # print x
     e = xml.etree.ElementTree.ElementTree(xml.etree.ElementTree.fromstring(x))
-    elem = e.getroot().find(path)
+    elem = e.getroot().find(path, namespace)
+    # print elem
     if elem is not None:
         return elem.text
     else:
@@ -57,8 +59,8 @@ def query_mimir(action, data):
 
 
 def main():
-    # x = '<message><data><queryId>1234</queryId></data></message>'
-    # print get_xml_data(x, 'data/queryId')
+    # x = "<message xmlns='http://gate.ac.uk/ns/mimir'><state>SUCCESS</state><data><queryId>a93566d8-574c-406d-86ce-4442e8c6407b</queryId></data></message>"
+    # print get_xml_data(x, 'm:data/m:queryId', mimir_ns)
     query_all_concepts()
     #query_mimir('postQuery', {'queryString': 'mental'})
 
