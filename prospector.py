@@ -1,4 +1,5 @@
 import utils
+import xml.etree.ElementTree
 
 # gate prospector rpc url
 prospector_url = 'http://192.168.100.101:8080/gwt/gate.prospector.rpc.ProspectorRpc/rpc'
@@ -24,13 +25,15 @@ def query_all_concepts():
     concept2query = utils.load_json_data('./resources/mimir_queries.json')
     for c in concept2query:
         print 'querying %s' % c
-        query_prospector(concept2query[c])
+        r = query_mimir('postQuery', {'queryString': concept2query[c]})
+        print r
+        e = xml.etree.ElementTree.fromstring(r)
+        print e.find('queryId')
         break
 
 
 def query_mimir(action, data):
-    r = utils.http_post_result('{}/{}'.format(mimir_service_url, action), data)
-    print r
+    return utils.http_post_result('{}/{}'.format(mimir_service_url, action), data)
 
 
 def main():
