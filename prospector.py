@@ -24,6 +24,8 @@ def query_prospector(query):
 
 
 def query_all_concepts():
+    total = 0
+    docs = []
     concept2query = utils.load_json_data('./resources/mimir_queries.json')
     for c in concept2query:
         print 'querying %s' % c
@@ -37,8 +39,11 @@ def query_all_concepts():
         if document_count != '':
             document_count = int(document_count)
             if document_count > 0:
-                random_pick_results(c, qid, document_count, min(5, document_count))
-                break
+                total += document_count
+                docs.append(random_pick_results(c, qid, document_count, min(5, document_count)))
+                print 'random picked %s' % c
+    utils.save_json_array(docs, './samples/samples.json')
+    print 'total docs: %s' % total
 
 
 def random_pick_results(concept, qid, document_count, num):
@@ -50,7 +55,8 @@ def random_pick_results(concept, qid, document_count, num):
             doc = int(math.ceil(random.random() * document_count - 1))
         dids.append(doc)
         docs.append( query_mimir('renderDocument', {'queryId': qid, 'rank': doc}) )
-    utils.save_json_array({'c': concept, 'docs': docs}, './samples/' + concept + '.json')
+    # utils.save_json_array({'c': concept, 'docs': docs}, './samples/' + concept + '.json')
+    return {'c': concept, 'docs': docs, 'result_size': document_count}
 
 
 def get_xml_data(x, path, namespace=None):
