@@ -3,9 +3,9 @@ import pyodbc
 
 #SQL db setting
 dsn = 'sqlserverdatasource'
-user = 'slam\hwu'
-password = '123321@@g'
-database = 'SQLCRIS'
+user = ''
+password = ''
+database = ''
 
 
 def get_db_connection():
