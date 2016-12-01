@@ -40,7 +40,7 @@ def get_concepts(output_file):
 
     for c in autoimmune_concepts:
         sympton_freq_result = []
-        dutil.squery_data(autoimmune_sympton_freq_sql, read_data, sympton_freq_result)
+        dutil.squery_data(autoimmune_sympton_freq_sql.format(c), read_data, sympton_freq_result)
         for sf in sympton_freq_result:
             patient_dic[sf['BrcId']][c] = sf['num']
     s = '\t'.join([k for k in patients[0]] + autoimmune_concepts) + '\n'
@@ -48,3 +48,6 @@ def get_concepts(output_file):
         s += '\t'.join([p[k] for k in p] + ['-' if c in p else p[c] for c in autoimmune_concepts]) + '\n'
     utils.save_string(s, output_file)
 
+
+if __name__ == "__main__":
+    get_concepts('autoimmune_results.csv')
