@@ -81,6 +81,11 @@ def save_json_array(lst, file_path):
         json.dump(lst, wf, encoding='utf-8')
 
 
+def save_string(str, file_path):
+    with codecs.open(file_path, 'w', encoding='utf-8') as wf:
+        wf.write(str)
+
+
 def load_json_data(file_path):
     data = None
     with codecs.open(file_path, encoding='utf-8') as rf:
@@ -93,6 +98,45 @@ def http_post_result(url, payload, headers=None, auth=None):
         url, headers=headers,
         data=payload, auth=auth)
     return req.content.decode("utf-8")
+
+
+def multi_thread_large_file_tasking(large_file, num_threads, process_func,
+                               proc_desc='processed', args=None, multi=None,
+                               file_filter_func=None, callback_func=None,
+                                thread_init_func=None, thread_end_func=None):
+    num_queue_size = 1000
+    pdf_queque = Queue.Queue(num_queue_size)
+    print('queue filled, threading...')
+    thread_objs = []
+    for i in range(num_threads):
+        arr = [process_func] if args is None else [process_func] + args
+        to = None
+        if thread_init_func is not None:
+            to = thread_init_func()
+            thread_objs.append(to)
+        arr.insert(1, to)
+        arr.insert(0, pdf_queque)
+        t = threading.Thread(target=multi_thread_do, args=tuple(arr))
+        t.daemon = True
+        t.start()
+
+    print('putting list into queue...')
+    num_lines = 0
+    with codecs.open(large_file, encoding='utf-8') as lf:
+        for line in lf:
+            num_lines += 1
+            pdf_queque.put(line)
+
+    print('waiting jobs to finish')
+    pdf_queque.join()
+    if thread_end_func is not None:
+        for to in thread_objs:
+            if to is not None:
+                thread_end_func(to)
+    print('{0} lines {1}'.format(num_lines, proc_desc))
+    if callback_func is not None:
+        callback_func(*tuple(args))
+
 
 def main():
     pass

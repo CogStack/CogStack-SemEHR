@@ -82,11 +82,16 @@ def query_instances(concept_id):
     return [r['inst_full']['value'] for r in ret]
 
 
-def get_all_instances():
+def get_all_instances(save_file):
     concepts = utils.load_json_data('./resources/autoimmune-concepts.json')
+    concpet2subconcepts_csv = ''
     for c in concepts:
         insts = query_instances(concepts[c])
         print '{}\t{}\t{}\t{}'.format(c, concepts[c], len(insts), json.dumps(insts))
+        for cid in insts:
+            concpet2subconcepts_csv += '"{}", "{}"\n'.format(c, cid)
+    if save_file is not None:
+        utils.save_string(concpet2subconcepts_csv, save_file)
 
 
 def generate_top_queries():
@@ -104,7 +109,8 @@ def generate_all_queries():
 
 
 def main():
-    generate_all_queries()
+    # generate_all_queries()
+    get_all_instances('./resources/all_insts.csv')
 
 if __name__ == "__main__":
     main()
