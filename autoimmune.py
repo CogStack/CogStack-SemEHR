@@ -13,6 +13,14 @@ select brcid, primary_diag, diagnosis_date, dob, gender_id, enthnicitycleaned fr
 
 # query concept freqs over patient
 autoimmune_sympton_freq_sql = """
+  select p.brcid, COUNT(distinct a.CN_Doc_ID) num 
+  from Kconnect.treatment_res_dep p, Kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d, Kconnect.[ulms_concept_mapping] c
+  where 
+  a.inst_uri=c.concept_id
+  and a.CN_Doc_ID = d.CN_Doc_ID
+  and p.brcid = d.BrcId
+  and c.concept_name='{}'
+  group by p.brcid
 """
 
 
