@@ -21,9 +21,11 @@ def release_db_connection(cnn_obj):
     cnn_obj['cnxn'].disconnect()
 
 
-def query_data(query, read_data_func, container):
+def query_data(query, container):
     conn_dic = get_db_connection()
     conn_dic['cursor'].execute(query)
     rows = conn_dic['cursor'].fetchall()
-    read_data_func(rows, container)
+    columns = [column[0] for column in conn_dic['cursor'].description]
+    for row in rows:
+        container.append(dict(zip(columns, row)))
     release_db_connection(conn_dic)
