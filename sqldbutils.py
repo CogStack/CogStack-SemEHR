@@ -3,8 +3,8 @@ import pyodbc
 
 #SQL db setting
 dsn = 'sqlserverdatasource'
-user = ''
-password = ''
+user = 'slam\hwu'
+password = '123321@@g'
 database = 'SQLCRIS'
 
 
@@ -17,8 +17,8 @@ def get_db_connection():
 
 def release_db_connection(cnn_obj):
     cnn_obj['cnxn'].close()
-    cnn_obj['cursor'].close()
-    cnn_obj['cnxn'].disconnect()
+    #cnn_obj['cursor'].close()
+    #cnn_obj['cnxn'].disconnect()
 
 
 def query_data(query, container):
