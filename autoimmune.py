@@ -25,13 +25,15 @@ autoimmune_sympton_freq_sql = """
 
 
 def read_data(rows, container):
+    print dir(rows[0])
     container += [r.__dict__ for r in rows]
 
 
 def get_concepts(output_file):
     autoimmune_concepts = []
     patients = []
-    dutil.squery_data(autoimmune_concepts_sql, read_data, autoimmune_concepts)
+    dutil.query_data(autoimmune_concepts_sql, read_data, autoimmune_concepts)
+    print '{} concepts read'.format(len(autoimmune_concepts))
     dutil.squery_data(autoimmune_concepts_sql, read_data, patients)
     # patient dic
     patient_dic = {}
