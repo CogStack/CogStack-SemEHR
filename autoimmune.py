@@ -43,9 +43,11 @@ def get_concepts(output_file):
         dutil.query_data(autoimmune_sympton_freq_sql.format(c), sympton_freq_result)
         for sf in sympton_freq_result:
             patient_dic[sf['brcid']][c] = sf['num']
-    s = '\t'.join([k for k in patients[0]] + [co['concept_name'] for co in autoimmune_concepts]) + '\n'
+    p_attrs = ['brcid', 'primary_diag', 'diagnosis_date', 'dob', 'gender_id', 'ethnicitycleaned']
+    d_attrs = sorted([co['concept_name'] for co in autoimmune_concepts])
+    s = '\t'.join(p_attrs) + '\t' + '\t'.join(d_attrs) + '\n'
     for p in patients:
-        s += '\t'.join([str(p[k]) for k in p] + ['0' if co['concept_name'] not in p else str(p[co['concept_name']]) for co in autoimmune_concepts]) + '\n'
+        s += '\t'.join([str(p[k]) for k in p_attrs]) + '\t' + '\t'.join(['0' if c not in p else str(p[c]) for c in d_attrs]) + '\n'
     utils.save_string(s, output_file)
 
 
