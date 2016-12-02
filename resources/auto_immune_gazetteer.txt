@@ -1,0 +1,180 @@
+Acute disseminated encephalomyelitis
+ADEM
+Acute necrotising haemorrhagic leukoencephalitis
+Addison’s
+Agammaglobulinaemia
+Alopecia areata
+Amyloidosis
+Ankylosing
+Anti-GBM
+Anti-TBM
+Antiphospholipid syndrome
+Autoimmune angioedema
+Autoimmune aplastic anaemia
+Autoimmune dysautonomia
+Autoimmune hepatitis
+Autoimmune hyperlipidaemia
+Autoimmune immunodeficiency 
+Autoimmune inner ear disease 
+AIED
+Autoimmune myocarditis
+Autoimmune oophoritis
+Autoimmune pancreatitis
+Autoimmune retinopathy
+Autoimmune thrombocytopenic purpura
+Autoimmune thyroid 
+Autoimmune urticaria
+Axonal neuropathy
+Neuronal neuropathy
+Balo disease
+Behcet’s disease
+Bullous pemphigoid
+Cardiomyopathy
+Castleman disease
+Coeliac 
+Chagas 
+Chronic inflammatory demyelinating polyneuropathy 
+CIDP
+Chronic recurrent multifocal osteomyelitis 
+CRMO
+Churg-Strauss 
+Pemphigoid
+Crohn’s 
+Cogans syndrome
+Cold agglutinin 
+Congenital heart block
+Coxsackie myocarditis
+CREST disease
+Essential mixed cryoglobulinaemia
+Demyelinating neuropathy
+Dermatitis herpetiformis
+Dermatomyositis
+Devic’s disease 
+Neuromyelitis optica
+Discoid lupus
+Dressler’s 
+Endometriosis
+Eosinophilic oesophagitis
+Eosinophilic fasciitis
+Erythema nodosum
+Experimental allergic encephalomyelitis
+Evans syndrome
+Fibrosing alveolitis
+Giant cell arteritis 
+Temporal arteritis
+Giant cell myocarditis
+Glomerulonephritis
+Goodpasture’s 
+Granulomatosis with Polyangiitis 
+GPA 
+Wegener’s Granulomatosis
+Graves’ disease
+Graves disease
+Guillain-Barr 
+Hashimoto’s encephalitis
+Hashimoto’s thyroiditis
+Haemolytic anaemia
+Henoch-Schonlein 
+Herpes gestationis
+Hypogammaglobulinaemia
+Idiopathic thrombocytopaenic purpura 
+ITP
+IgA nephropathy
+IgG4-related sclerosing disease
+Immunoregulatory lipoproteins
+Inclusion body myositis
+Interstitial cystitis
+Juvenile arthritis
+Juvenile diabetes 
+Type 1 diabetes
+Juvenile myositis
+Kawasaki syndrome
+Lambert-Eaton syndrome
+Leukocytoclastic vasculitis
+Lichen planus
+Lichen sclerosus
+Ligneous conjunctivitis
+Linear IgA disease
+Lupus 
+SLE
+Lyme disease
+Meniere’s disease
+Microscopic polyangiitis
+Mixed connective tissue disease 
+MCTD
+Mooren’s ulcer
+Mucha-Habermann 
+Multiple sclerosis
+Myasthenia gravis
+Myositis
+Narcolepsy
+Neuromyelitis optica 
+Devic’s
+Ocular cicatricial pemphigoid
+Optic neuritis
+Palindromic rheumatism
+PANDAS 
+Paediatric Autoimmune Neuropsychiatric Disorders Associated with Streptococcus
+Paraneoplastic cerebellar degeneration
+Paroxysmal nocturnal hemoglobinuria 
+PNH
+Parry Romberg syndrome
+Parry-Romberg syndrome
+Parsonnage-Turner syndrome
+Pars planitis 
+Peripheral uveitis
+Pemphigus
+Peripheral neuropathy
+Perivenous encephalomyelitis
+Pernicious anemia
+POEMS syndrome
+Polyarteritis nodosa
+Autoimmune polyglandular 
+Polymyalgia rheumatica
+Polymyositis
+Postmyocardial infarction syndrome
+Postpericardiotomy syndrome
+Progesterone dermatitis
+Primary biliary cirrhosis
+Primary sclerosing cholangitis
+Psoriasis
+Psoriatic arthritis
+Idiopathic pulmonary fibrosis
+Pyoderma gangrenosum
+Pure red cell aplasia
+Raynaud
+Reactive arthritis
+Reflex sympathetic dystrophy
+Reiter’s 
+Relapsing polychondritis
+Restless legs syndrome
+Retroperitoneal fibrosis
+Rheumatic fever
+Rheumatoid arthritis
+Sarcoidosis
+Schmidt syndrome
+Scleritis
+Scleroderma
+Sjogren
+Sperm autoimmune
+Testicular autoimmune
+Stiff person syndrome
+Subacute bacterial endocarditis 
+SBE
+Susac’s 
+Sympathetic ophthalmia
+Takayasu’s arteritis
+Temporal arteritis
+Giant cell arteritis
+Thrombocytopenic purpura 
+TTP
+Tolosa-Hunt 
+Transverse myelitis
+Type 1 diabet
+Ulcerative colitis
+Undifferentiated connective tissue disease 
+UCTD
+Uveitis
+Vasculitis
+Vesiculobullous dermatosis
+Vitiligo
