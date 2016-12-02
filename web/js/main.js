@@ -74,6 +74,9 @@
             so[selection] = approved[selection];
             console.log(so);
             qbb.inf.saveDisOrderMapping($.toJSON(so), function(s){
+                if (s != "ok"){
+                    alert("saving action failed. please contact Honghan <honghan.wu@kcl.ac.uk>");
+                }
                 console.log('saved - ' + s);
             })
         });
