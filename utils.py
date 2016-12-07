@@ -138,6 +138,13 @@ def multi_thread_large_file_tasking(large_file, num_threads, process_func,
         callback_func(*tuple(args))
 
 
+def read_text_file(file_path):
+    lines = []
+    with codecs.open(file_path) as rf:
+        lines += rf.readlines()
+    return lines
+
+
 def main():
     pass
 

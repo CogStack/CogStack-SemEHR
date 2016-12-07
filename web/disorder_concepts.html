@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>autoimmune disorder mapped to UMLS concepts</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="js/libs/jquery.json-2.3.js"></script>
+    <script src="js/exact_map.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+</head>
+<style>
+    #disoderList{height:300px;overflow:auto;margin:20px;}
+    .clsApproved {margin-left:12px; margin-right:12px;}
+    .clsDisorder{margin:6px;background-color:#e9e9e9;padding:3px;cursor:pointer}
+    .clsSelected {background-color:#f9e9e9;}
+    #lldConcept{width:100%;height:600px;overflow:auto;}
+    #ctrlPanel {margin:20px;border:solid 1px #eee;text-align:center;height:50px;padding-top:25px;}
+    .clsCtrl{margin-left:20px;font-size:20px;}
+    .btn {
+      background: #3498db;
+      background-image: -webkit-linear-gradient(top, #3498db, #2980b9);
+      background-image: -moz-linear-gradient(top, #3498db, #2980b9);
+      background-image: -ms-linear-gradient(top, #3498db, #2980b9);
+      background-image: -o-linear-gradient(top, #3498db, #2980b9);
+      background-image: linear-gradient(to bottom, #3498db, #2980b9);
+      -webkit-border-radius: 28;
+      -moz-border-radius: 28;
+      border-radius: 28px;
+      font-family: Arial;
+      color: #ffffff;
+      font-size: 20px;
+      padding: 10px 20px 10px 20px;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background: #e0a967;
+      text-decoration: none;
+    }
+    .clsActive{
+        background: #d98f34;
+    }
+</style>
+<body>
+<h2>Autoimmune Disorder List</h2>
+<div>(click a disorder to show the mapped concept detail and approval buttons)</div>
+<div id="disoderList">
+reading mappings...
+</div>
+<div id="ctrlPanel"></div>
+<div id="lldConcept"></div>
+</body>
+</html>
