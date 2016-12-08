@@ -83,13 +83,15 @@ def query_instances(concept_id):
 
 
 def get_all_instances(save_file):
-    concepts = utils.load_json_data('./resources/autoimmune-concepts.json')
+    concepts = utils.load_json_data('./resources/exact_concpts_mappings.json')
     concpet2subconcepts_csv = ''
     for c in concepts:
+        if concepts[c] == '':
+            continue
         insts = query_instances(concepts[c])
-        print '{}\t{}\t{}\t{}'.format(c, concepts[c], len(insts), json.dumps(insts))
+        print u'{}\t{}\t{}\t{}'.format(c, concepts[c], len(insts), json.dumps(insts))
         for cid in insts:
-            concpet2subconcepts_csv += '"{}", "{}"\n'.format(c, cid)
+            concpet2subconcepts_csv += u'"{}", "{}"\n'.format(c, cid[cid.rfind('/')+1:])
     if save_file is not None:
         utils.save_string(concpet2subconcepts_csv, save_file)
 
