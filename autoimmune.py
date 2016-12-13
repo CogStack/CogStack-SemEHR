@@ -69,4 +69,4 @@ def get_concepts(output_file):
 
 
 if __name__ == "__main__":
-    get_concepts('autoimmune_results_v2.csv')
+    get_concepts('autoimmune_results_v3.csv')
