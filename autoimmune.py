@@ -45,7 +45,7 @@ def get_concepts(output_file):
         c = co['concept_name']
         sympton_freq_result = []
         print autoimmune_sympton_freq_sql.format(c)
-        dutil.query_data(autoimmune_sympton_freq_sql.format(c), sympton_freq_result)
+        dutil.query_data(autoimmune_sympton_freq_sql.format(c.replace("'", "''")), sympton_freq_result)
         if len(sympton_freq_result) > 0:
             if c in curated_mappings and curated_mappings[c] is not None and curated_mappings[c] == 'correct':
                 non_empty_curated_concepts.append(c)
