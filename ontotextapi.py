@@ -23,6 +23,12 @@ SELECT ?inst_full WHERE {{
 }}
 """
 
+subconcepts_only_query_tmp = """
+SELECT ?inst_full WHERE {{
+   <http://linkedlifedata.com/resource/umls/id/{}> <http://www.w3.org/2004/02/skos/core#narrower> ?inst_full .
+}}
+"""
+
 # mimir query template
 mimir_query_temp = """
 {{Mention sparql = "{}"}}
@@ -76,7 +82,8 @@ def generate_prospector_query(concept_id, sparql_only=None):
 
 # query to get all instances of a concept
 def query_instances(concept_id):
-    q = generate_prospector_query(concept_id, sparql_only=True)
+    # q = generate_prospector_query(concept_id, sparql_only=True)
+    q = subconcepts_only_query_tmp.format(concept_id)
     # print q
     ret = query_result(q)
     return [r['inst_full']['value'] for r in ret]
@@ -89,9 +96,10 @@ def get_all_instances(save_file):
         if concepts[c] == '':
             continue
         insts = query_instances(concepts[c])
+        insts = [concepts[c]] + insts
         print u'{}\t{}\t{}\t{}'.format(c, concepts[c], len(insts), json.dumps(insts))
         for cid in insts:
-            concpet2subconcepts_csv += u'"{}", "{}"\n'.format(c, cid[cid.rfind('/')+1:])
+            concpet2subconcepts_csv += u'{}, {}\n'.format(c, cid[cid.rfind('/')+1:])
     if save_file is not None:
         utils.save_string(concpet2subconcepts_csv, save_file)
 
@@ -110,9 +118,26 @@ def generate_all_queries():
     utils.save_json_array(concept2queries, './resources/mimir_queries.json')
 
 
+def get_concept_label(concept_id):
+    query2 = """
+    select ?label where {{
+        <http://linkedlifedata.com/resource/umls/id/{}> <http://www.w3.org/2008/05/skos-xl#prefLabel> ?labelObj .
+        ?labelObj <http://www.w3.org/2008/05/skos-xl#literalForm> ?label .
+        FILTER ( lang(?label) = "en" )
+    }}
+    """.format(concept_id)
+    ret = query_result(query2)
+    labels = [r['label']['value'] for r in ret]
+
+    if len(labels) > 0:
+        return labels[0]
+    else:
+        return None
+
 def main():
     # generate_all_queries()
-    get_all_instances('./resources/all_insts.csv')
+    # get_all_instances('./resources/all_insts.csv')
+    print get_concept_label('C0018799')
 
 if __name__ == "__main__":
     main()
