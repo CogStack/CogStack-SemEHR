@@ -155,7 +155,7 @@ def match_term_to_concept(term):
     t = requests.get(lld_autocomplete_api.format(**{'term': term})).content
     rets = json.loads(t)
     if 'results' in rets and len(rets['results']) > 0:
-        return rets['results'][0]['uri']
+        return [r['uri'] for r in rets['results'][:min(2, len(rets['results']))]]
     return None
 
 
