@@ -142,7 +142,7 @@ def read_text_file(file_path):
     lines = []
     with codecs.open(file_path) as rf:
         lines += rf.readlines()
-    return lines
+    return [l.strip() for l in lines]
 
 
 def main():

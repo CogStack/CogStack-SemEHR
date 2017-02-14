@@ -1,0 +1,64 @@
+{
+  "Cancer/tumour/neoplasm": [
+    "Cancer",
+    "tumour",
+    "neoplasm"
+  ],
+  "Diabetes": [
+    "Diabetes"
+  ],
+  "Epilepsy": [
+    "Epilepsy"
+  ],
+  "Migraine": [
+    "Migraine"
+  ],
+  "Eyesight problems": [
+    "blind",
+    "cataract",
+    "glaucoma",
+    "macular degeneration"
+  ],
+  "Hearing problems": [
+    "deaf",
+    "hard of hearing",
+    "tinnitus"
+  ],
+  "Stroke": [
+    "Stroke"
+  ],
+  "Heart issues": [
+    "Heart attack",
+    "myocardial infarction",
+    "MI",
+    "angina",
+    "heart failure",
+    "cardiac failure",
+    "STEMI",
+    "NSTEMI"
+  ],
+  "Hypertension": [
+    "Hypertension"
+  ],
+  "Bronchitis and  etc.": [
+    "Bronchitis",
+    "COPD",
+    "COAD",
+    "chronic obstructive pulmonary disease"
+  ],
+  "Asthma": [
+    "Asthma"
+  ],
+  "Stomach ulcer and etc.": [
+    "Stomach ulcer",
+    "peptic ulcer",
+    "duodenal ulcer",
+    "gastric ulcer",
+    "gastritis"
+  ],
+  "Osteoarthritis": [
+    "Osteoarthritis",
+    "arthritis",
+    "~~Rheumatoid Arthritis"
+  ]
+}
