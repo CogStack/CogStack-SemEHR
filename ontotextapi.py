@@ -7,6 +7,8 @@ api_key = 's4624iv14eij'
 key_secret = 'd0ifs7vd3m80pa1'
 
 endpoint = "https://kconnect-kb.s4.ontotext.com/v1/sparql"
+lld_sparql_json_api = 'http://linkedlifedata.com/sparql.json'
+lld_autocomplete_api = 'http://linkedlifedata.com/autocomplete.json?q={term}&type=disorders'
 
 # SPARQL query template for get narrower concepts
 query_tmp = """
@@ -26,6 +28,12 @@ SELECT ?inst_full WHERE {{
 subconcepts_only_query_tmp = """
 SELECT ?inst_full WHERE {{
    <http://linkedlifedata.com/resource/umls/id/{}> <http://www.w3.org/2004/02/skos/core#narrower> ?inst_full .
+}}
+"""
+
+subconcepts_transitive_query_tmp = """
+SELECT ?inst_full WHERE {{
+   <http://linkedlifedata.com/resource/umls/id/{}> <http://www.w3.org/2004/02/skos/core#narrowerTransitive> ?inst_full .
 }}
 """
 
@@ -54,12 +62,14 @@ top_freq_concepts = {"immunodeficiency ": "C0021051",
 
 
 # do sparql query answering using linked life data service
-def query_result(q):
+def query_result(q, endpoint_url=None):
     headers = {
         "Accept": "application/sparql-results+json",
         "Content-Type": "application/x-www-form-urlencoded"
     }
-    ret = json.loads(utils.http_post_result(endpoint, "query=" + q,
+    if endpoint_url is None:
+        endpoint_url = endpoint
+    ret = json.loads(utils.http_post_result(endpoint_url, "query=" + q,
                                             headers=headers, auth=(api_key, key_secret)))
     return ret['results']['bindings']
 
@@ -87,6 +97,12 @@ def query_instances(concept_id):
     # print q
     ret = query_result(q)
     return [r['inst_full']['value'] for r in ret]
+
+
+def get_transitive_subconcepts(concept_id):
+    q = subconcepts_transitive_query_tmp.format(concept_id)
+    ret = query_result(q, endpoint_url=lld_sparql_json_api)
+    return [r['inst_full']['value'][r['inst_full']['value'].rfind('/') + 1:] for r in ret]
 
 
 def get_all_instances(save_file):
@@ -134,11 +150,21 @@ def get_concept_label(concept_id):
     else:
         return None
 
+
+def match_term_to_concept(term):
+    t = requests.get(lld_autocomplete_api.format(**{'term': term})).content
+    rets = json.loads(t)
+    if 'results' in rets and len(rets['results']) > 0:
+        return rets['results'][0]['uri']
+    return None
+
+
 def main():
     # generate_all_queries()
     # get_all_instances('./resources/all_insts.csv')
     print get_concept_label('C0018799')
 
 if __name__ == "__main__":
-    main()
-
+    # main()
+    print get_transitive_subconcepts('C0011854')
+    # print match_term_to_concept('Type 1 diabetes')
