@@ -3,7 +3,7 @@ import utils
 import json
 from os.path import isfile, join, split
 import joblib as jl
-#import cohortanalysis as cohort
+import cohortanalysis as cohort
 
 
 class StudyConcept(object):
@@ -110,7 +110,7 @@ class StudyAnalyzer(object):
         cohort.populate_patient_study_table(cohort_name, self, out_file)
 
 
-def study(folder):
+def study(folder, cohort_name):
     p, fn = split(folder)
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
@@ -125,11 +125,15 @@ def study(folder):
         sa.study_concepts = scs
         sa.serialise(join(folder, 'study_analyzer.pickle'))
 
+    merged_mappings = {}
     for c in sa.study_concepts:
-        print c.name, json.dumps(c.term_to_concept)
+        for t in c.term_to_concept:
+            merged_mappings['(%s) %s' % (c.name, t)] = c.term_to_concept[t]
+        print c.name, c.concept_closure
+    print json.dumps(merged_mappings)
     print 'generating result table...'
-    sa.gen_study_table(join(folder, 'result.csv'))
+    sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
     print 'done'
 
 if __name__ == "__main__":
-    study('./studies/autoimmune.v2')
+    study('./studies/slam_physical_health')
