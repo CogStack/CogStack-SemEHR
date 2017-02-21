@@ -156,6 +156,7 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
                 if prev_doc_id != d['CN_Doc_ID']:
                     doc_obj = {'id': d['CN_Doc_ID'], 'content': d['TextContent'], 'annotations': []}
                     doc_objs.append(doc_obj)
+                    prev_doc_id = d['CN_Doc_ID']
                 doc_obj['annotations'].append({'start': d['start_offset'],
                                                'end': d['end_offset'],
                                                'concept': d['inst_uri']})
