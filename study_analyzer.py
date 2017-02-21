@@ -109,6 +109,9 @@ class StudyAnalyzer(object):
     def gen_study_table(self, cohort_name, out_file):
         cohort.populate_patient_study_table(cohort_name, self, out_file)
 
+    def gen_sample_docs(self, cohort_name, out_file):
+        cohort.random_extract_annotated_docs(cohort_name, self, out_file, 10)
+
 
 def study(folder, cohort_name):
     p, fn = split(folder)
@@ -132,8 +135,10 @@ def study(folder, cohort_name):
         print c.name, c.concept_closure
     print json.dumps(merged_mappings)
     print 'generating result table...'
-    sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
+    # sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
+    sa.gen_sample_docs(cohort_name, join(folder, 'sample_docs.json'))
     print 'done'
 
 if __name__ == "__main__":
-    study('./studies/slam_physical_health/', 'CC_physical_health')
+    # study('./studies/slam_physical_health/', 'CC_physical_health')
+    study('./studies/autoimmune.v2/', 'auto_immune')
