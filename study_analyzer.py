@@ -136,4 +136,4 @@ def study(folder, cohort_name):
     print 'done'
 
 if __name__ == "__main__":
-    study('./studies/slam_physical_health')
+    study('./studies/slam_physical_health/', 'CC_physical_health')
