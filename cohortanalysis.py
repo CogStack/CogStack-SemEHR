@@ -30,7 +30,7 @@ concept_doc_freq_sql = """
 
 # query term (potentially represented by a list of concepts) freqs over patient
 term_doc_freq_sql = """
-  select p.brcid, COUNT(distinct a.CN_Doc_ID) num
+  select c.brcid, COUNT(distinct a.CN_Doc_ID) num
   from [SQLCRIS_User].[Kconnect].[cohorts] c, [SQLCRIS_User].Kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d
   where
   a.inst_uri in ({0})
@@ -89,19 +89,19 @@ def populate_patient_study_table(cohort_name, study_analyzer, out_file):
     non_empty_concepts = []
     study_concepts = study_analyzer.study_concepts
     for sc in study_concepts:
-        sc_key = '%(%)' % (sc.name, len(sc.concept_closure))
-        concept_list = ', '.join(['\'%\'' % c for c in sc.concept_closure])
+        sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
+        concept_list = ', '.join(['\'%s\'' % c for c in sc.concept_closure])
         patient_term_freq = []
         dutil.query_data(term_doc_freq_sql.format(concept_list, cohort_name), patient_term_freq)
         if len(patient_term_freq) > 0:
             non_empty_concepts.append(sc_key)
             for pc in patient_term_freq:
-                id2p[pc['brcid']][sc_key] = pc['num']
+                id2p[pc['brcid']][sc_key] = str(pc['num'])
 
     concept_labels = sorted(non_empty_concepts)
     s = '\t'.join(['brcid'] + concept_labels) + '\n'
     for p in patients:
-        s += '\t'.join([p['brcid']] + [p[k] for k in concept_labels]) + '\n'
+        s += '\t'.join([p['brcid']] + [p[k] if k in p else '0' for k in concept_labels]) + '\n'
     utils.save_string(s, out_file)
     print 'done'
 
