@@ -50,7 +50,6 @@ docs_by_term_sql = """
   and a.CN_Doc_ID = d.CN_Doc_ID
   and c.brcid = d.BrcId
   and c.patient_group='{1}'
-  group by c.brcid
 """
 
 # query docs & annotations by doc ids and concepts
