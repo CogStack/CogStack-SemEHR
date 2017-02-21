@@ -160,7 +160,7 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
                                                'end': d['end_offset'],
                                                'concept': d['inst_uri']})
             term_to_docs[sc.name] = doc_objs
-    utils.save_string(term_to_docs, out_file)
+    utils.save_json_array(term_to_docs, out_file)
     print 'done'
 
 if __name__ == "__main__":
