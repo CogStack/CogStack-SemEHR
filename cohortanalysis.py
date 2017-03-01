@@ -40,6 +40,7 @@ term_doc_freq_sql = """
   and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
   and c.brcid = d.BrcId
   and c.patient_group='{1}'
+  {2}
   group by c.brcid
 """
 
@@ -53,6 +54,7 @@ docs_by_term_sql = """
   and a.CN_Doc_ID = d.CN_Doc_ID
   and c.brcid = d.BrcId
   and c.patient_group='{1}'
+  {2}
 """
 
 # query docs & annotations by doc ids and concepts
@@ -64,6 +66,12 @@ docs_by_ids_sql = """
   and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
   and d.CN_Doc_ID in ({0})
   and a.inst_uri in ({1})
+  {2}
+"""
+
+# skip term constrain template
+skip_term_sql = """
+and a.string_orig not in ({0})
 """
 
 
@@ -98,6 +106,13 @@ def populate_patient_concept_table(cohort_name, concepts, out_file):
     print 'done'
 
 
+def generate_skip_term_constrain(study_analyzer):
+    if len(study_analyzer.skip_terms) > 0:
+        return skip_term_sql.format(', '.join(['\'%s\'' % t for t in study_analyzer.skip_terms]))
+    else:
+        return ''
+
+
 def populate_patient_study_table(cohort_name, study_analyzer, out_file):
     """
     populate result table for a given study analyzer instance
@@ -118,7 +133,10 @@ def populate_patient_study_table(cohort_name, study_analyzer, out_file):
         sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
         concept_list = ', '.join(['\'%s\'' % c for c in sc.concept_closure])
         patient_term_freq = []
-        dutil.query_data(term_doc_freq_sql.format(concept_list, cohort_name), patient_term_freq)
+        dutil.query_data(term_doc_freq_sql.format(concept_list,
+                                                  cohort_name,
+                                                  generate_skip_term_constrain(study_analyzer)),
+                         patient_term_freq)
         if len(patient_term_freq) > 0:
             non_empty_concepts.append(sc_key)
             for pc in patient_term_freq:
@@ -140,7 +158,10 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
         sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
         concept_list = ', '.join(['\'%s\'' % c for c in sc.concept_closure])
         doc_ids = []
-        dutil.query_data(docs_by_term_sql.format(concept_list, cohort_name), doc_ids)
+        dutil.query_data(docs_by_term_sql.format(concept_list,
+                                                 cohort_name,
+                                                 generate_skip_term_constrain(study_analyzer)),
+                         doc_ids)
         if len(doc_ids) > 0:
             sample_ids = []
             if len(doc_ids) <= sample_size:
@@ -152,7 +173,10 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
                     del doc_ids[index]
             doc_list = ', '.join(['\'%s\'' % d for d in sample_ids])
             docs = []
-            dutil.query_data(docs_by_ids_sql.format(doc_list, concept_list), docs)
+            dutil.query_data(docs_by_ids_sql.format(doc_list,
+                                                    concept_list,
+                                                    generate_skip_term_constrain(study_analyzer)),
+                             docs)
             doc_objs = []
             prev_doc_id = ''
             doc_obj = None
