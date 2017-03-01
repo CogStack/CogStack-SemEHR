@@ -23,6 +23,7 @@ concept_doc_freq_sql = """
   from [SQLCRIS_User].[Kconnect].[cohorts] c, [SQLCRIS_User].Kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d
   where
   a.inst_uri='{0}'
+  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
   and a.CN_Doc_ID = d.CN_Doc_ID
   and c.brcid = d.BrcId
   and c.patient_group='{1}'
@@ -36,6 +37,7 @@ term_doc_freq_sql = """
   where
   a.inst_uri in ({0})
   and a.CN_Doc_ID = d.CN_Doc_ID
+  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
   and c.brcid = d.BrcId
   and c.patient_group='{1}'
   group by c.brcid
@@ -47,6 +49,7 @@ docs_by_term_sql = """
   from [SQLCRIS_User].[Kconnect].[cohorts] c, [SQLCRIS_User].Kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d
   where
   a.inst_uri in ({0})
+  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
   and a.CN_Doc_ID = d.CN_Doc_ID
   and c.brcid = d.BrcId
   and c.patient_group='{1}'
@@ -58,6 +61,7 @@ docs_by_ids_sql = """
   from GateDB_Cris.dbo.gate d, [SQLCRIS_User].Kconnect.kconnect_annotations a
   where
   a.CN_Doc_ID = d.CN_Doc_ID
+  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
   and d.CN_Doc_ID in ({0})
   and a.inst_uri in ({1})
 """
