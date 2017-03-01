@@ -69,6 +69,7 @@ class StudyAnalyzer(object):
     def __init__(self, name):
         self._study_name = name
         self._study_concepts = []
+        self._skip_terms = []
 
     @property
     def study_name(self):
@@ -85,6 +86,14 @@ class StudyAnalyzer(object):
     @study_concepts.setter
     def study_concepts(self, value):
         self._study_concepts = value
+
+    @property
+    def skip_terms(self):
+        return self._skip_terms
+
+    @skip_terms.setter
+    def skip_terms(self, value):
+        self._skip_terms = value
 
     def add_concept(self, concept):
         self.study_concepts.append(concept)
@@ -128,6 +137,8 @@ def study(folder, cohort_name):
         sa.study_concepts = scs
         sa.serialise(join(folder, 'study_analyzer.pickle'))
 
+    if isfile(join(folder, 'skip_terms.json')):
+        sa.skip_terms = utils.load_json_data(join(folder, 'skip_terms.json'))
     merged_mappings = {}
     for c in sa.study_concepts:
         for t in c.term_to_concept:
