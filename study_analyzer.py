@@ -127,15 +127,28 @@ def study(folder, cohort_name):
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
     else:
-        concepts = utils.load_json_data(join(folder, 'study_concepts.json'))
-        if len(concepts) > 0:
-            scs = []
-            for name in concepts:
-                scs.append(StudyConcept(name, concepts[name]))
-                print name, concepts[name]
         sa = StudyAnalyzer(fn)
-        sa.study_concepts = scs
-        sa.serialise(join(folder, 'study_analyzer.pickle'))
+        if isfile(join(folder, 'exact_concepts_mappings.json')):
+            concept_mappings = utils.load_json_data(join(folder, 'exact_concepts_mappings.json'))
+            scs = []
+            for t in concept_mappings:
+                sc = StudyConcept(t, [t])
+                t_c = {}
+                t_c[t] = [concept_mappings[t]]
+                sc.gen_concept_closure(term_concepts=t_c)
+                scs.append(sc)
+                print sc.concept_closure
+            sa.study_concepts = scs
+            sa.serialise(join(folder, 'study_analyzer.pickle'))
+        else:
+            concepts = utils.load_json_data(join(folder, 'study_concepts.json'))
+            if len(concepts) > 0:
+                scs = []
+                for name in concepts:
+                    scs.append(StudyConcept(name, concepts[name]))
+                    print name, concepts[name]
+            sa.study_concepts = scs
+            sa.serialise(join(folder, 'study_analyzer.pickle'))
 
     if isfile(join(folder, 'skip_terms.json')):
         sa.skip_terms = utils.load_json_data(join(folder, 'skip_terms.json'))
@@ -146,10 +159,11 @@ def study(folder, cohort_name):
         print c.name, c.concept_closure
     print json.dumps(merged_mappings)
     print 'generating result table...'
-    # sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
+    sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
     sa.gen_sample_docs(cohort_name, join(folder, 'sample_docs.json'))
     print 'done'
 
 if __name__ == "__main__":
     # study('./studies/slam_physical_health/', 'CC_physical_health')
-    study('./studies/autoimmune.v2/', 'auto_immune')
+    # study('./studies/autoimmune.v2/', 'auto_immune')
+    study('./studies/autoimmune', 'auto_immune')
