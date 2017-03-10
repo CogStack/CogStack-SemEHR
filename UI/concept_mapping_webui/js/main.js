@@ -43,9 +43,9 @@
         ordered.sort();
         for (var i=0;i<ordered.length;i++){
             var d = ordered[i];
-            r = "<div class='clsDisorder' concept=\""+ exact_map[d] + "\" disorder=\"" + d + "\">" +
+            r = "<div class='clsDisorder' concept=\""+ exact_map[d]['mapped'] + "\" disorder=\"" + d + "\">" +
                 "<span class='clsApproved'>" + getApproveSymbol(d) + "</span>" +
-                d + " -> " + (exact_map[d].length > 0 ? exact_map[d] : "N/A") + "</div>";
+                d + " -> " + (exact_map[d]['mapped'].length > 0 ? exact_map[d]['mapped'] + "(" + exact_map[d]['closure'] + ")" : "N/A") + "</div>";
             if (exact_map[d].length > 0)
                 mapped += r;
             else
@@ -60,7 +60,8 @@
             selection = $(this).attr('disorder');
             var url = "";
             if ($(this).attr('concept') && $(this).attr('concept').length > 0){
-                url = "http://linkedlifedata.com/resource/umls/id/" + $(this).attr('concept');
+//                url = "http://linkedlifedata.com/resource/umls/id/" + $(this).attr('concept');
+                url = "https://ncim.nci.nih.gov/ncimbrowser/ConceptReport.jsp?dictionary=NCI%20Metathesaurus&code=" + $(this).attr('concept');
                 $( "#lldConcept" ).html('<object id="objView" width="100%" height="600px" data="' + url + '"/>');
             }
             else{
