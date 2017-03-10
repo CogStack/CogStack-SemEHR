@@ -1,0 +1,88 @@
+# delete the index
+curl -XDELETE 'http://timeline2016-silverash.rhcloud.com/kch/'
+
+
+# mappings
+curl -XPUT 'http://timeline2016-silverash.rhcloud.com/kch/' -H 'Content-Type: application/json' -d'
+{
+  "mappings": {
+    "doc": {
+      "properties": {
+        "body_analysed": {
+           "type":  "text"
+         },
+        "yodie_ann.insturi": {
+            "type":  "keyword"
+         },
+         "yodie_ann.offset_start": {
+            "type":  "long"
+         },
+         "yodie_ann.offset_end": {
+            "type":  "long"
+         }
+      }
+    }
+  }
+}
+'
+
+
+# index sample
+curl -XPUT 'http://timeline2016-silverash.rhcloud.com/kch/doc/3?pretty' -H 'Content-Type: application/json' -d'
+{
+  "body_analysed": "The symptoms of chickenpox start one to three weeks after becoming infected.\r\nThe main symptom is a rash that develops in three stages:\r\nspots – red raised spots develop on the face or chest before spreading to other parts of the body\r\nblisters – over the next few hours or the following day, very itchy fluid-filled blisters develop on top of the spots\r\nscabs and crusts – after a further few days, the blisters dry out and scab over to form a crust; the crusts then gradually fall off by themselves over the next week or two\r\nChickenpox is contagious until all the blisters have scabbed over, which usually happens about five or six days after the rash appeared.\r\nRead about the symptoms of chickenpox for more information and pictures of the different stages of the rash.\r\nHow to treat chickenpox at home\r\n\r\nChickenpox can usually be treated at home.\r\nYou or your child will probably feel pretty miserable and uncomfortable, but treatment can help relieve the symptoms.\r\nThe following can help:\r\nuse paracetamol to relieve fever and discomfort – don t use anti-inflammatory painkillers, such as ibuprofen, as they can sometimes make people with chickenpox very ill\r\nuse calamine lotion, moisturising creams or cooling gels to ease itching\r\ntap or pat the skin rather than scratching it – it s important to avoid scratching because this can lead to further problems\r\ndrink plenty of fluids to stay hydrated\r\nYou should also take steps to stop chickenpox spreading, such as staying away from school or work until the last blister has scabbed over.\r\nRead more about how to treat chickenpox.\r\nWhen to get medical advice\r\n\r\nChickenpox is normally mild and gets better on its own. But some people can become more seriously ill and need to see a doctor.\r\nIts a good idea to contact your GP or NHS 111 for advice if:\r\nyoure not sure if you or your child has chickenpox\r\nyour baby is less than four weeks old and has chickenpox\r\nyou develop chickenpox as an adult\r\nthe symptoms haven t started to improve after six days\r\nyou ve been in contact with someone who has chickenpox (or you have symptoms) and you re pregnant or have a weakened immune system\r\nyou or your child has signs of chickenpox complications, such as swollen and painful skin, difficulty breathing or dehydration\r\nAlso consider getting advice if you re originally from a country near the equator (the tropics) and you ve been in close contact with someone who has chickenpox.\r\nChickenpox is much more common in adults from these areas and you may need treatment to help stop you becoming seriously ill.\r\nHow you catch chickenpox\r\n\r\nChickenpox is caused by a virus that spreads very easily to people who haven t had it before. If you have had it before, you ll usually be immune for life.\r\nThe infection is spread in the fluid found in chickenpox blisters and the droplets in the coughs or sneezes of someone with the infection.\r\nYou can catch chickenpox from:",
+  "client_idcode": "123112141",
+  "yodie_ann": [
+    {
+      "insturi": "C1866245",
+      "offset_start": "130",
+      "offset_end": "146"
+    },
+    {
+      "insturi": "C3277428",
+      "offset_start": "223",
+      "offset_end": "246"
+    }
+  ]
+}
+'
+
+# sample with full yodie annotation
+curl -XPUT 'http://timeline2016-silverash.rhcloud.com/kch/doc/3?pretty' -H 'Content-Type: application/json' -d'
+{
+  "body_analysed": "The symptoms of chickenpox start one to three weeks after becoming infected.\r\nThe main symptom is a rash that develops in three stages:\r\nspots – red raised spots develop on the face or chest before spreading to other parts of the body\r\nblisters – over the next few hours or the following day, very itchy fluid-filled blisters develop on top of the spots\r\nscabs and crusts – after a further few days, the blisters dry out and scab over to form a crust; the crusts then gradually fall off by themselves over the next week or two\r\nChickenpox is contagious until all the blisters have scabbed over, which usually happens about five or six days after the rash appeared.\r\nRead about the symptoms of chickenpox for more information and pictures of the different stages of the rash.\r\nHow to treat chickenpox at home\r\n\r\nChickenpox can usually be treated at home.\r\nYou or your child will probably feel pretty miserable and uncomfortable, but treatment can help relieve the symptoms.\r\nThe following can help:\r\nuse paracetamol to relieve fever and discomfort – don t use anti-inflammatory painkillers, such as ibuprofen, as they can sometimes make people with chickenpox very ill\r\nuse calamine lotion, moisturising creams or cooling gels to ease itching\r\ntap or pat the skin rather than scratching it – it s important to avoid scratching because this can lead to further problems\r\ndrink plenty of fluids to stay hydrated\r\nYou should also take steps to stop chickenpox spreading, such as staying away from school or work until the last blister has scabbed over.\r\nRead more about how to treat chickenpox.\r\nWhen to get medical advice\r\n\r\nChickenpox is normally mild and gets better on its own. But some people can become more seriously ill and need to see a doctor.\r\nIts a good idea to contact your GP or NHS 111 for advice if:\r\nyoure not sure if you or your child has chickenpox\r\nyour baby is less than four weeks old and has chickenpox\r\nyou develop chickenpox as an adult\r\nthe symptoms haven t started to improve after six days\r\nyou ve been in contact with someone who has chickenpox (or you have symptoms) and you re pregnant or have a weakened immune system\r\nyou or your child has signs of chickenpox complications, such as swollen and painful skin, difficulty breathing or dehydration\r\nAlso consider getting advice if you re originally from a country near the equator (the tropics) and you ve been in close contact with someone who has chickenpox.\r\nChickenpox is much more common in adults from these areas and you may need treatment to help stop you becoming seriously ill.\r\nHow you catch chickenpox\r\n\r\nChickenpox is caused by a virus that spreads very easily to people who haven t had it before. If you have had it before, you ll usually be immune for life.\r\nThe infection is spread in the fluid found in chickenpox blisters and the droplets in the coughs or sneezes of someone with the infection.\r\nYou can catch chickenpox from:",
+  "client_idcode": "123112141",
+  "yodie_ann": [
+    {
+      "insturi": "C1866245",
+      "offset_start": "130",
+      "offset_end": "146"
+    },
+    {
+      "insturi": "C3277428",
+      "offset_start": "223",
+      "offset_end": "246"
+    }
+  ]
+}
+'
+
+
+# query sample
+curl -XGET 'http://timeline2016-silverash.rhcloud.com/kch/doc/_search?pretty' -H 'Content-Type: application/json' -d'
+{
+    "query": {
+	    "match": {
+	      "yodie_ann.insturi": {
+	        "query": "C4020876 C3277428",
+	        "operator": "or"
+	      }
+	    }
+	},
+    "highlight" : {
+         "fields" : {
+             "yodie_ann.insturi" : {}
+         }
+    }
+}
+'
