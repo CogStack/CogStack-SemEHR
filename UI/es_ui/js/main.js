@@ -1,6 +1,6 @@
 (function($){
     var _es_client = null;
-    var __es_server_url = "http://timeline2016-silverash.rhcloud.com";
+    var __es_server_url = "";
     var _display_attrs = ["client_idcode", "body_analysed"];
 
     var _pageNum = 0;
@@ -23,7 +23,7 @@
             for (var hpo in termMaps){
                 var shouldQuery = [];
                 for (var idx in termMaps[hpo]) {
-                    shouldQuery.push({"match": {"yodie_ann.insturi": termMaps[hpo][idx]}});
+                    shouldQuery.push({"match": {"yodie_ann.features.inst": termMaps[hpo][idx]}});
                 }
                 bq.push({bool: {should: shouldQuery}});
             }
@@ -32,9 +32,10 @@
         if (query_str!=null && query_str.trim().length > 0){
             query_body["query"]["bool"]["must"].push( {match: {_all: query_str}} );
         }
+		console.log(query_body);
         _es_client.search({
-            index: 'kch',
-            type: 'doc',
+            index: 'epr_documents_bioyodie',
+            type: 'semantic_anns',
             body: query_body
         }).then(function (resp) {
             var hits = resp.hits.hits;
@@ -67,10 +68,14 @@
     function highlight_text(anns, terms, text, snippet){
         var hos = [];
         for (var idx in anns){
-            for (var tidx in terms){
-                if (anns[idx]['insturi'] == terms[tidx]){
-                    hos.push({"term": terms[tidx], "s": anns[idx]['offset_start'], "e": anns[idx]['offset_end']});
-                }
+            for (var hpo in terms){
+				console.log(anns[idx]['features']['inst']);
+				var umls_concepts = terms[hpo];
+				for(var tidx in umls_concepts){
+					if (anns[idx]['features']['inst'] == umls_concepts[tidx]){
+						hos.push({"term": umls_concepts[tidx], "s": anns[idx]['startNode']['offset'], "e": anns[idx]['endNode']['offset']});
+					}
+				}
             }
         }
         hos = hos.sort(function(a, b){
