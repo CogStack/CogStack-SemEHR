@@ -69,7 +69,7 @@ docs_by_cohort_sql = """
 
 # query docs & annotations by doc ids and concepts
 docs_by_ids_sql = """
-  select d.CN_Doc_ID, d.TextContent, a.start_offset, a.end_offset, a.string_orig, a.inst_uri
+  select d.CN_Doc_ID, d.src_table, d.src_col, d.TextContent, a.start_offset, a.end_offset, a.string_orig, a.inst_uri
   from GateDB_Cris.dbo.gate d left join [SQLCRIS_User].Kconnect.kconnect_annotations a on
   a.CN_Doc_ID = d.CN_Doc_ID
   and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
@@ -170,13 +170,14 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
 
     term_to_docs = {}
     study_concepts = study_analyzer.study_concepts
+    is_NOT_cohort_based = study_analyzer.study_options is None \
+                          or study_analyzer.study_options['sample_non_hits'] is None \
+                          or (not study_analyzer.study_options['sample_non_hits'])
     for sc in study_concepts:
         sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
         concept_list = ', '.join(['\'%s\'' % c for c in sc.concept_closure])
         doc_ids = []
-        if study_analyzer.study_options is None \
-                or study_analyzer.study_options['sample_non_hits'] is None \
-                or (not study_analyzer.study_options['sample_non_hits']):
+        if is_NOT_cohort_based:
             dutil.query_data(
                 docs_by_term_sql.format(
                     **{'concepts': concept_list,
@@ -221,13 +222,16 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
             doc_obj = None
             for d in docs:
                 if prev_doc_id != d['CN_Doc_ID']:
-                    doc_obj = {'id': d['CN_Doc_ID'], 'content': d['TextContent'], 'annotations': []}
+                    doc_obj = {'id': d['CN_Doc_ID'], 'content': d['TextContent'], 'annotations': [],
+                               'doc_table': d['src_table'], 'doc_col': d['src_col']}
                     doc_objs.append(doc_obj)
                     prev_doc_id = d['CN_Doc_ID']
                 doc_obj['annotations'].append({'start': d['start_offset'],
                                                'end': d['end_offset'],
                                                'concept': d['inst_uri']})
             term_to_docs[sc.name] = doc_objs
+        if not is_NOT_cohort_based:
+            break
     utils.save_json_array(term_to_docs, out_file)
     print 'done'
 
