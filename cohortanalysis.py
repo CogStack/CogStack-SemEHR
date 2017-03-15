@@ -35,12 +35,12 @@ term_doc_freq_sql = """
   select c.brcid, COUNT(distinct a.CN_Doc_ID) num
   from [SQLCRIS_User].[Kconnect].[cohorts] c, [SQLCRIS_User].Kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d
   where
-  a.inst_uri in ({0})
+  a.inst_uri in ({concepts})
   and a.CN_Doc_ID = d.CN_Doc_ID
   and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
   and c.brcid = d.BrcId
-  and c.patient_group='{1}'
-  {2}
+  and c.patient_group='{cohort_id}'
+  {extra_constrains}
   group by c.brcid
 """
 
@@ -49,24 +49,34 @@ docs_by_term_sql = """
   select distinct a.CN_Doc_ID
   from [SQLCRIS_User].[Kconnect].[cohorts] c, [SQLCRIS_User].Kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d
   where
-  a.inst_uri in ({0})
+  a.inst_uri in ({concepts})
   and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
   and a.CN_Doc_ID = d.CN_Doc_ID
   and c.brcid = d.BrcId
-  and c.patient_group='{1}'
-  {2}
+  and c.patient_group='{cohort_id}'
+  {extra_constrains}
+"""
+
+# query doc ids by cohort - including every doc of this cohort no matter whether the concepts present or not
+docs_by_cohort_sql = """
+  select distinct d.CN_Doc_ID
+  from [SQLCRIS_User].[Kconnect].[cohorts] c, GateDB_Cris.dbo.gate d
+  where
+  c.brcid = d.BrcId
+  and c.patient_group='{cohort_id}'
+  {extra_constrains}
 """
 
 # query docs & annotations by doc ids and concepts
 docs_by_ids_sql = """
   select d.CN_Doc_ID, d.TextContent, a.start_offset, a.end_offset, a.string_orig, a.inst_uri
-  from GateDB_Cris.dbo.gate d, [SQLCRIS_User].Kconnect.kconnect_annotations a
-  where
+  from GateDB_Cris.dbo.gate d left join [SQLCRIS_User].Kconnect.kconnect_annotations a on
   a.CN_Doc_ID = d.CN_Doc_ID
   and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
-  and d.CN_Doc_ID in ({0})
-  and a.inst_uri in ({1})
-  {2}
+  and a.inst_uri in ({concepts})
+  where
+  and d.CN_Doc_ID in ({docs})
+  {extra_constrains}
 """
 
 # skip term constrain template
@@ -133,10 +143,16 @@ def populate_patient_study_table(cohort_name, study_analyzer, out_file):
         sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
         concept_list = ', '.join(['\'%s\'' % c for c in sc.concept_closure])
         patient_term_freq = []
-        dutil.query_data(term_doc_freq_sql.format(concept_list,
-                                                  cohort_name,
-                                                  generate_skip_term_constrain(study_analyzer)),
-                         patient_term_freq)
+        data_sql = term_doc_freq_sql.format(**{'concepts': concept_list,
+                                               'cohort_id': cohort_name,
+                                               'extra_constrains':
+                                                   ' and '.join(
+                                                       [generate_skip_term_constrain(study_analyzer)]
+                                                       + [] if (study_analyzer.study_options is None or
+                                                                study_analyzer.study_options['extra_constrains'] is None)
+                                                       else study_analyzer.study_options['extra_constrains'])})
+        print data_sql
+        dutil.query_data(data_sql, patient_term_freq)
         if len(patient_term_freq) > 0:
             non_empty_concepts.append(sc_key)
             for pc in patient_term_freq:
@@ -158,10 +174,31 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
         sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
         concept_list = ', '.join(['\'%s\'' % c for c in sc.concept_closure])
         doc_ids = []
-        dutil.query_data(docs_by_term_sql.format(concept_list,
-                                                 cohort_name,
-                                                 generate_skip_term_constrain(study_analyzer)),
-                         doc_ids)
+        if study_analyzer.study_options is None \
+                or study_analyzer.study_options['sample_non_hits'] is None \
+                or (not study_analyzer.study_options['sample_non_hits']):
+            dutil.query_data(
+                docs_by_term_sql.format(
+                    **{'concepts': concept_list,
+                       'cohort_id': cohort_name,
+                       'extra_constrains':
+                           ' and '.join(
+                               [generate_skip_term_constrain(study_analyzer)]
+                               + [] if (study_analyzer.study_options is None or
+                                        study_analyzer.study_options['extra_constrains'] is None)
+                               else study_analyzer.study_options['extra_constrains'])}),
+                doc_ids)
+        else:
+            doc_sql = docs_by_cohort_sql.format(
+                **{'cohort_id': cohort_name,
+                   'extra_constrains':
+                       ' and '.join(
+                           [generate_skip_term_constrain(study_analyzer)]
+                           + [] if (study_analyzer.study_options is None or
+                                    study_analyzer.study_options['extra_constrains'] is None)
+                           else study_analyzer.study_options['extra_constrains'])})
+            print doc_sql
+            dutil.query_data(doc_sql, doc_ids)
         if len(doc_ids) > 0:
             sample_ids = []
             if len(doc_ids) <= sample_size:
@@ -173,9 +210,9 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
                     del doc_ids[index]
             doc_list = ', '.join(['\'%s\'' % d for d in sample_ids])
             docs = []
-            dutil.query_data(docs_by_ids_sql.format(doc_list,
-                                                    concept_list,
-                                                    generate_skip_term_constrain(study_analyzer)),
+            dutil.query_data(docs_by_ids_sql.format(**{'docs': doc_list,
+                                                       'concepts': concept_list,
+                                                       'extra_constrains': generate_skip_term_constrain(study_analyzer)}),
                              docs)
             doc_objs = []
             prev_doc_id = ''
