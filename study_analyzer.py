@@ -70,6 +70,7 @@ class StudyAnalyzer(object):
         self._study_name = name
         self._study_concepts = []
         self._skip_terms = []
+        self._options = None
 
     @property
     def study_name(self):
@@ -110,6 +111,14 @@ class StudyAnalyzer(object):
         print 'saving...'
         jl.dump(self, out_file)
         print 'serialised to %s' % out_file
+
+    @property
+    def study_options(self):
+        return self._options
+
+    @study_options.setter
+    def study_options(self, value):
+        self._options = value
 
     @staticmethod
     def deserialise(ser_file):
@@ -152,6 +161,8 @@ def study(folder, cohort_name):
 
     if isfile(join(folder, 'skip_terms.json')):
         sa.skip_terms = utils.load_json_data(join(folder, 'skip_terms.json'))
+    if isfile(join(folder, 'study_options.json')):
+        sa.study_options = utils.load_json_data(join(folder, 'study_options.json'))
     merged_mappings = {}
     for c in sa.study_concepts:
         for t in c.term_to_concept:
@@ -166,4 +177,5 @@ def study(folder, cohort_name):
 if __name__ == "__main__":
     # study('./studies/slam_physical_health/', 'CC_physical_health')
     # study('./studies/autoimmune.v2/', 'auto_immune')
-    study('./studies/autoimmune', 'auto_immune')
+    # study('./studies/autoimmune', 'auto_immune')
+    study('./studies/HCVpos', 'HCVpos_cohort')
