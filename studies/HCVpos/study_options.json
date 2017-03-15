@@ -1,4 +1,4 @@
 {
-  "extra_constrains": ["and d.date <= convert(date, c.Patient_data_constrain)"],
+  "extra_constrains": ["and d.date <= convert(date, substring(c.Patient_data_constrain, 0, 30))"],
   "sample_non_hits": true
 }
