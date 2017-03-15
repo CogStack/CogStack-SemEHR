@@ -146,7 +146,7 @@ def populate_patient_study_table(cohort_name, study_analyzer, out_file):
         data_sql = term_doc_freq_sql.format(**{'concepts': concept_list,
                                                'cohort_id': cohort_name,
                                                'extra_constrains':
-                                                   ' and '.join(
+                                                   ' \n '.join(
                                                        [generate_skip_term_constrain(study_analyzer)]
                                                        + [] if (study_analyzer.study_options is None or
                                                                 study_analyzer.study_options['extra_constrains'] is None)
@@ -182,7 +182,7 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
                     **{'concepts': concept_list,
                        'cohort_id': cohort_name,
                        'extra_constrains':
-                           ' and '.join(
+                           ' \n '.join(
                                [generate_skip_term_constrain(study_analyzer)]
                                + [] if (study_analyzer.study_options is None or
                                         study_analyzer.study_options['extra_constrains'] is None)
