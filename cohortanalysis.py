@@ -75,7 +75,7 @@ docs_by_ids_sql = """
   and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
   and a.inst_uri in ({concepts})
   where
-  and d.CN_Doc_ID in ({docs})
+  d.CN_Doc_ID in ({docs})
   {extra_constrains}
 """
 
@@ -210,9 +210,11 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
                     del doc_ids[index]
             doc_list = ', '.join(['\'%s\'' % d for d in sample_ids])
             docs = []
-            dutil.query_data(docs_by_ids_sql.format(**{'docs': doc_list,
+            doc_sample_sql = docs_by_ids_sql.format(**{'docs': doc_list,
                                                        'concepts': concept_list,
-                                                       'extra_constrains': generate_skip_term_constrain(study_analyzer)}),
+                                                       'extra_constrains': generate_skip_term_constrain(study_analyzer)})
+            print doc_sample_sql
+            dutil.query_data(doc_sample_sql,
                              docs)
             doc_objs = []
             prev_doc_id = ''
