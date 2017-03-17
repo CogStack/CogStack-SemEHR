@@ -143,16 +143,17 @@ def populate_patient_study_table(cohort_name, study_analyzer, out_file):
         sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
         concept_list = ', '.join(['\'%s\'' % c for c in sc.concept_closure])
         patient_term_freq = []
-        data_sql = term_doc_freq_sql.format(**{'concepts': concept_list,
-                                               'cohort_id': cohort_name,
-                                               'extra_constrains':
-                                                   ' \n '.join(
-                                                       [generate_skip_term_constrain(study_analyzer)]
-                                                       + [] if (study_analyzer.study_options is None or
-                                                                study_analyzer.study_options['extra_constrains'] is None)
-                                                       else study_analyzer.study_options['extra_constrains'])})
-        print data_sql
-        dutil.query_data(data_sql, patient_term_freq)
+        if len(sc.concept_closure) > 0:
+            data_sql = term_doc_freq_sql.format(**{'concepts': concept_list,
+                                                   'cohort_id': cohort_name,
+                                                   'extra_constrains':
+                                                       ' \n '.join(
+                                                           [generate_skip_term_constrain(study_analyzer)]
+                                                           + [] if (study_analyzer.study_options is None or
+                                                                    study_analyzer.study_options['extra_constrains'] is None)
+                                                           else study_analyzer.study_options['extra_constrains'])})
+            print data_sql
+            dutil.query_data(data_sql, patient_term_freq)
         if len(patient_term_freq) > 0:
             non_empty_concepts.append(sc_key)
             for pc in patient_term_freq:
@@ -177,29 +178,30 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
         sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
         concept_list = ', '.join(['\'%s\'' % c for c in sc.concept_closure])
         doc_ids = []
-        if is_NOT_cohort_based:
-            dutil.query_data(
-                docs_by_term_sql.format(
-                    **{'concepts': concept_list,
-                       'cohort_id': cohort_name,
+        if len(sc.concept_closure) > 0:
+            if is_NOT_cohort_based:
+                dutil.query_data(
+                    docs_by_term_sql.format(
+                        **{'concepts': concept_list,
+                           'cohort_id': cohort_name,
+                           'extra_constrains':
+                               ' \n '.join(
+                                   [generate_skip_term_constrain(study_analyzer)]
+                                   + [] if (study_analyzer.study_options is None or
+                                            study_analyzer.study_options['extra_constrains'] is None)
+                                   else study_analyzer.study_options['extra_constrains'])}),
+                    doc_ids)
+            else:
+                doc_sql = docs_by_cohort_sql.format(
+                    **{'cohort_id': cohort_name,
                        'extra_constrains':
-                           ' \n '.join(
+                           ' and '.join(
                                [generate_skip_term_constrain(study_analyzer)]
                                + [] if (study_analyzer.study_options is None or
                                         study_analyzer.study_options['extra_constrains'] is None)
-                               else study_analyzer.study_options['extra_constrains'])}),
-                doc_ids)
-        else:
-            doc_sql = docs_by_cohort_sql.format(
-                **{'cohort_id': cohort_name,
-                   'extra_constrains':
-                       ' and '.join(
-                           [generate_skip_term_constrain(study_analyzer)]
-                           + [] if (study_analyzer.study_options is None or
-                                    study_analyzer.study_options['extra_constrains'] is None)
-                           else study_analyzer.study_options['extra_constrains'])})
-            print doc_sql
-            dutil.query_data(doc_sql, doc_ids)
+                               else study_analyzer.study_options['extra_constrains'])})
+                print doc_sql
+                dutil.query_data(doc_sql, doc_ids)
         if len(doc_ids) > 0:
             sample_ids = []
             if len(doc_ids) <= sample_size:
