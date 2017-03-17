@@ -3,7 +3,7 @@ import utils
 import json
 from os.path import isfile, join, split
 import joblib as jl
-import cohortanalysis as cohort
+# import cohortanalysis as cohort
 
 
 class StudyConcept(object):
@@ -57,6 +57,10 @@ class StudyConcept(object):
             self.gen_concept_closure()
         return self._concept_closure
 
+    @concept_closure.setter
+    def concept_closure(self, value):
+        self._concept_closure = value
+
     @property
     def term_to_concept(self):
         if self._concept_closure is None:
@@ -98,6 +102,35 @@ class StudyAnalyzer(object):
 
     def add_concept(self, concept):
         self.study_concepts.append(concept)
+
+    def generate_exclusive_concepts(self):
+        """
+        it is important to have a set of disjoint concepts otherwise concept-document frequencies would
+        contain double-counted results
+        :return:
+        """
+        # call the concept closure property to make sure
+        # that the closure has been generated before
+        # compute the disjoint
+        for sc in self.study_concepts:
+            cc = sc.concept_closure
+        intersections = {}
+        explain_inter = {}
+        for i in range(1, len(self.study_concepts)):
+            for j in xrange(i):
+                common = self.study_concepts[i].concept_closure & self.study_concepts[j].concept_closure
+                if len(common) > 0:
+                    intersections[self.study_concepts[i].name + ' - ' + self.study_concepts[j].name] = common
+                    self.study_concepts[j].concept_closure -= common
+                    explain_inter[self.study_concepts[j].name] = \
+                        ['removed %s common (%s) concepts' % (len(common), self.study_concepts[i].name)] \
+                            if self.study_concepts[j].name not in explain_inter \
+                            else explain_inter[self.study_concepts[j].name] + \
+                                 ['removed %s common (%s) concepts' % (len(common), self.study_concepts[i].name)]
+        if len(intersections) > 0:
+            print 'intersections [[\n%s\n]]' % json.dumps(explain_inter)
+        for sc in self.study_concepts:
+            print '%s %s' % (sc.name, len(sc.concept_closure))
 
     def export_mapping_in_json(self):
         mapping = {}
@@ -159,6 +192,9 @@ def study(folder, cohort_name):
             sa.study_concepts = scs
             sa.serialise(join(folder, 'study_analyzer.pickle'))
 
+    # compute disjoint concepts
+    sa.generate_exclusive_concepts()
+
     if isfile(join(folder, 'skip_terms.json')):
         sa.skip_terms = utils.load_json_data(join(folder, 'skip_terms.json'))
     if isfile(join(folder, 'study_options.json')):
@@ -167,15 +203,15 @@ def study(folder, cohort_name):
     for c in sa.study_concepts:
         for t in c.term_to_concept:
             merged_mappings['(%s) %s' % (c.name, t)] = c.term_to_concept[t]
-        print c.name, c.concept_closure
+        print c.name, c.term_to_concept, c.concept_closure
     print json.dumps(merged_mappings)
     print 'generating result table...'
-    sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
-    sa.gen_sample_docs(cohort_name, join(folder, 'sample_docs.json'))
+    # sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
+    # sa.gen_sample_docs(cohort_name, join(folder, 'sample_docs.json'))
     print 'done'
 
 if __name__ == "__main__":
     # study('./studies/slam_physical_health/', 'CC_physical_health')
     # study('./studies/autoimmune.v2/', 'auto_immune')
-    # study('./studies/autoimmune', 'auto_immune')
-    study('./studies/HCVpos', 'HCVpos_cohort')
+    study('./studies/autoimmune', 'auto_immune')
+    # study('./studies/HCVpos', 'HCVpos_cohort')
