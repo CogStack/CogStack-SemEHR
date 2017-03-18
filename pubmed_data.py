@@ -83,7 +83,7 @@ def do_download_pmc_full_text(pmcid, data_folder):
 def dump_pmc_data(term, page_size, data_path):
     docs = search_pmc(term, page_size)
     utils.save_json_array(docs, join(data_path, 'pmc_docs.json'))
-    utils.multi_thread_tasking([d['pmcid'] for d in docs], 10, do_download_pmc_full_text,
+    utils.multi_thread_tasking([d['pmcid'] for d in docs if 'pmcid' in d], 10, do_download_pmc_full_text,
                                args=[join(data_path, 'fulltext')])
     print 'done'
 
