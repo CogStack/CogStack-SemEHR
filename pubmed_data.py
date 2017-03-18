@@ -89,8 +89,13 @@ def dump_pmc_data(term, page_size, data_path):
     print 'done'
 
 
+def dump_pmc_doc_ids(doc_json, file_path):
+    docs = utils.load_json_data(doc_json)
+    utils.save_string('\n'.join([d['pmcid'] for d in docs if 'pmcid' in d]), file_path)
+
 if __name__ == "__main__":
     # print get_pmc_paper_fulltext('PMC5309427')
     # search_pmc('parkinson''s')
-    dump_pmc_data('parkinson''s', 20, './pubmed_test')
+    # dump_pmc_data('parkinson''s', 20, './pubmed_test')
+    dump_pmc_doc_ids('./pumed_test/pmc_docs.json', './pumed_test/pmc_doc_ids.txt')
 
