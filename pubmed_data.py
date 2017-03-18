@@ -92,5 +92,5 @@ def dump_pmc_data(term, page_size, data_path):
 if __name__ == "__main__":
     # print get_pmc_paper_fulltext('PMC5309427')
     # search_pmc('parkinson''s')
-    dump_pmc_data('parkinson''s', 20, './pubmed_test')
+    dump_pmc_data('parkinson''s', 1000, './pubmed_test')
 
