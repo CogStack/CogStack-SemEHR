@@ -36,7 +36,8 @@ def get_pmc_paper_fulltext(pmcid):
             text_data.append('abstract\n' + abstract)
 
         elem = root.find('body')
-        text_data.append(iterate_get_text(elem))
+        if elem is not None:
+            text_data.append(iterate_get_text(elem))
         s = '\n'.join(text_data)
     except Exception, e:
         traceback.print_exc()
