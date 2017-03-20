@@ -29,6 +29,7 @@ class EntityCentricES(object):
         self._index = 'semehr'
         self._concept_doc_type = 'ctx_concept'
         self._entity_doc_type = 'user'
+        self._doc_doc_type = 'doc'
 
     @property
     def index_name(self):
@@ -54,6 +55,14 @@ class EntityCentricES(object):
     def entity_doc_type(self, value):
         self._entity_doc_type = value
 
+    @property
+    def doc_doc_type(self):
+        return self._doc_doc_type
+
+    @doc_doc_type.setter
+    def doc_doc_type(self, value):
+        self._doc_doc_type = value
+
     def init_index(self, mapping):
         if self._es_instance.indices.exists(self.index_name):
             self._es_instance.indices.delete(self.index_name)
@@ -77,6 +86,9 @@ class EntityCentricES(object):
         ctx_id = EntityCentricES.get_ctx_concept_id(ann)
         print json.dumps(data)
         self._es_instance.update(index=self.index_name, doc_type=self.concept_doc_type, id=ctx_id, body=data)
+
+    def index_document(self, doc_obj):
+        self._es_instance.index(index=self.index_name, doc_type=self.doc_doc_type, body=doc_obj)
 
     def index_entity_data(self, entity_id, doc_id, anns=None, article=None):
         scripts = []
@@ -153,6 +165,14 @@ def do_index_pubmed(line, es, pmcid_to_journal, full_text_path):
                               })
 
 
+def do_index_pubmed_docs(doc_obj, es, full_text_path):
+    if 'pmcid' in doc_obj:
+        pmcid = doc_obj['pmcid']
+        doc_obj['fulltext'] = utils.read_text_file(join(full_text_path, pmcid))
+        es.index_document(doc_obj)
+        print 'doc %s indexed' % pmcid
+
+
 def index_pubmed():
     es = EntityCentricES.get_instance('./pubmed_test/es_setting.json')
     doc_details = utils.load_json_data('./pubmed_test/pmc_docs.json')
@@ -161,8 +181,10 @@ def index_pubmed():
         if 'pmcid' in d and 'journalTitle' in d:
             pmcid_to_journal[d['pmcid']] = d['journalTitle']
     # load anns
-    utils.multi_thread_large_file_tasking('./pubmed_test/test_anns.json', 10, do_index_pubmed,
-                                          args=[es, pmcid_to_journal, './pubmed_test/fulltext'])
+    # utils.multi_thread_large_file_tasking('./pubmed_test/test_anns.json', 10, do_index_pubmed,
+    #                                       args=[es, pmcid_to_journal, './pubmed_test/fulltext'])
+    utils.multi_thread_tasking(doc_details, 10, do_index_pubmed_docs,
+                               args = [es, './pubmed_test/fulltext'])
     print 'done'
 
 
