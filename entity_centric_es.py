@@ -87,8 +87,8 @@ class EntityCentricES(object):
         # print json.dumps(data)
         self._es_instance.update(index=self.index_name, doc_type=self.concept_doc_type, id=ctx_id, body=data)
 
-    def index_document(self, doc_obj):
-        self._es_instance.index(index=self.index_name, doc_type=self.doc_doc_type, body=doc_obj)
+    def index_document(self, doc_obj, id):
+        self._es_instance.index(index=self.index_name, doc_type=self.doc_doc_type, body=doc_obj, id=id)
 
     def index_entity_data(self, entity_id, doc_id, anns=None, article=None):
         scripts = []
@@ -170,7 +170,7 @@ def do_index_pubmed_docs(doc_obj, es, full_text_path):
     if 'pmcid' in doc_obj:
         pmcid = doc_obj['pmcid']
         doc_obj['fulltext'] = utils.read_text_file(join(full_text_path, pmcid))
-        es.index_document(doc_obj)
+        es.index_document(doc_obj, pmcid)
         print 'doc %s indexed' % pmcid
 
 
@@ -203,6 +203,7 @@ def do_index_100k(line, es, doc_to_patient, full_doc_es, index_name, ft_field):
                                   })
         else:
             print '[ERROR] %s full text not found' % doc_id
+
 
 def index_100k():
     f_patient_doc = ''
@@ -240,4 +241,4 @@ def test():
                           })
 
 if __name__ == "__main__":
-    index_100k()
+    index_pubmed()
