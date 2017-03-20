@@ -84,11 +84,11 @@ class EntityCentricES(object):
             "doc_as_upsert": True
         }
         ctx_id = EntityCentricES.get_ctx_concept_id(ann)
-        print json.dumps(data)
+        # print json.dumps(data)
         self._es_instance.update(index=self.index_name, doc_type=self.concept_doc_type, id=ctx_id, body=data)
 
-    def index_document(self, doc_obj):
-        self._es_instance.index(index=self.index_name, doc_type=self.doc_doc_type, body=doc_obj)
+    def index_document(self, doc_obj, id):
+        self._es_instance.index(index=self.index_name, doc_type=self.doc_doc_type, body=doc_obj, id=id)
 
     def index_entity_data(self, entity_id, doc_id, anns=None, article=None):
         scripts = []
@@ -119,6 +119,7 @@ class EntityCentricES(object):
             data['upsert']['anns'] = entity_anns
             for ann in anns:
                 self.index_ctx_concept(ann)
+            print '[concepts] %s indexed' % len(anns)
 
         if article is not None:
             scripts.append("if (ctx._source.articles == null) " \
@@ -129,8 +130,8 @@ class EntityCentricES(object):
 
         data['script'] = ';'.join(scripts)
 
-        print json.dumps(data)
-        print entity_id
+        # print json.dumps(data)
+        print 'patient %s updated' % entity_id
         self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data)
 
     @staticmethod
@@ -169,7 +170,7 @@ def do_index_pubmed_docs(doc_obj, es, full_text_path):
     if 'pmcid' in doc_obj:
         pmcid = doc_obj['pmcid']
         doc_obj['fulltext'] = utils.read_text_file(join(full_text_path, pmcid))
-        es.index_document(doc_obj)
+        es.index_document(doc_obj, pmcid)
         print 'doc %s indexed' % pmcid
 
 
@@ -185,6 +186,43 @@ def index_pubmed():
     #                                       args=[es, pmcid_to_journal, './pubmed_test/fulltext'])
     utils.multi_thread_tasking(doc_details, 10, do_index_pubmed_docs,
                                args = [es, './pubmed_test/fulltext'])
+    print 'done'
+
+
+def do_index_100k(line, es, doc_to_patient, full_doc_es, index_name, ft_field):
+    ann_data = json.loads(line)
+    doc_id = ann_data['docId']
+    if doc_id in doc_to_patient:
+        patient_id = doc_to_patient[doc_id]
+        doc_obj = full_doc_es.get(index_name, doc_id)
+        if doc_obj is not None:
+            es.index_entity_data(patient_id,
+                                 doc_id, ann_data['annotations'][0],
+                                 {"eprid:": doc_id,
+                                  "fulltext": doc_obj[ft_field]
+                                  })
+        else:
+            print '[ERROR] %s full text not found' % doc_id
+
+
+def index_100k():
+    f_patient_doc = ''
+    f_yodie_anns = ''
+    es_epr_full_text =''
+    index_name = ''
+    ft_field = ''
+    es = EntityCentricES.get_instance('./pubmed_test/es_100k_setting.json')
+    lines = utils.read_text_file(f_patient_doc)
+    doc_to_patient = {}
+    for l in lines:
+        arr = l.split('\t')
+        doc_to_patient[arr[1]] = arr[0]
+
+    # epr full text index api
+    es_full_text = Elasticsearch([es_epr_full_text], serializer=JSONSerializerPython2())
+    es_full_text.get()
+    utils.multi_thread_large_file_tasking(f_yodie_anns, 10, do_index_100k,
+                                          args=[es, doc_to_patient, es_full_text, index_name, ft_field])
     print 'done'
 
 
