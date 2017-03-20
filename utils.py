@@ -97,7 +97,7 @@ def http_post_result(url, payload, headers=None, auth=None):
     req = requests.post(
         url, headers=headers,
         data=payload, auth=auth)
-    return req.content.decode("utf-8")
+    return unicode(req.content, errors='ignore') # req.content.decode("utf-8")
 
 
 def multi_thread_large_file_tasking(large_file, num_threads, process_func,
@@ -114,8 +114,8 @@ def multi_thread_large_file_tasking(large_file, num_threads, process_func,
         if thread_init_func is not None:
             to = thread_init_func()
             thread_objs.append(to)
-        arr.insert(1, to)
-        arr.insert(0, pdf_queque)
+        arr.insert(0, to)
+        arr.insert(1, pdf_queque)
         t = threading.Thread(target=multi_thread_do, args=tuple(arr))
         t.daemon = True
         t.start()
