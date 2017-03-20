@@ -169,7 +169,7 @@ def do_index_pubmed(line, es, pmcid_to_journal, full_text_path):
 def do_index_pubmed_docs(doc_obj, es, full_text_path):
     if 'pmcid' in doc_obj:
         pmcid = doc_obj['pmcid']
-        doc_obj['fulltext'] = utils.read_text_file(join(full_text_path, pmcid))
+        doc_obj['fulltext'] = '\n'.join(utils.read_text_file(join(full_text_path, pmcid)))
         es.index_document(doc_obj, pmcid)
         print 'doc %s indexed' % pmcid
 
