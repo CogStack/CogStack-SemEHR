@@ -145,6 +145,13 @@ def read_text_file(file_path):
     return [l.strip() for l in lines]
 
 
+def read_text_file_as_string(file_path):
+    s = None
+    with codecs.open(file_path) as rf:
+        s = rf.read()
+    return s
+
+
 def main():
     pass
 
