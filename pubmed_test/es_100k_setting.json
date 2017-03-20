@@ -1,0 +1,8 @@
+{
+  "es_host": "",
+  "index": "",
+  "concept_doc_type": "ctx_concept",
+  "entity_doc_type": "patient",
+  "reset": false,
+  "mappings": {"patient":{"properties":{"id":{"type":"string"},"anns":{"properties":{"contexted_concept":{"type":"string"},"CUI":{"type":"string"},"appearances":{"properties":{"pmcid":{"type":"string"},"offset_start":{"type":"long"},"offset_end":{"type":"long"}}}}},"articles":{"properties":{"eprid":{"type":"string"},"fulltext":{"type":"string"}}}},"_source":{"excludes":["articles.*"]}},"ctx_concept":{"properties":{"cui":{"type":"string"},"negation":{"type":"string"},"experiencer":{"type":"string"},"temporality":{"type":"string"},"prefLabel":{"type":"string"},"vocabularies":{"type":"string"},"STY":{"type":"string"}}}}
+}
