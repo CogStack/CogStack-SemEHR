@@ -162,14 +162,14 @@ def do_index_pubmed(line, es, pmcid_to_journal, full_text_path):
         es.index_entity_data(hashlib.md5(journal_name).hexdigest().upper(),
                              pmcid, ann_data['annotations'][0],
                              {"pmcid:": pmcid,
-                              "fulltext": '\n'.join(utils.read_text_file(join(full_text_path, pmcid)))
+                              "fulltext": utils.read_text_file_as_string(join(full_text_path, pmcid))
                               })
 
 
 def do_index_pubmed_docs(doc_obj, es, full_text_path):
     if 'pmcid' in doc_obj:
         pmcid = doc_obj['pmcid']
-        doc_obj['fulltext'] = '\n'.join(utils.read_text_file(join(full_text_path, pmcid)))
+        doc_obj['fulltext'] = utils.read_text_file_as_string(join(full_text_path, pmcid))
         es.index_document(doc_obj, pmcid)
         print 'doc %s indexed' % pmcid
 
