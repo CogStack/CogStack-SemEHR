@@ -277,7 +277,7 @@
                 new_str += "...";
             for (var idx in hos){
                 new_str += text.substring(prev_pos, hos[idx]["s"]) +
-                    "<em title='" + _umlsToHPO["UMLS:" + hos[idx]["term"]] + "'>" + text.substring(hos[idx]["s"], hos[idx]["e"]) + "</em>";
+                    "<em>" + text.substring(hos[idx]["s"], hos[idx]["e"]) + "</em>";
                 prev_pos = hos[idx]["e"];
                 if (snippet)
                     break;
