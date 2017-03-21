@@ -242,7 +242,7 @@
                     for (var cid in _context_concepts['typed']){
                         var t = _context_concepts['typed'][cid];
                         if (t['_source']['experiencer'] == 'Patient'){
-                            if (t['_source']['temporality'] == "Recent"){
+                            if (t['_source']['temporality'] != "Recent"){
                                 _context_concepts['hisM'].push(t);
                             }else{
                                 if (t['_source']['negation'] == "Negated"){
