@@ -449,7 +449,7 @@
             }else if ($(this).hasClass('hisM')){
                 console.log('hisM clicked');
                 var ctx_concept = {};
-                for (var i=0;i<_context_concepts['negM'].length;i++){
+                for (var i=0;i<_context_concepts['hisM'].length;i++){
                     var cc = _context_concepts['hisM'][i]['_id'];
                     ctx_concept[cc] = _context_concepts['mentions'][cc];
                 }
