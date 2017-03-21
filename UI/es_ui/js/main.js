@@ -1,4 +1,5 @@
 (function($){
+    var __es_need_login = true;
     var _es_client = null;
     var __es_server_url = "http://timeline2016-silverash.rhcloud.com/";
     var __es_index = "pubmed"; //epr_documents_bioyodie
@@ -19,6 +20,86 @@
     var _umlsToHPO = {};
 
     var _context_concepts = null;
+
+    function initESClient(){
+        if (__es_need_login){
+            easyLogin();
+        }else{
+            _es_client = new $.es.Client({
+                hosts: __es_server_url
+            });
+            _es_client.ping({
+                requestTimeout: 30000,
+            }, function (error) {
+                if (error) {
+                    console.error('elasticsearch cluster is down!');
+                } else {
+                    console.log('All is well');
+                }
+            });
+        }
+    }
+
+    function easyLogin(){
+        swal.setDefaults({
+            confirmButtonText: 'Next &rarr;',
+            showCancelButton: true,
+            animation: false,
+            progressSteps: ['1', '2']
+        })
+
+        var steps = [
+            {
+                title: 'Login',
+                text: 'name',
+                input: 'text',
+            },
+            {
+                title: 'Login',
+                text: 'password',
+                input: 'password',
+                confirmButtonText: 'login'
+            }
+        ]
+
+        swal.queue(steps).then(function (result) {
+            swal.resetDefaults();
+            swal('login...');
+            swal.showLoading();
+            _es_client = $.es.Client({
+                host: [
+                    {
+                        host: __es_server_url,
+                        auth: result[0] + ':' + result[1],
+                        protocol: 'https',
+                        port: 9200
+                    }
+                ]
+            });
+            _es_client.ping({
+                requestTimeout: 30000,
+            }, function (error) {
+                if (error) {
+                    swal({
+                        title: 'something is wrong!',
+                        confirmButtonText: 'retry',
+                        showCancelButton: true
+                    }).then(function(){
+                        easyLogin();
+                    });
+                    console.error('elasticsearch cluster is down!');
+                } else {
+                    swal({
+                        title: 'Welcome back, ' + result[0] + "!",
+                        confirmButtonText: 'ok',
+                    });
+                    console.log('All is well');
+                }
+            });
+        }, function () {
+            swal.resetDefaults()
+        })
+    }
 
     function search(queryObj){
         var termMaps = queryObj["terms"];
@@ -383,19 +464,7 @@
 
 	$(document).ready(function(){
         genUMLSToHPO();
-
-        _es_client = new $.es.Client({
-            hosts: __es_server_url
-        });
-        _es_client.ping({
-            requestTimeout: 30000,
-        }, function (error) {
-            if (error) {
-                console.error('elasticsearch cluster is down!');
-            } else {
-                console.log('All is well');
-            }
-        });
+        initESClient();
 
         $('#btnSearch').click(function () {
             resetSearchResult();
