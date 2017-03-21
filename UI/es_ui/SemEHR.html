@@ -20,12 +20,17 @@
         white-space: -pre-wrap;      /* Opera 4-6 */
         white-space: -o-pre-wrap;    /* Opera 7 */
         word-wrap: break-word;       /* Internet Explorer 5.5+ */
-        border-bottom: dashed 1px #e9e9e9;  max-width: 300px}
+        border-bottom: solid 1px #e9e9e9;  max-width: 300px;
+        font-size: 110%;
+        line-height: 180%;
+        text-align: justify;
+    }
     .clsRow {display: table-row;overflow: hidden;}
     .clsDoc{border-bottom: dotted 1px burlywood}
     em{font-size:150%;color:red;background-color: cornsilk}
-    #searchDiv{width: 100%;text-align: center}
-    #entityInput, #searchInput{height: 40px;font-size: 120%;width: 200px}
+    #searchDiv{text-align: center;display: table;width: 100%;}
+    #entityInput, #searchInput{height: 40px;font-size: 110%;width: 200px;color:#678;padding: 5px;margin:5px;}
+    #searchDiv div{display: table-row;}
     #entityInput{width: 160px}
     #btnSearch{height: 40px;font-size: 120%; color: dimgrey}
     #pageCtrl{width: 100%;text-align: center;margin: 10px;display:none;margin-top:20px}
@@ -35,7 +40,7 @@
     .banner{color:#888;font-style:italic;text-align: left;display: table-row;}
     .banner div{display: table-cell;vertical-align: middle;}
     .banner .head{padding-left: 10px;font-size: 130%;line-height: 80%}
-    .head span{font-size:60%;}
+    .head span{font-size:50%;}
     .clsMore{margin:30px;text-align:right;cursor:pointer;font-size:120%;color:#2980b9;background-color: floralwhite;border:solid 1px #3085d6;padding-left: 5px;padding-right: 5px}
     .clsMore:hover{color:#d98f34;border: solid 1px #dd5555}
     .clsTextCtn{display: none}
@@ -55,19 +60,21 @@
     .sumCol span:hover{color:#dd5555}
     #sumTermDiv{color:#888;text-align: center;font-size: 160%;margin-top: 50px;}
     .selected{background-color: #facea8}
+    .projectName{padding-left:30px;font-size: 220%}
 </style>
 <body>
 <div id="mainDiv">
     <div class="banner">
         <div><img src="./imgs/KConnect_logo_150px.png"/> <img src="./imgs/logo.png" width="46"/></div>
         <div class="head">PHI <br/><span>PRECISION HEALTH INFORMATICS</span></div>
+        <div class="projectName">Semantic EHR for 100K </div>
     </div>
     <nav id="primaryNav"/>
     <div style="display:block;width: 100%;font-size:200%;margin-bottom:30px;text-align: center">&nbsp; </div>
     <div id="searchDiv">
-        <label for="entityInput">Patient ID</label> <input type="text" id="entityInput" value="6A3DBC58A865EB42303A02769035AC03"/>
+        <div><label for="entityInput">Patient ID</label> <input type="text" id="entityInput" value="6A3DBC58A865EB42303A02769035AC03"/>
         <label for="searchInput">Terms</label> <input type="text" id="searchInput" value="HP:0002019"/>
-        <button id="btnSearch">search</button>
+        <button id="btnSearch">search</button></div>
     </div>
     <div id="sumTermDiv"></div>
     <div id="entitySumm">

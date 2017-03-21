@@ -369,6 +369,7 @@
         $('#entitySumm').css("visibility", "hidden");
         _context_concepts = null;
         $('.sum').html('-');
+        $('.sum').parent().removeClass('selected');
         resetDocConceptCanvas();
     }
 
