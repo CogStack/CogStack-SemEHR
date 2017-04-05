@@ -100,9 +100,9 @@ def get_doc_detail_by_id(doc_id):
 
 
 def do_save_file(doc, folder):
-    utils.save_string(join(folder, doc['CN_Doc_ID'] + '.txt'), doc['TextContent'])
+    utils.save_string(doc['TextContent'], join(folder, doc['CN_Doc_ID'] + '.txt'))
     doc['TextContent'] = ''
-    utils.save_json_array(join(folder, doc['CN_Doc_ID'] + '.json'), doc)
+    utils.save_json_array(doc, join(folder, doc['CN_Doc_ID'] + '.json'))
 
 
 def dump_doc_as_files(folder):
