@@ -4,7 +4,7 @@ import utils
 import json
 from os.path import join, isfile
 from os import listdir
-from cohortanalysis import get_doc_detail_by_id
+from cohortanalysis import load_all_docs
 
 
 class JSONSerializerPython2(serializer.JSONSerializer):
@@ -286,13 +286,13 @@ def load_doc_from_dir(folder, doc_id):
     return doc_obj
 
 
-def do_index_cris(line, es, doc_to_patient, data_folder):
+def do_index_cris(line, es, doc_to_patient, doc_dict):
     ann_data = json.loads(line)
     doc_id = ann_data['docId']
     if doc_id in doc_to_patient:
         patient_id = doc_to_patient[doc_id]
         # doc_obj = get_doc_detail_by_id(doc_id)
-        doc_obj = load_doc_from_dir(data_folder, doc_id)
+        doc_obj = doc_dict[doc_id]
         if doc_obj is not None and len(doc_obj) > 0:
             doc_obj = doc_obj[0]
             print doc_obj['Date']
@@ -318,7 +318,12 @@ def do_index_cris(line, es, doc_to_patient, data_folder):
 def index_cris_cohort():
     f_patient_doc = './hepc_pos_doc_brcid.txt'
     f_yodie_anns = '/isilon_home/hwubrc/kconnect/gcp/gcp_runtime/tmp_hepc_ann'
-    data_folder = './hepc_data'
+    print 'loading all docs at a time...'
+    docs = load_all_docs()
+    print 'docs read'
+    doc_dict = {}
+    for d in docs:
+        doc_dict[d['CN_Doc_ID']] = d
 
     es = EntityCentricES.get_instance('./pubmed_test/es_cris_setting.json')
     lines = utils.read_text_file(f_patient_doc)
@@ -330,7 +335,7 @@ def index_cris_cohort():
     ann_files = [f for f in listdir(f_yodie_anns) if isfile(join(f_yodie_anns, f))]
     for ann in ann_files:
         utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 2, do_index_cris,
-                                              args=[es, doc_to_patient, data_folder])
+                                              args=[es, doc_to_patient, doc_dict])
     print 'done'
 
 
