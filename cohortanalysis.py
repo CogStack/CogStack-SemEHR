@@ -3,7 +3,7 @@ import sqldbutils as dutil
 import json
 import ontotextapi as oi
 import random
-from study_analyzer import StudyAnalyzer
+# from study_analyzer import StudyAnalyzer
 
 # query concept sql
 autoimmune_concepts_sql = """
@@ -86,16 +86,15 @@ and a.string_orig not in ({0})
 
 # get full text of a doc
 fulltext_date_by_doc_id = """
- select TextContent, Date from sqlcris_user.KConnect.vw_hepcpos_docs
+ select TextContent, Date, src_table, src_col, BrcId from sqlcris_user.KConnect.vw_hepcpos_docs
  where CN_Doc_ID='{doc_id}'
 """
 
 
-def get_text_date_by_id(doc_id):
+def get_doc_detail_by_id(doc_id):
     sql = fulltext_date_by_doc_id.format(**{'doc_id': doc_id})
     docs = []
     dutil.query_data(sql, docs)
-    print docs
     return docs
 
 

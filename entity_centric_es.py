@@ -2,7 +2,9 @@ from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, com
 import hashlib
 import utils
 import json
-from os.path import join
+from os.path import join, isfile
+from os import listdir
+from cohortanalysis import get_doc_detail_by_id
 
 
 class JSONSerializerPython2(serializer.JSONSerializer):
@@ -149,6 +151,9 @@ class EntityCentricES(object):
         es.index_name = setting['index']
         es.concept_doc_type = setting['concept_doc_type']
         es.entity_doc_type = setting['entity_doc_type']
+        if 'doc_doc_type' in setting and setting['doc_doc_type'] != '':
+            es.doc_doc_type = setting['doc_doc_type']
+
         if setting['reset']:
             es.init_index(setting['mappings'])
         return es
@@ -223,6 +228,46 @@ def index_100k():
     es_full_text.get()
     utils.multi_thread_large_file_tasking(f_yodie_anns, 10, do_index_100k,
                                           args=[es, doc_to_patient, es_full_text, index_name, ft_field])
+    print 'done'
+
+
+def do_index_cris(line, es, doc_to_patient):
+    ann_data = json.loads(line)
+    doc_id = ann_data['docId']
+    if doc_id in doc_to_patient:
+        patient_id = doc_to_patient[doc_id]
+        doc_obj = get_doc_detail_by_id(doc_id)
+        if doc_obj is not None:
+            es.index_document({'eprid': doc_id,
+                               'date': doc_obj['date'],
+                               'patientId': doc_obj['BrcId'],
+                               'src_table': doc_obj['src_table'],
+                               'src_col': doc_obj['src_col'],
+                               'fulltext': doc_obj['TextContent']}, doc_id)
+            es.index_entity_data(patient_id,
+                                 doc_id, ann_data['annotations'][0],
+                                 {
+                                     "eprid:": doc_id,
+                                     "fulltext": doc_obj['TextContent']
+                                 })
+        else:
+            print '[ERROR] %s full text not found' % doc_id
+
+
+def index_cris_cohort():
+    f_patient_doc = ''
+    f_yodie_anns = ''
+    es = EntityCentricES.get_instance('./pubmed_test/es_cris_setting.json')
+    lines = utils.read_text_file(f_patient_doc)
+    doc_to_patient = {}
+    for l in lines:
+        arr = l.split('\t')
+        doc_to_patient[arr[1]] = arr[0]
+
+    ann_files = [f for f in listdir(f_yodie_anns) if isfile(join(f_yodie_anns, f))]
+    for ann in ann_files:
+        utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 10, do_index_cris,
+                                              args=[es, doc_to_patient])
     print 'done'
 
 
