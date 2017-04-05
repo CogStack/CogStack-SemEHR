@@ -237,7 +237,8 @@ def do_index_cris(line, es, doc_to_patient):
     if doc_id in doc_to_patient:
         patient_id = doc_to_patient[doc_id]
         doc_obj = get_doc_detail_by_id(doc_id)
-        if doc_obj is not None:
+        if doc_obj is not None and len(doc_obj) > 0:
+            doc_obj = doc_obj[0]
             es.index_document({'eprid': doc_id,
                                'date': doc_obj['date'],
                                'patientId': doc_obj['BrcId'],
@@ -252,11 +253,14 @@ def do_index_cris(line, es, doc_to_patient):
                                  })
         else:
             print '[ERROR] %s full text not found' % doc_id
+    else:
+        print '[ERROR] %s not found in dic' % doc_id
 
 
 def index_cris_cohort():
-    f_patient_doc = ''
-    f_yodie_anns = ''
+    f_patient_doc = './hepc_pos_doc_brcid.txt'
+    f_yodie_anns = '/isilon_home/hwubrc/kconnect/gcp/gcp_runtime/tmp_hepc_ann'
+
     es = EntityCentricES.get_instance('./pubmed_test/es_cris_setting.json')
     lines = utils.read_text_file(f_patient_doc)
     doc_to_patient = {}
@@ -286,4 +290,4 @@ def test():
                           })
 
 if __name__ == "__main__":
-    index_pubmed()
+    index_cris_cohort()
