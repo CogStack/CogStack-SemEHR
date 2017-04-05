@@ -99,6 +99,13 @@ def get_doc_detail_by_id(doc_id):
     return docs
 
 
+def load_all_docs():
+    sql = "select TextContent, Date, src_table, src_col, BrcId, CN_Doc_ID from sqlcris_user.KConnect.vw_hepcpos_docs"
+    docs = []
+    dutil.query_data(sql, docs)
+    return docs
+
+
 def do_save_file(doc, folder):
     utils.save_string(unicode(doc['TextContent'], errors='ignore'), join(folder, doc['CN_Doc_ID'] + '.txt'))
     doc['TextContent'] = ''
@@ -107,10 +114,7 @@ def do_save_file(doc, folder):
 
 
 def dump_doc_as_files(folder):
-    sql = "select TextContent, Date, src_table, src_col, BrcId, CN_Doc_ID from sqlcris_user.KConnect.vw_hepcpos_docs"
-    docs = []
-    dutil.query_data(sql, docs)
-    utils.multi_thread_tasking(docs, 10, do_save_file, args=[folder])
+    utils.multi_thread_tasking(load_all_docs(), 10, do_save_file, args=[folder])
 
 
 def populate_patient_concept_table(cohort_name, concepts, out_file):
