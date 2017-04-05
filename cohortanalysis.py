@@ -1,6 +1,7 @@
 import utils
 import sqldbutils as dutil
 import json
+from os.path import join
 import ontotextapi as oi
 import random
 # from study_analyzer import StudyAnalyzer
@@ -96,6 +97,19 @@ def get_doc_detail_by_id(doc_id):
     docs = []
     dutil.query_data(sql, docs)
     return docs
+
+
+def do_save_file(doc, folder):
+    utils.save_string(join(folder, doc['CN_Doc_ID'] + '.txt'), doc['TextContent'])
+    doc['TextContent'] = ''
+    utils.save_json_array(join(folder, doc['CN_Doc_ID'] + '.json'), doc)
+
+
+def dump_doc_as_files(folder):
+    sql = "select TextContent, Date, src_table, src_col, BrcId, CN_Doc_ID from sqlcris_user.KConnect.vw_hepcpos_docs"
+    docs = []
+    dutil.query_data(sql, docs)
+    utils.multi_thread_tasking(docs, 10, do_save_file, args=[folder])
 
 
 def populate_patient_concept_table(cohort_name, concepts, out_file):
@@ -253,5 +267,5 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
 if __name__ == "__main__":
     # concepts = utils.load_json_data('./resources/Surgical_Procedures.json')
     # populate_patient_concept_table('dementia', concepts, 'dementia_cohorts.csv')
-    get_text_date_by_id('')
+    dump_doc_as_files('')
 
