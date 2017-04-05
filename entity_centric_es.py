@@ -79,9 +79,9 @@ class EntityCentricES(object):
                 "negation": ann['features']['Negation'],
                 "experiencer": ann['features']['Experiencer'],
                 "temporality": ann['features']['Temporality'],
-                "prefLabel": ann['features']['PREF'],
-                "vocabularies": ann['features']['VOCABS'],
-                "STY": ann['features']['STY']
+                "prefLabel": ann['features']['PREF']
+                # "vocabularies": ann['features']['VOCABS'],
+                # "STY": ann['features']['STY']
             },
             "doc_as_upsert": True
         }
@@ -181,9 +181,9 @@ class EntityCentricES(object):
             'params': params
         }
 
-        print json.dumps(data)
+        # print json.dumps(data)
         # print 'patient %s updated' % entity_id
-        # self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data)
+        self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data)
 
     @staticmethod
     def get_ctx_concept_id(ann):
