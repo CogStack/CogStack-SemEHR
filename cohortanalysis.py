@@ -100,8 +100,9 @@ def get_doc_detail_by_id(doc_id):
 
 
 def do_save_file(doc, folder):
-    utils.save_string(doc['TextContent'], join(folder, doc['CN_Doc_ID'] + '.txt'))
+    utils.save_string(unicode(doc['TextContent'], errors='ignore'), join(folder, doc['CN_Doc_ID'] + '.txt'))
     doc['TextContent'] = ''
+    doc['Date'] = long(doc['Date'])
     utils.save_json_array(doc, join(folder, doc['CN_Doc_ID'] + '.json'))
 
 
@@ -267,5 +268,5 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
 if __name__ == "__main__":
     # concepts = utils.load_json_data('./resources/Surgical_Procedures.json')
     # populate_patient_concept_table('dementia', concepts, 'dementia_cohorts.csv')
-    dump_doc_as_files('')
+    dump_doc_as_files('./hepc_data')
 
