@@ -295,7 +295,7 @@ def do_index_cris(line, es, doc_to_patient):
                                'src_table': doc_obj['src_table'],
                                'src_col': doc_obj['src_col'],
                                'fulltext': unicode(doc_obj['TextContent'], errors='ignore')}, doc_id)
-            es.index_entity_data(patient_id,
+            es.index_entity_data_v2(patient_id,
                                  doc_id, ann_data['annotations'][0],
                                  {
                                      "eprid:": doc_id,
