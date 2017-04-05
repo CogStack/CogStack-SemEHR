@@ -92,7 +92,7 @@ class EntityCentricES(object):
     def index_document(self, doc_obj, id):
         self._es_instance.index(index=self.index_name, doc_type=self.doc_doc_type, body=doc_obj, id=id)
 
-    def index_entity_data(self, entity_id, doc_id, anns=None, article=None):
+    def index_entity_data(self, entity_id, doc_id, anns=None, article=None, doc_date=None):
         scripts = []
         data = {
             "params": {
@@ -110,7 +110,8 @@ class EntityCentricES(object):
                         "CUI": ann['features']['inst'],
                         "appearances": [
                             {
-                                "pmcid": doc_id,
+                                "eprid": doc_id,
+                                "date": 0 if doc_date is None else doc_date
                                 "offset_start": int(ann['startNode']['offset']),
                                 "offset_end": int(ann['endNode']['offset'])
                             }
@@ -249,7 +250,8 @@ def do_index_cris(line, es, doc_to_patient):
                                  {
                                      "eprid:": doc_id,
                                      "fulltext": doc_obj['TextContent']
-                                 })
+                                 },
+                                 doc_date=doc_obj['date'])
         else:
             print '[ERROR] %s full text not found' % doc_id
 
