@@ -280,12 +280,19 @@ def index_100k():
     print 'done'
 
 
-def do_index_cris(line, es, doc_to_patient):
+def load_doc_from_dir(folder, doc_id):
+    doc_obj = utils.load_json_data(join(folder, doc_id + '.json'))
+    doc_obj['TextContent'] = utils.read_text_file_as_string(join(folder, doc_id + '.txt'))
+    return doc_obj
+
+
+def do_index_cris(line, es, doc_to_patient, data_folder):
     ann_data = json.loads(line)
     doc_id = ann_data['docId']
     if doc_id in doc_to_patient:
         patient_id = doc_to_patient[doc_id]
-        doc_obj = get_doc_detail_by_id(doc_id)
+        # doc_obj = get_doc_detail_by_id(doc_id)
+        doc_obj = load_doc_from_dir(data_folder, doc_id)
         if doc_obj is not None and len(doc_obj) > 0:
             doc_obj = doc_obj[0]
             print doc_obj['Date']
@@ -311,6 +318,7 @@ def do_index_cris(line, es, doc_to_patient):
 def index_cris_cohort():
     f_patient_doc = './hepc_pos_doc_brcid.txt'
     f_yodie_anns = '/isilon_home/hwubrc/kconnect/gcp/gcp_runtime/tmp_hepc_ann'
+    data_folder = './hepc_data'
 
     es = EntityCentricES.get_instance('./pubmed_test/es_cris_setting.json')
     lines = utils.read_text_file(f_patient_doc)
@@ -322,7 +330,7 @@ def index_cris_cohort():
     ann_files = [f for f in listdir(f_yodie_anns) if isfile(join(f_yodie_anns, f))]
     for ann in ann_files:
         utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 2, do_index_cris,
-                                              args=[es, doc_to_patient])
+                                              args=[es, doc_to_patient, data_folder])
     print 'done'
 
 
