@@ -111,7 +111,7 @@ class EntityCentricES(object):
                         "appearances": [
                             {
                                 "eprid": doc_id,
-                                "date": 0 if doc_date is None else doc_date
+                                # "date": 0 if doc_date is None else doc_date,
                                 "offset_start": int(ann['startNode']['offset']),
                                 "offset_end": int(ann['endNode']['offset'])
                             }
@@ -133,9 +133,9 @@ class EntityCentricES(object):
 
         data['script'] = ';'.join(scripts)
 
-        # print json.dumps(data)
-        print 'patient %s updated' % entity_id
-        self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data)
+        print json.dumps(data)
+        # print 'patient %s updated' % entity_id
+        # self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data)
 
     @staticmethod
     def get_ctx_concept_id(ann):
@@ -240,19 +240,20 @@ def do_index_cris(line, es, doc_to_patient):
         doc_obj = get_doc_detail_by_id(doc_id)
         if doc_obj is not None and len(doc_obj) > 0:
             doc_obj = doc_obj[0]
+            print doc_obj['Date']
             es.index_document({'eprid': doc_id,
-                               'date': doc_obj['date'],
+                               # 'date': doc_obj['Date'],
                                'patientId': doc_obj['BrcId'],
                                'src_table': doc_obj['src_table'],
                                'src_col': doc_obj['src_col'],
-                               'fulltext': doc_obj['TextContent']}, doc_id)
+                               'fulltext': unicode(doc_obj['TextContent'], errors='ignore')}, doc_id)
             es.index_entity_data(patient_id,
                                  doc_id, ann_data['annotations'][0],
                                  {
                                      "eprid:": doc_id,
-                                     "fulltext": doc_obj['TextContent']
+                                     "fulltext": unicode(doc_obj['TextContent'], errors='ignore')
                                  },
-                                 doc_date=doc_obj['date'])
+                                 doc_date=None) #doc_obj['Date'])
         else:
             print '[ERROR] %s full text not found' % doc_id
     else:
@@ -272,7 +273,7 @@ def index_cris_cohort():
 
     ann_files = [f for f in listdir(f_yodie_anns) if isfile(join(f_yodie_anns, f))]
     for ann in ann_files:
-        utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 10, do_index_cris,
+        utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 2, do_index_cris,
                                               args=[es, doc_to_patient])
     print 'done'
 
