@@ -84,6 +84,20 @@ skip_term_sql = """
 and a.string_orig not in ({0})
 """
 
+# get full text of a doc
+fulltext_date_by_doc_id = """
+ select TextContent, Date from sqlcris_user.KConnect.vw_hepcpos_docs
+ where CN_Doc_ID='{doc_id}'
+"""
+
+
+def get_text_date_by_id(doc_id):
+    sql = fulltext_date_by_doc_id.format(**{'doc_id': doc_id})
+    docs = []
+    dutil.query_data(sql, docs)
+    print docs
+    return docs
+
 
 def populate_patient_concept_table(cohort_name, concepts, out_file):
     patients = []
@@ -238,5 +252,7 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
     print 'done'
 
 if __name__ == "__main__":
-    concepts = utils.load_json_data('./resources/Surgical_Procedures.json')
-    populate_patient_concept_table('dementia', concepts, 'dementia_cohorts.csv')
+    # concepts = utils.load_json_data('./resources/Surgical_Procedures.json')
+    # populate_patient_concept_table('dementia', concepts, 'dementia_cohorts.csv')
+    get_text_date_by_id('')
+
