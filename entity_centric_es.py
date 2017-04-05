@@ -133,6 +133,54 @@ class EntityCentricES(object):
 
         data['script'] = ';'.join(scripts)
 
+        # print json.dumps(data)
+        # print 'patient %s updated' % entity_id
+        self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data)
+
+    def index_entity_data_v2(self, entity_id, doc_id, anns=None, article=None, doc_date=None):
+        scripts = []
+        data = {
+            "upsert": {
+                "id": entity_id,
+            }
+        }
+        params = {}
+        if anns is not None:
+            scripts.append("ctx._source.anns += anns")
+            entity_anns = \
+                [
+                    {
+                        "contexted_concept": EntityCentricES.get_ctx_concept_id(ann),
+                        "CUI": ann['features']['inst'],
+                        "appearances": [
+                            {
+                                "eprid": doc_id,
+                                # "date": 0 if doc_date is None else doc_date,
+                                "offset_start": int(ann['startNode']['offset']),
+                                "offset_end": int(ann['endNode']['offset'])
+                            }
+                        ]
+                    } for ann in anns
+                    ]
+            params['anns'] = entity_anns
+            data['upsert']['anns'] = entity_anns
+            for ann in anns:
+                self.index_ctx_concept(ann)
+            print '[concepts] %s indexed' % len(anns)
+
+        if article is not None:
+            scripts.append("if (ctx._source.articles == null) " \
+                           "{ ctx._source.articles = [article] } else " \
+                           "{ ctx._source.articles = ctx._source.articles + article}")
+            params['article'] = article
+            data['upsert']['articles'] = [article]
+
+        data['script'] = {
+            'inline': ';'.join(scripts),
+            'lang': 'groovy',
+            'params': params
+        }
+
         print json.dumps(data)
         # print 'patient %s updated' % entity_id
         # self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data)
