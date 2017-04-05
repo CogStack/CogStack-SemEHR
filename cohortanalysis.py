@@ -1,9 +1,10 @@
 import utils
 import sqldbutils as dutil
 import json
+from os.path import join
 import ontotextapi as oi
 import random
-from study_analyzer import StudyAnalyzer
+# from study_analyzer import StudyAnalyzer
 
 # query concept sql
 autoimmune_concepts_sql = """
@@ -83,6 +84,37 @@ docs_by_ids_sql = """
 skip_term_sql = """
 and a.string_orig not in ({0})
 """
+
+# get full text of a doc
+fulltext_date_by_doc_id = """
+ select TextContent, Date, src_table, src_col, BrcId from sqlcris_user.KConnect.vw_hepcpos_docs
+ where CN_Doc_ID='{doc_id}'
+"""
+
+
+def get_doc_detail_by_id(doc_id):
+    sql = fulltext_date_by_doc_id.format(**{'doc_id': doc_id})
+    docs = []
+    dutil.query_data(sql, docs)
+    return docs
+
+
+def load_all_docs():
+    sql = "select TextContent, Date, src_table, src_col, BrcId, CN_Doc_ID from sqlcris_user.KConnect.vw_hepcpos_docs"
+    docs = []
+    dutil.query_data(sql, docs)
+    return docs
+
+
+def do_save_file(doc, folder):
+    utils.save_string(unicode(doc['TextContent'], errors='ignore'), join(folder, doc['CN_Doc_ID'] + '.txt'))
+    doc['TextContent'] = ''
+    doc['Date'] = long(doc['Date'])
+    utils.save_json_array(doc, join(folder, doc['CN_Doc_ID'] + '.json'))
+
+
+def dump_doc_as_files(folder):
+    utils.multi_thread_tasking(load_all_docs(), 10, do_save_file, args=[folder])
 
 
 def populate_patient_concept_table(cohort_name, concepts, out_file):
@@ -238,5 +270,7 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
     print 'done'
 
 if __name__ == "__main__":
-    concepts = utils.load_json_data('./resources/Surgical_Procedures.json')
-    populate_patient_concept_table('dementia', concepts, 'dementia_cohorts.csv')
+    # concepts = utils.load_json_data('./resources/Surgical_Procedures.json')
+    # populate_patient_concept_table('dementia', concepts, 'dementia_cohorts.csv')
+    dump_doc_as_files('./hepc_data')
+
