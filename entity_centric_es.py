@@ -87,7 +87,7 @@ class EntityCentricES(object):
         }
         ctx_id = EntityCentricES.get_ctx_concept_id(ann)
         # print json.dumps(data)
-        self._es_instance.update(index=self.index_name, doc_type=self.concept_doc_type, id=ctx_id, body=data)
+        self._es_instance.update(index=self.index_name, doc_type=self.concept_doc_type, id=ctx_id, body=data, retry_on_conflict=10)
 
     def index_document(self, doc_obj, id):
         self._es_instance.index(index=self.index_name, doc_type=self.doc_doc_type, body=doc_obj, id=id)
@@ -183,7 +183,7 @@ class EntityCentricES(object):
 
         # print json.dumps(data)
         # print 'patient %s updated' % entity_id
-        self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data)
+        self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data, retry_on_conflict=10)
 
     @staticmethod
     def get_ctx_concept_id(ann):
@@ -293,8 +293,8 @@ def do_index_cris(line, es, doc_to_patient, doc_dict):
         patient_id = doc_to_patient[doc_id]
         # doc_obj = get_doc_detail_by_id(doc_id)
         doc_obj = doc_dict[doc_id]
-        if doc_obj is not None and len(doc_obj) > 0:
-            doc_obj = doc_obj[0]
+        if doc_obj is not None:
+            #doc_obj = doc_obj[0]
             print doc_obj['Date']
             es.index_document({'eprid': doc_id,
                                # 'date': doc_obj['Date'],
