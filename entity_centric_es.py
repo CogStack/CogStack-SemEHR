@@ -88,10 +88,12 @@ class EntityCentricES(object):
         }
         ctx_id = EntityCentricES.get_ctx_concept_id(ann)
         # print json.dumps(data)
-        self._es_instance.update(index=self.index_name, doc_type=self.concept_doc_type, id=ctx_id, body=data, retry_on_conflict=10)
+        self._es_instance.update(index=self.index_name, doc_type=self.concept_doc_type, id=ctx_id, body=data,
+                                 retry_on_conflict=30, timeout=30)
 
     def index_document(self, doc_obj, id):
-        self._es_instance.index(index=self.index_name, doc_type=self.doc_doc_type, body=doc_obj, id=id)
+        self._es_instance.index(index=self.index_name, doc_type=self.doc_doc_type, body=doc_obj, id=id,
+                                retry_on_conflict=30, timeout=30)
 
     def index_entity_data(self, entity_id, doc_id, anns=None, article=None, doc_date=None):
         scripts = []
@@ -184,7 +186,8 @@ class EntityCentricES(object):
 
         # print json.dumps(data)
         # print 'patient %s updated' % entity_id
-        self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data, retry_on_conflict=10)
+        self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data,
+                                 retry_on_conflict=30, timeout=30)
 
     @staticmethod
     def get_ctx_concept_id(ann):
