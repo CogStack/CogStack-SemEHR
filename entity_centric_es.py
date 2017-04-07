@@ -5,6 +5,7 @@ import json
 from os.path import join, isfile
 from os import listdir
 from cohortanalysis import load_all_docs
+from datetime import datetime
 
 
 class JSONSerializerPython2(serializer.JSONSerializer):
@@ -337,6 +338,13 @@ def index_cris_cohort():
         utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 2, do_index_cris,
                                               args=[es, doc_to_patient, doc_dict])
     print 'done'
+
+
+def mimic_load_text(text_file):
+    print 'reading %s' % text_file
+    s = datetime.now()
+    lines = utils.read_text_file(text_file)
+    print 'read in %s seconds' % (datetime.now() - s).seconds
 
 
 def test():
