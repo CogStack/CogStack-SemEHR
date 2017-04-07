@@ -89,7 +89,7 @@ class EntityCentricES(object):
         ctx_id = EntityCentricES.get_ctx_concept_id(ann)
         # print json.dumps(data)
         self._es_instance.update(index=self.index_name, doc_type=self.concept_doc_type, id=ctx_id, body=data,
-                                 retry_on_conflict=30, timeout=30)
+                                 retry_on_conflict=30)
 
     def index_document(self, doc_obj, id):
         self._es_instance.index(index=self.index_name, doc_type=self.doc_doc_type, body=doc_obj, id=id)
@@ -186,7 +186,7 @@ class EntityCentricES(object):
         # print json.dumps(data)
         # print 'patient %s updated' % entity_id
         self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data,
-                                 retry_on_conflict=30, timeout=30)
+                                 retry_on_conflict=30)
 
     @staticmethod
     def get_ctx_concept_id(ann):
@@ -337,7 +337,7 @@ def index_cris_cohort():
 
     ann_files = [f for f in listdir(f_yodie_anns) if isfile(join(f_yodie_anns, f))]
     for ann in ann_files:
-        utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 40, do_index_cris,
+        utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 20, do_index_cris,
                                               args=[es, doc_to_patient, doc_dict])
     print 'done'
 
