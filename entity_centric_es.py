@@ -93,7 +93,7 @@ class EntityCentricES(object):
 
     def index_document(self, doc_obj, id):
         self._es_instance.index(index=self.index_name, doc_type=self.doc_doc_type, body=doc_obj, id=id,
-                                retry_on_conflict=30, timeout=30)
+                                timeout=30)
 
     def index_entity_data(self, entity_id, doc_id, anns=None, article=None, doc_date=None):
         scripts = []
