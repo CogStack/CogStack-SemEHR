@@ -318,7 +318,7 @@ def do_index_cris(line, es, doc_to_patient, doc_dict):
 
 def index_cris_cohort():
     f_patient_doc = './hepc_pos_doc_brcid.txt'
-    f_yodie_anns = '/isilon_home/hwubrc/kconnect/gcp/gcp_runtime/tmp_hepc_ann'
+    f_yodie_anns = '/isilon_home/hwubrc/kconnect/gcp/gcp_runtime/hepc_output/'
     print 'loading all docs at a time...'
     docs = load_all_docs()
     print 'docs read'
@@ -335,7 +335,7 @@ def index_cris_cohort():
 
     ann_files = [f for f in listdir(f_yodie_anns) if isfile(join(f_yodie_anns, f))]
     for ann in ann_files:
-        utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 2, do_index_cris,
+        utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 40, do_index_cris,
                                               args=[es, doc_to_patient, doc_dict])
     print 'done'
 
