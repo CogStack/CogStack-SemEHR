@@ -6,6 +6,7 @@ from os.path import join, isfile
 from os import listdir
 from cohortanalysis import load_all_docs
 from datetime import datetime
+import sys
 
 
 class JSONSerializerPython2(serializer.JSONSerializer):
@@ -28,7 +29,7 @@ class EntityCentricES(object):
 
     def __init__(self, es_host):
         self._host = es_host
-        self._es_instance = Elasticsearch([es_host], serializer=JSONSerializerPython2())
+        self._es_instance = Elasticsearch([es_host])
         self._index = 'semehr'
         self._concept_doc_type = 'ctx_concept'
         self._entity_doc_type = 'user'
@@ -73,7 +74,7 @@ class EntityCentricES(object):
         for t in mapping:
             self._es_instance.indices.put_mapping(doc_type=t, body=mapping[t])
 
-    def index_ctx_concept(self, ann):
+    def index_ctx_concept(self, ann, index_instance=False):
         data = {
             "doc": {
                 "cui": ann['features']['inst'],
@@ -89,10 +90,16 @@ class EntityCentricES(object):
         ctx_id = EntityCentricES.get_ctx_concept_id(ann)
         # print json.dumps(data)
         self._es_instance.update(index=self.index_name, doc_type=self.concept_doc_type, id=ctx_id, body=data,
-                                 retry_on_conflict=30)
+                                 retry_on_conflict=30, timeout='30s')
+        if index_instance:
+            ann['ctx_id'] = ctx_id
+            self._es_instance.index(index=self.index_name, doc_type='concept_inst', body=ann, timeout='30s')
 
     def index_document(self, doc_obj, id):
-        self._es_instance.index(index=self.index_name, doc_type=self.doc_doc_type, body=doc_obj, id=id)
+        self._es_instance.index(index=self.index_name, doc_type=self.doc_doc_type, body=doc_obj, id=id, timeout='30s')
+    
+    def delete_index(self, doc_type):
+        self._es_instance.delete(index=self.index_name, doc_type=doc_type)
 
     def index_entity_data(self, entity_id, doc_id, anns=None, article=None, doc_date=None):
         scripts = []
@@ -138,55 +145,44 @@ class EntityCentricES(object):
         # print json.dumps(data)
         # print 'patient %s updated' % entity_id
         self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data)
-
-    def index_entity_data_v2(self, entity_id, doc_id, anns=None, article=None, doc_date=None):
+    
+    def query_entity_to_index(self, entity_id):
+        results = self._es_instance.search(index=self.index_name, doc_type=self.doc_doc_type, body={'query': {'term': {'patientId': entity_id}}})
         scripts = []
         data = {
-            "upsert": {
-                "id": entity_id,
-            }
+            "id": str(entity_id)
         }
-        params = {}
-        if anns is not None:
-            scripts.append("ctx._source.anns += anns")
-            entity_anns = \
-                [
-                    {
-                        "contexted_concept": EntityCentricES.get_ctx_concept_id(ann),
-                        "CUI": ann['features']['inst'],
-                        "appearances": [
-                            {
-                                "eprid": doc_id,
-                                # "date": 0 if doc_date is None else doc_date,
-                                "offset_start": int(ann['startNode']['offset']),
-                                "offset_end": int(ann['endNode']['offset'])
-                            }
+        entity_anns = []
+        articles = []
+        for d in results['hits']['hits']:
+            articles.append({'erpid': d['_id'], 'fulltext': d['_source']['fulltext']})
+            if 'anns' in d['_source']:
+                anns = d['_source']['anns']
+                entity_anns += \
+                    [
+                        {
+                            "contexted_concept": EntityCentricES.get_ctx_concept_id(ann),
+                            "CUI": ann['features']['inst'],
+                            "appearances": [
+                                {
+                                    "eprid": d['_id'],
+                                    #"date": 0 if doc_date is None else doc_date,
+                                    "offset_start": int(ann['startNode']['offset']),
+                                    "offset_end": int(ann['endNode']['offset'])
+                                }
+                            ]
+                        } for ann in anns
                         ]
-                    } for ann in anns
-                    ]
-            params['anns'] = entity_anns
-            data['upsert']['anns'] = entity_anns
+        data['anns'] = entity_anns
+        data['articles'] = articles
+        self._es_instance.index(index=self.index_name, doc_type=self.entity_doc_type, body=data, id=str(entity_id), timeout='30s')
+        print 'patient %s indexed' % entity_id
+
+    def index_entity_data_v2(self, entity_id, doc_id, anns=None, article=None, doc_date=None):        
+        if anns is not None:
             for ann in anns:
                 self.index_ctx_concept(ann)
             print '[concepts] %s indexed' % len(anns)
-
-        if article is not None:
-            scripts.append("if (ctx._source.articles == null) " \
-                           "{ ctx._source.articles = [article] } else " \
-                           "{ ctx._source.articles = ctx._source.articles + article}")
-            params['article'] = article
-            data['upsert']['articles'] = [article]
-
-        data['script'] = {
-            'inline': ';'.join(scripts),
-            'lang': 'groovy',
-            'params': params
-        }
-
-        # print json.dumps(data)
-        # print 'patient %s updated' % entity_id
-        self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data,
-                                 retry_on_conflict=30)
 
     @staticmethod
     def get_ctx_concept_id(ann):
@@ -289,38 +285,42 @@ def load_doc_from_dir(folder, doc_id):
     return doc_obj
 
 
-def do_index_cris(line, es, doc_to_patient, doc_dict):
+def do_index_cris(line, es, doc_to_patient, doc_dict, container):
     ann_data = json.loads(line)
-    doc_id = ann_data['docId']
+    doc_id = ann_data['docId']    
     if doc_id in doc_to_patient:
         patient_id = doc_to_patient[doc_id]
         # doc_obj = get_doc_detail_by_id(doc_id)
         doc_obj = doc_dict[doc_id]
         if doc_obj is not None:
-            #doc_obj = doc_obj[0]
-            print doc_obj['Date']
+            # doc_obj = doc_obj[0] 
+            full_text = doc_obj['TextContent'].decode('iso-8859-1').encode('utf-8')
+            print '%s indexed' % doc_id
             es.index_document({'eprid': doc_id,
                                # 'date': doc_obj['Date'],
-                               'patientId': doc_obj['BrcId'],
+                               'patientId': str(doc_obj['BrcId']),
                                'src_table': doc_obj['src_table'],
                                'src_col': doc_obj['src_col'],
-                               'fulltext': unicode(doc_obj['TextContent'], errors='ignore')}, doc_id)
+                               'fulltext': full_text,
+                               'anns': ann_data['annotations'][0]}, 
+                               doc_id)
             es.index_entity_data_v2(patient_id,
                                  doc_id, ann_data['annotations'][0],
                                  {
                                      "eprid:": doc_id,
-                                     "fulltext": unicode(doc_obj['TextContent'], errors='ignore')
+                                     "fulltext": full_text
                                  },
-                                 doc_date=None) #doc_obj['Date'])
+                                 doc_date=doc_obj['Date']) #doc_obj['Date'])
         else:
             print '[ERROR] %s full text not found' % doc_id
+        container.append(doc_id)
     else:
         print '[ERROR] %s not found in dic' % doc_id
 
 
 def index_cris_cohort():
     f_patient_doc = './hepc_pos_doc_brcid.txt'
-    f_yodie_anns = '/isilon_home/hwubrc/kconnect/gcp/gcp_runtime/hepc_output/'
+    f_yodie_anns = 'U:/kconnect/hepc_output/'
     print 'loading all docs at a time...'
     docs = load_all_docs()
     print 'docs read'
@@ -334,11 +334,31 @@ def index_cris_cohort():
     for l in lines:
         arr = l.split('\t')
         doc_to_patient[arr[1]] = arr[0]
-
+    container = []
     ann_files = [f for f in listdir(f_yodie_anns) if isfile(join(f_yodie_anns, f))]
     for ann in ann_files:
         utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 20, do_index_cris,
-                                              args=[es, doc_to_patient, doc_dict])
+                                              args=[es, doc_to_patient, doc_dict, container])
+        print 'file %s [%s] done' % (ann, len(container))
+    print 'num done %s' % len(container)
+    print 'done'
+
+
+def do_index_patient(patient_id, es):
+    es.query_entity_to_index(patient_id)
+
+
+def index_cris_patients():
+    f_patient_doc = './hepc_pos_doc_brcid.txt'
+    lines = utils.read_text_file(f_patient_doc)
+    patients = []
+    for l in lines:
+        arr = l.split('\t')
+        if arr[0] not in patients:
+            patients.append(arr[0])
+    print 'total patients %s %s' % (len(patients), patients[0])
+    es = EntityCentricES.get_instance('./pubmed_test/es_cris_setting.json')
+    utils.multi_thread_tasking(patients, 10, do_index_patient, args=[es])
     print 'done'
 
 
@@ -364,4 +384,7 @@ def test():
                           })
 
 if __name__ == "__main__":
-    index_cris_cohort()
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+    # index_cris_cohort()
+    index_cris_patients()
