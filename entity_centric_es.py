@@ -8,6 +8,8 @@ from cohortanalysis import load_all_docs
 from datetime import datetime
 import sys
 
+_ann_doc_type = 'ann_insts'
+
 
 class JSONSerializerPython2(serializer.JSONSerializer):
     """Override elasticsearch library serializer to ensure it encodes utf characters during json dump.
@@ -34,6 +36,7 @@ class EntityCentricES(object):
         self._concept_doc_type = 'ctx_concept'
         self._entity_doc_type = 'user'
         self._doc_doc_type = 'doc'
+        self._customise_settings = None
 
     @property
     def index_name(self):
@@ -66,6 +69,14 @@ class EntityCentricES(object):
     @doc_doc_type.setter
     def doc_doc_type(self, value):
         self._doc_doc_type = value
+
+    @property
+    def customise_settings(self):
+        return self._customise_settings
+
+    @customise_settings.setter
+    def customise_settings(self, value):
+        self._customise_settings = value
 
     def init_index(self, mapping):
         if self._es_instance.indices.exists(self.index_name):
@@ -145,10 +156,70 @@ class EntityCentricES(object):
         # print json.dumps(data)
         # print 'patient %s updated' % entity_id
         self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data)
+
+    def index_anns(self, entity_id, doc_id, anns):
+        if anns is not None:
+            entity_anns = \
+                [
+                    {
+                        "contexted_concept": EntityCentricES.get_ctx_concept_id(ann),
+                        "CUI": ann['features']['inst'],
+                        "appearances": [
+                            {
+                                "eprid": doc_id,
+                                # "date": 0 if doc_date is None else doc_date,
+                                "offset_start": int(ann['startNode']['offset']),
+                                "offset_end": int(ann['endNode']['offset'])
+                            }
+                        ]
+                    } for ann in anns
+                ]
+            data = {'patientId': entity_id, 'anns': entity_anns}
+            self._es_instance.update(index=self.index_name, doc_type=_ann_doc_type, body=data)
+            for ann in anns:
+                self.index_ctx_concept(ann)
+            print '[concepts] %s indexed' % len(anns)
+
+    def query_to_index_entities(self, entity_id,
+                                doc_es_inst, ft_index_name, ft_doc_type, ft_entity_field_id, ft_fulltext_field_id):
+        """
+        query the anns index and full text index to index the patient data
+        :param entity_id:
+        :param doc_es_inst:
+        :param ft_index_name:
+        :param ft_doc_type:
+        :param ft_entity_field_id:
+        :param ft_fulltext_field_id:
+        :return:
+        """
+        ann_results = self._es_instance.search(index=self.index_name,
+                                               doc_type=self.doc_doc_type,
+                                               body={'query': {'term': {'eprid': entity_id}}})
+        doc_results = doc_es_inst.search(index=ft_index_name,
+                                         doc_type=ft_doc_type,
+                                         body={'query': {'term': {ft_entity_field_id: entity_id}}})
+        data = {
+            "id": str(entity_id)
+        }
+        entity_anns = []
+        articles = []
+        for d in ann_results['hits']['hits']:
+            if 'anns' in d['_source']:
+                anns = d['_source']['anns']
+                entity_anns += anns
+
+        for d in doc_results['hits']['hits']:
+            articles.append({'erpid': d['_id'], 'fulltext': d['_source'][ft_fulltext_field_id]})
+        data['anns'] = entity_anns
+        data['articles'] = articles
+        self._es_instance.index(index=self.index_name, doc_type=self.entity_doc_type,
+                                body=data, id=str(entity_id), timeout='30s')
+        print 'patient %s indexed' % entity_id
     
-    def query_entity_to_index(self, entity_id):
-        results = self._es_instance.search(index=self.index_name, doc_type=self.doc_doc_type, body={'query': {'term': {'patientId': entity_id}}})
-        scripts = []
+    def query_entity_to_index(self, entity_id, entity_field_id='patientId'):
+        results = self._es_instance.search(index=self.index_name,
+                                           doc_type=self.doc_doc_type,
+                                           body={'query': {'term': {entity_field_id: entity_id}}})
         data = {
             "id": str(entity_id)
         }
@@ -201,7 +272,8 @@ class EntityCentricES(object):
         es.entity_doc_type = setting['entity_doc_type']
         if 'doc_doc_type' in setting and setting['doc_doc_type'] != '':
             es.doc_doc_type = setting['doc_doc_type']
-
+        if 'customise_settings' in setting:
+            es.customise_settings = setting['customise_settings']
         if setting['reset']:
             es.init_index(setting['mappings'])
         return es
@@ -242,41 +314,53 @@ def index_pubmed():
     print 'done'
 
 
-def do_index_100k(line, es, doc_to_patient, full_doc_es, index_name, ft_field):
+def do_index_100k_anns(line, es, doc_to_patient):
     ann_data = json.loads(line)
     doc_id = ann_data['docId']
     if doc_id in doc_to_patient:
         patient_id = doc_to_patient[doc_id]
-        doc_obj = full_doc_es.get(index_name, doc_id)
-        if doc_obj is not None:
-            es.index_entity_data(patient_id,
-                                 doc_id, ann_data['annotations'][0],
-                                 {"eprid:": doc_id,
-                                  "fulltext": doc_obj[ft_field]
-                                  })
-        else:
-            print '[ERROR] %s full text not found' % doc_id
+        es.index_anns(patient_id,
+                      doc_id, ann_data['annotations'][0])
+
+
+def do_index_100k_patients(patient_id, es,
+                           fulltext_es, ft_index_name, ft_doc_type, ft_entity_field, ft_fulltext_field):
+    es.query_to_index_entities(patient_id, fulltext_es, ft_index_name, ft_doc_type, ft_entity_field, ft_fulltext_field)
 
 
 def index_100k():
     f_patient_doc = ''
     f_yodie_anns = ''
-    es_epr_full_text =''
-    index_name = ''
-    ft_field = ''
+
     es = EntityCentricES.get_instance('./pubmed_test/es_100k_setting.json')
+    es_epr_full_text = es.customise_settings['es_ft']
+    ft_index_name = es.customise_settings['ft_index_name']
+    ft_doc_type = es.customise_settings['ft_doc_type']
+    ft_entity_field = es.customise_settings['ft_entity_field']
+    ft_fulltext_field = es.customise_settings['ft_fulltext_field']
+
     lines = utils.read_text_file(f_patient_doc)
     doc_to_patient = {}
+    patients = set()
     for l in lines:
         arr = l.split('\t')
         doc_to_patient[arr[1]] = arr[0]
-
+        patients.add(arr[0])
+    patients = list(patients)
     # epr full text index api
     es_full_text = Elasticsearch([es_epr_full_text], serializer=JSONSerializerPython2())
     es_full_text.get()
-    utils.multi_thread_large_file_tasking(f_yodie_anns, 10, do_index_100k,
-                                          args=[es, doc_to_patient, es_full_text, index_name, ft_field])
-    print 'done'
+    utils.multi_thread_large_file_tasking(f_yodie_anns, 10, do_index_100k_anns,
+                                          args=[es, doc_to_patient])
+    print 'anns done, indexing patients...'
+    utils.multi_thread_large_file_tasking(patients, 10, do_index_100k_patients,
+                                          args=[es, es_full_text,
+                                                ft_index_name,
+                                                ft_doc_type,
+                                                ft_entity_field,
+                                                ft_fulltext_field])
+    print 'all done'
+
 
 
 def load_doc_from_dir(folder, doc_id):
