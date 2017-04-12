@@ -101,9 +101,10 @@ def http_post_result(url, payload, headers=None, auth=None):
 
 
 def multi_thread_large_file_tasking(large_file, num_threads, process_func,
-                               proc_desc='processed', args=None, multi=None,
-                               file_filter_func=None, callback_func=None,
-                                thread_init_func=None, thread_end_func=None):
+                                    proc_desc='processed', args=None, multi=None,
+                                    file_filter_func=None, callback_func=None,
+                                    thread_init_func=None, thread_end_func=None,
+                                    file_encoding='utf-8'):
     num_queue_size = 1000
     pdf_queque = Queue.Queue(num_queue_size)
     print('queue filled, threading...')
@@ -122,7 +123,7 @@ def multi_thread_large_file_tasking(large_file, num_threads, process_func,
 
     print('putting list into queue...')
     num_lines = 0
-    with codecs.open(large_file, encoding='utf-8') as lf:
+    with codecs.open(large_file, encoding=file_encoding) as lf:
         for line in lf:
             num_lines += 1
             pdf_queque.put(line)
@@ -138,9 +139,9 @@ def multi_thread_large_file_tasking(large_file, num_threads, process_func,
         callback_func(*tuple(args))
 
 
-def read_text_file(file_path):
+def read_text_file(file_path, encoding='utf-8'):
     lines = []
-    with codecs.open(file_path) as rf:
+    with codecs.open(file_path, encoding=encoding) as rf:
         lines += rf.readlines()
     return [l.strip() for l in lines]
 

@@ -353,14 +353,13 @@ def index_100k():
     utils.multi_thread_large_file_tasking(f_yodie_anns, 10, do_index_100k_anns,
                                           args=[es, doc_to_patient])
     print 'anns done, indexing patients...'
-    utils.multi_thread_large_file_tasking(patients, 10, do_index_100k_patients,
-                                          args=[es, es_full_text,
-                                                ft_index_name,
-                                                ft_doc_type,
-                                                ft_entity_field,
-                                                ft_fulltext_field])
+    utils.multi_thread_tasking(patients, 10, do_index_100k_patients,
+                               args=[es, es_full_text,
+                                     ft_index_name,
+                                     ft_doc_type,
+                                     ft_entity_field,
+                                     ft_fulltext_field])
     print 'all done'
-
 
 
 def load_doc_from_dir(folder, doc_id):
@@ -413,7 +412,7 @@ def index_cris_cohort():
         doc_dict[d['CN_Doc_ID']] = d
 
     es = EntityCentricES.get_instance('./pubmed_test/es_cris_setting.json')
-    lines = utils.read_text_file(f_patient_doc)
+    lines = utils.read_text_file(f_patient_doc, encoding='utf-8-sig')
     doc_to_patient = {}
     for l in lines:
         arr = l.split('\t')
@@ -422,7 +421,8 @@ def index_cris_cohort():
     ann_files = [f for f in listdir(f_yodie_anns) if isfile(join(f_yodie_anns, f))]
     for ann in ann_files:
         utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 20, do_index_cris,
-                                              args=[es, doc_to_patient, doc_dict, container])
+                                              args=[es, doc_to_patient, doc_dict, container],
+                                              file_encoding='iso-8859-1')
         print 'file %s [%s] done' % (ann, len(container))
     print 'num done %s' % len(container)
     print 'done'
@@ -434,7 +434,7 @@ def do_index_patient(patient_id, es):
 
 def index_cris_patients():
     f_patient_doc = './hepc_pos_doc_brcid.txt'
-    lines = utils.read_text_file(f_patient_doc)
+    lines = utils.read_text_file(f_patient_doc, encoding='utf-8-sig')
     patients = []
     for l in lines:
         arr = l.split('\t')
