@@ -329,10 +329,9 @@ def do_index_100k_patients(patient_id, es,
 
 
 def index_100k():
-    f_patient_doc = ''
-    f_yodie_anns = ''
-
     es = EntityCentricES.get_instance('./pubmed_test/es_100k_setting.json')
+    f_patient_doc = es.customise_settings['patient_doc_mapping_file']
+    f_yodie_anns = es.customise_settings['yodie_output_folder']
     es_epr_full_text = es.customise_settings['es_ft']
     ft_index_name = es.customise_settings['ft_index_name']
     ft_doc_type = es.customise_settings['ft_doc_type']
@@ -350,8 +349,11 @@ def index_100k():
     # epr full text index api
     es_full_text = Elasticsearch([es_epr_full_text], serializer=JSONSerializerPython2())
     es_full_text.get()
-    utils.multi_thread_large_file_tasking(f_yodie_anns, 10, do_index_100k_anns,
-                                          args=[es, doc_to_patient])
+
+    ann_files = [f for f in listdir(f_yodie_anns) if isfile(join(f_yodie_anns, f))]
+    for ann in ann_files:
+        utils.multi_thread_large_file_tasking(ann, 10, do_index_100k_anns,
+                                              args=[es, doc_to_patient])
     print 'anns done, indexing patients...'
     utils.multi_thread_tasking(patients, 10, do_index_100k_patients,
                                args=[es, es_full_text,
@@ -471,4 +473,5 @@ if __name__ == "__main__":
     reload(sys)
     sys.setdefaultencoding('utf-8')
     # index_cris_cohort()
-    index_cris_patients()
+    # index_cris_patients()
+    index_100k()
