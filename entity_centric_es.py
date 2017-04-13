@@ -7,6 +7,9 @@ from os import listdir
 from cohortanalysis import load_all_docs
 from datetime import datetime
 import sys
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
 
 _ann_doc_type = 'ann_insts'
 
@@ -31,7 +34,7 @@ class EntityCentricES(object):
 
     def __init__(self, es_host):
         self._host = es_host
-        self._es_instance = Elasticsearch([es_host])
+        self._es_instance = Elasticsearch([es_host], serializer=JSONSerializerPython2())
         self._index = 'semehr'
         self._concept_doc_type = 'ctx_concept'
         self._entity_doc_type = 'user'
@@ -175,7 +178,7 @@ class EntityCentricES(object):
                     } for ann in anns
                 ]
             data = {'patientId': entity_id, 'anns': entity_anns}
-            self._es_instance.update(index=self.index_name, doc_type=_ann_doc_type, body=data)
+            self._es_instance.index(index=self.index_name, doc_type=_ann_doc_type, body=data)
             for ann in anns:
                 self.index_ctx_concept(ann)
             print '[concepts] %s indexed' % len(anns)
@@ -193,11 +196,11 @@ class EntityCentricES(object):
         :return:
         """
         ann_results = self._es_instance.search(index=self.index_name,
-                                               doc_type=self.doc_doc_type,
-                                               body={'query': {'term': {'eprid': entity_id}}})
+                                               doc_type=_ann_doc_type,
+                                               body={'query': {'term': {'patientId': entity_id}}, 'size':10000})
         doc_results = doc_es_inst.search(index=ft_index_name,
                                          doc_type=ft_doc_type,
-                                         body={'query': {'term': {ft_entity_field_id: entity_id}}})
+                                         body={'query': {'term': {ft_entity_field_id: entity_id}},'size':10000})
         data = {
             "id": str(entity_id)
         }
@@ -348,11 +351,11 @@ def index_100k():
     patients = list(patients)
     # epr full text index api
     es_full_text = Elasticsearch([es_epr_full_text], serializer=JSONSerializerPython2())
-    es_full_text.get()
+    # es_full_text.get()
 
     ann_files = [f for f in listdir(f_yodie_anns) if isfile(join(f_yodie_anns, f))]
     for ann in ann_files:
-        utils.multi_thread_large_file_tasking(ann, 10, do_index_100k_anns,
+        utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 10, do_index_100k_anns,
                                               args=[es, doc_to_patient])
     print 'anns done, indexing patients...'
     utils.multi_thread_tasking(patients, 10, do_index_100k_patients,
@@ -472,6 +475,7 @@ def test():
 if __name__ == "__main__":
     reload(sys)
     sys.setdefaultencoding('utf-8')
+    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     # index_cris_cohort()
     # index_cris_patients()
     index_100k()
