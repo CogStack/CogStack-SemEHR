@@ -6,7 +6,7 @@ from os.path import isfile, join
 from os import listdir
 
 
-_f_yodie_anns = ''
+_f_yodie_anns = './sample_anns/'
 
 
 def do_index_mimic(line, es, patients):
