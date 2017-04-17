@@ -55,7 +55,7 @@ order by starttime
 
 # get mimic doc (noteevents) by rowid
 mimic_doc_by_row_id = """
- select text, subject_id, hadm_id, chartdate, charttime from mimiciii.noteevents where row_id={doc_id}
+ select text, subject_id, hadm_id, extract(epoch from chartdate) chartdate, charttime from mimiciii.noteevents where row_id={doc_id}
 """
 
 # get distinct patient ids
