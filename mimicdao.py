@@ -7,7 +7,7 @@ import datetime
 import json
 
 # db connection string
-db_cnn_str = "dbname='mimic' user='postgres' password='' host='localhost'"
+db_cnn_str = "dbname='mimic' user='mimic' password='' host='localhost'"
 
 # query templates
 # patient cohort by diagnosis template
