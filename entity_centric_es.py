@@ -222,7 +222,7 @@ class EntityCentricES(object):
     def query_entity_to_index(self, entity_id, entity_field_id='patientId'):
         results = self._es_instance.search(index=self.index_name,
                                            doc_type=self.doc_doc_type,
-                                           body={'query': {'term': {entity_field_id: entity_id}}})
+                                           body={'query': {'term': {entity_field_id: entity_id}}, 'size': 10000})
         data = {
             "id": str(entity_id)
         }
