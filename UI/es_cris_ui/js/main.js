@@ -10,8 +10,6 @@
     var _display_attrs = ["title", "fulltext"];
     var _full_text_attr = 'fulltext';
     var _fdid = 'pmcid';
-    var _user_id = 'not_logged'
-    var _log_call_url = "./test.html" // a local url to be called so that apache saves the log
 
     var _pageNum = 0;
     var _pageSize = 1;
@@ -91,7 +89,6 @@
                     });
                     console.error('elasticsearch cluster is down!');
                 } else {
-                    _user_id = result[0];
                     swal({
                         title: 'Welcome back, ' + result[0] + "!",
                         confirmButtonText: 'ok',
@@ -476,11 +473,6 @@
             if (q.length == 0 || entity.length == 0){
                 swal({text:"please input your query", showConfirmButton: true});
             }else{
-                $.ajax({
-                    url: _log_call_url,
-                    data: {q: q, e: entity, u: _user_id},
-                    success: function(s){console.log(s)}
-                });
                 _queryObj = getUMLSFromHPO(q.split(" "));
                 _queryObj["entity"] = entity;
                 search(_queryObj);
