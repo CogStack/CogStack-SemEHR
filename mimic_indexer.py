@@ -26,7 +26,7 @@ def do_index_mimic(line, es, patients):
                            'fulltext': full_text,
                            'anns': ann_data['annotations'][0]},
                           doc_id)
-        es.index_entity_data_v2(anns=ann_data['annotations'][0])
+        es.index_entity_data_v2('', '', anns=ann_data['annotations'][0])
         patients.append(doc_obj['subject_id'])
     else:
         print '[ERROR] doc %s not found' % doc_id
