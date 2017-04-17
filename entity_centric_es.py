@@ -219,7 +219,7 @@ class EntityCentricES(object):
                                 body=data, id=str(entity_id), timeout='30s')
         print 'patient %s indexed' % entity_id
     
-    def query_entity_to_index(self, entity_id, entity_field_id='patientId'):
+    def query_entity_to_index(self, entity_id, entity_field_id='patientId', date_field=None):
         results = self._es_instance.search(index=self.index_name,
                                            doc_type=self.doc_doc_type,
                                            body={'query': {'term': {entity_field_id: entity_id}}, 'size': 10000})
@@ -240,7 +240,7 @@ class EntityCentricES(object):
                             "appearances": [
                                 {
                                     "eprid": d['_id'],
-                                    #"date": 0 if doc_date is None else doc_date,
+                                    "date": 0 if date_field is None else d[date_field],
                                     "offset_start": int(ann['startNode']['offset']),
                                     "offset_end": int(ann['endNode']['offset'])
                                 }
