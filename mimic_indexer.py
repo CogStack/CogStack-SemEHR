@@ -22,7 +22,7 @@ def do_index_mimic(line, es, patients):
                            'patientId': str(doc_obj['subject_id']),
                            'stayId': str(doc_obj['hadm_id']),
                            'charttime': doc_obj['charttime'],
-                           'chartdate': doc_obj['chartdate'],
+                           'chartdate': long(doc_obj['chartdate']),
                            'fulltext': full_text,
                            'anns': ann_data['annotations'][0]},
                           doc_id)
