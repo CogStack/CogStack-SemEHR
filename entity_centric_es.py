@@ -240,7 +240,7 @@ class EntityCentricES(object):
                             "appearances": [
                                 {
                                     "eprid": d['_id'],
-                                    "date": 0 if date_field is None else d[date_field],
+                                    "date": 0 if date_field is None else d['_source'][date_field],
                                     "offset_start": int(ann['startNode']['offset']),
                                     "offset_end": int(ann['endNode']['offset'])
                                 }
