@@ -46,7 +46,7 @@ def index_mimic_notes():
 
 
 def do_index_patient(patient, es):
-    es.query_entity_to_index(patient['subject_id'])
+    es.query_entity_to_index(patient)
 
 
 def index_patients(patients, es):
