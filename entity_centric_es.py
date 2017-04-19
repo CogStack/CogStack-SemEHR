@@ -221,11 +221,16 @@ class EntityCentricES(object):
     
     def query_entity_to_index(self, entity_id, entity_field_id='patientId', date_field=None, check_before_index=False):
         if check_before_index:
-            doc_entity = self._es_instance.get(self.index_name, entity_id, doc_type=self.entity_doc_type,
-                                               _source_include='a')
-            if 'found' in  doc_entity and doc_entity['found']:
-                print 'entity %s exists' % entity_id
-                return
+            try:
+                doc_entity = self._es_instance.get(self.index_name, entity_id, doc_type=self.entity_doc_type,
+                                                   _source_include='a')
+                if 'found' in  doc_entity and doc_entity['found']:
+                    print 'entity %s exists' % entity_id
+                    return
+            except Exception:
+                print 'not found, indexing %s' % entity_id
+                pass
+
         results = self._es_instance.search(index=self.index_name,
                                            doc_type=self.doc_doc_type,
                                            body={'query': {'term': {entity_field_id: entity_id}}, 'size': 10000})
