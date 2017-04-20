@@ -430,9 +430,20 @@
         for (var idx in hpos){
             if (hpos[idx] in hpo_umls) {
                 mapped[hpos[idx]] = [];
+
+                //do subconcepts expansion
+                var all_concepts = {};
                 for (var i in hpo_umls[hpos[idx]]){
-                    mapped[hpos[idx]].push(hpo_umls[hpos[idx]][i].replace("UMLS:", ""));
+                    var c = hpo_umls[hpos[idx]][i].replace("UMLS:", "");
+                    all_concepts[c] = 1;
+                    if (c in _subconcepts){
+                        for(var i=0;i<_subconcepts[c].length;i++){
+                            all_concepts[_subconcepts[c][i][0]] = 1;
+                        }
+                    }
                 }
+                for(var ac in all_concepts)
+                    mapped[hpos[idx]].push(ac);
             }else {
                 query += hpos[idx] + " ";
             }
