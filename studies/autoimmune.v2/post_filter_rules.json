@@ -1,0 +1,5 @@
+[
+  {"offset": -1, "regs": [".*(\\s)+died of(\\s)+.{,10}", ".*(\\s)+died from(\\s)+.{,10}", ".*(\\s)+death from(\\s)+.{,10}"]},
+  {"offset": 1, "regs": ["\\s+society\\s+", "\\s+team\\s+", "\\s+service(s){0,1}\\s+",
+    "\\s+nurse\\s+", "\\s+clinic\\s+"]}
+]

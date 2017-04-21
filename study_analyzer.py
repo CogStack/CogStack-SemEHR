@@ -3,7 +3,8 @@ import utils
 import json
 from os.path import isfile, join, split
 import joblib as jl
-# import cohortanalysis as cohort
+import cohortanalysis as cohort
+from ann_post_rules import AnnRuleExecutor
 
 
 class StudyConcept(object):
@@ -163,6 +164,9 @@ class StudyAnalyzer(object):
     def gen_sample_docs(self, cohort_name, out_file):
         cohort.random_extract_annotated_docs(cohort_name, self, out_file, 10)
 
+    def gen_study_table_with_rules(self, cohort_name, out_file, sample_out_file, ruler):
+        cohort.populate_patient_study_table_post_ruled(cohort_name, self, out_file, ruler, 20, sample_out_file)
+
 
 def study(folder, cohort_name):
     p, fn = split(folder)
@@ -208,6 +212,12 @@ def study(folder, cohort_name):
     print 'generating result table...'
     # sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
     # sa.gen_sample_docs(cohort_name, join(folder, 'sample_docs.json'))
+    ruler = AnnRuleExecutor()
+    rules = utils.load_json_data(join(folder, 'post_filter_rules.json'))
+    for r in rules:
+        ruler.add_filter_rule(r['offset'], r['regs'])
+    sa.gen_study_table_with_rules(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'), ruler,
+                                  join(folder, 'ruled_anns.json'))
     print 'done'
 
 if __name__ == "__main__":
