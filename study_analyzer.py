@@ -164,8 +164,9 @@ class StudyAnalyzer(object):
     def gen_sample_docs(self, cohort_name, out_file):
         cohort.random_extract_annotated_docs(cohort_name, self, out_file, 10)
 
-    def gen_study_table_with_rules(self, cohort_name, out_file, sample_out_file, ruler):
-        cohort.populate_patient_study_table_post_ruled(cohort_name, self, out_file, ruler, 20, sample_out_file)
+    def gen_study_table_with_rules(self, cohort_name, out_file, sample_out_file, ruler, ruled_out_file):
+        cohort.populate_patient_study_table_post_ruled(cohort_name, self, out_file, ruler, 20,
+                                                       sample_out_file, ruled_out_file)
 
 
 def study(folder, cohort_name):
