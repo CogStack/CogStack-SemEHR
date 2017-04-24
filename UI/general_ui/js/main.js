@@ -157,7 +157,7 @@
                 }
             }
         }
-        $('#sumTermDiv').html(" matched " + entities.length + "/" + total + " patients");
+        $('#sumTermDiv').html(entities.length + " of " + total + " matched patients");
 
         _context_concepts = {
             'mentions': {}, 
