@@ -373,8 +373,17 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_
     utils.save_json_array(term_to_docs, out_file)
     print 'done'
 
+
+def test_connection():
+    sql = "select top 1 * from GateDB_Cris.dbo.gate"
+    docs = []
+    dutil.query_data(sql, docs)
+    for d in docs:
+        for k in d:
+            print '%s\t%s' % (k, d[k])
+
 if __name__ == "__main__":
     # concepts = utils.load_json_data('./resources/Surgical_Procedures.json')
     # populate_patient_concept_table('dementia', concepts, 'dementia_cohorts.csv')
-    dump_doc_as_files('./hepc_data')
-
+    # dump_doc_as_files('./hepc_data')
+    test_connection()
