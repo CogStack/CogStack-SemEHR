@@ -66,6 +66,10 @@
 
     function search(queryObj){
         _queryObj = queryObj;
+        if (doPatientFilter()){
+            cohortSearch(queryObj, $('#cohortText').val().split(","), [], 0);
+            return;
+        }
         var termMaps = queryObj["terms"];
         var query_str = queryObj["query"];
         var query_body = {
@@ -100,6 +104,49 @@
         });
     }
 
+    function cohortSearch(queryObj, cohorts, patientResults, currentOffset){
+        var queryPatientSize = 2;
+        if (currentOffset >= cohorts.length){
+            swal.resetDefaults();
+            swal({title:"analysing...", showConfirmButton: false});
+            console.log(patientResults);
+            if (patientResults.length > 0) {
+                summaris_cohort(patientResults, patientResults.length);
+            }else{
+                $('#sumTermDiv').html('no records found');
+            }
+            swal.close();
+        }else{
+            var start = currentOffset;
+            var end = Math.min(start + queryPatientSize, cohorts.length);
+            currentOffset = end;
+            var patientIds = cohorts.slice(start, end);
+            _queryObj = queryObj;
+            var termMaps = queryObj["terms"];
+            var query_str = queryObj["query"];
+            if (termMaps != null)
+                query_str = termMaps.join(" ");
+            var idConstrains = "";
+            for (var i=0;i<patientIds.length;i++){
+                idConstrains += " id:" + patientIds[i];
+            }
+            query_str += " AND (" + idConstrains + ")";
+            //query_body["query"]["bool"]["must"].push( {match: {"id": entity_id}} );
+            console.log(query_str);
+            swal({"title": 'searching...', showConfirmButton: false})
+            semehr.search.queryPatient(query_str, function(result){
+                patientResults = patientResults.concat(result.patients);
+                swal.resetDefaults();
+                swal({title:"next batch search [" + currentOffset + "]...",
+                    showConfirmButton: false});
+                cohortSearch(queryObj, cohorts, patientResults, currentOffset);
+            }, function(err){
+                swal(err.message);
+                console.trace(err.message);
+            });
+        }
+    }
+
     function smartQuery(query){
         if (query.match(/(C\d{5,}\b)+/ig)){
             search({"terms": query.split(" "), "query": ""});
@@ -114,7 +161,7 @@
                 semehr.search.searchConcept(q, function(concepts){
                     swal.close();
                     if (concepts.length <= 0){
-
+                        $('#conceptMapDiv').html('no concepts found');
                     }else{
                         var s = "";
                         for(var i=0;i<concepts.length;i++){
@@ -505,6 +552,10 @@
         $('#pageCtrl').hide();
     }
 
+    function doPatientFilter(){
+        return $('#chkCohort').prop('checked') && $('#cohortText').val().length > 0;
+    }
+
     $(document).ready(function(){
         semehr.search.initESClient();
 
@@ -529,6 +580,14 @@
             if ($(this).hasClass("clsActive")){
                 _pageNum--;
                 showCurrentPage();
+            }
+        });
+
+        $('#chkCohort').click(function() {
+            if ($(this).prop('checked')){
+                $("#cohortDiv").css('visibility', 'visible');
+            }else{
+                $("#cohortDiv").css('visibility', 'hidden');
             }
         });
     })

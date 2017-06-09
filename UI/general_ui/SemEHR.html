@@ -27,9 +27,11 @@
     <nav id="primaryNav"></nav>
     <div style="display:block;width: 100%;font-size:200%;margin-bottom:30px;text-align: center">&nbsp; </div>
     <div id="searchDiv">
-        <div><label for="entityInput" style="display:none">Patient ID</label> <input type="text" id="entityInput" value=""  style="display:none"/>
         <label for="searchInput">Terms</label> <input type="text" id="searchInput" value=""/>
-        <button id="btnSearch">search</button><br/>
+        <button id="btnSearch">search</button>
+        <br/><label for="chkCohort">Filter by patients</label><input type="checkbox" id="chkCohort"/><br/>
+
+        <div id="cohortDiv"><textarea id="cohortText" placeholder="past comma separated patient IDs (e.g., 123,345)"></textarea></div>
         <div id="conceptMapDiv"></div>
         </div>
     </div>
