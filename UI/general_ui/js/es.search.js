@@ -101,11 +101,19 @@ if (typeof semehr == "undefined"){
             },
 
             queryPatient: function(queryBody, successCB, errorCB){
-                semehr.search._es_client.search({
+                var queryObj = {
                     index: semehr.search.__es_index,
                     type: semehr.search.__es_type,
                     body: queryBody
-                }).then(function (resp) {
+                };
+                if (typeof queryBody == "string"){
+                    queryObj = {
+                        index: semehr.search.__es_index,
+                        type: semehr.search.__es_type,
+                        q: queryBody
+                    };
+                }
+                semehr.search._es_client.search(queryObj).then(function (resp) {
                     var hits = resp.hits.hits;
                     console.log(resp.hits);
                     if (hits.length > 0) {
