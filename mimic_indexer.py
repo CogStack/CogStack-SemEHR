@@ -55,5 +55,10 @@ def index_patients(patients, es):
     print 'patient indexing done'
 
 
+def update_mimic_doc_types():
+    es = EntityCentricES.get_instance('./pubmed_test/es_mimic_setting.json')
+    es.update_doc_type('38374', 'Discharge summary')
+
 if __name__ == "__main__":
-    index_mimic_notes()
+    # index_mimic_notes()
+    update_mimic_doc_types()
