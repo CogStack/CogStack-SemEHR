@@ -55,14 +55,18 @@ def index_patients(patients, es):
     print 'patient indexing done'
 
 
+def do_doc_update(dt, es_inst, container):
+    es_inst.update_doc_type(str(dt['row_id']), dt['category'])
+    container.append('1')
+    if len(container) % 1000 == 0:
+        print '%s updated' % len(container)
+
+
 def update_mimic_doc_types(doc_types):
     es = EntityCentricES.get_instance('./pubmed_test/es_mimic_setting.json')
-    counter = 0
-    for dt in doc_types:
-        es.update_doc_type(str(dt['row_id']), dt['category'])
-        counter += 1
-        if counter % 1000 == 0:
-            print '%s updated' % counter
+    container = []
+    utils.multi_thread_tasking(doc_types, 20, do_doc_update, args=[es, container])
+
 
 if __name__ == "__main__":
     # index_mimic_notes()
