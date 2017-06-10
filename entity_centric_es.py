@@ -269,6 +269,12 @@ class EntityCentricES(object):
                 self.index_ctx_concept(ann)
             print '[concepts] %s indexed' % len(anns)
 
+    def update_doc_type(self, doc_id, type):
+        data = {
+            "script" : "ctx._source.docType = \"%s\"" % type
+        }
+        self._es_instance.update(index=self.index_name, doc_type=self.doc_doc_type, id=doc_id, body=data)
+
     @staticmethod
     def get_ctx_concept_id(ann):
         s = "%s_%s_%s_%s" % (ann['features']['inst'],
