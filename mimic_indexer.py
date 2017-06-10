@@ -1,6 +1,6 @@
 from entity_centric_es import EntityCentricES
 import json
-from mimicdao import get_mimic_doc_by_id
+from mimicdao import get_mimic_doc_by_id, get_doc_types
 import utils
 from os.path import isfile, join
 from os import listdir
@@ -55,10 +55,19 @@ def index_patients(patients, es):
     print 'patient indexing done'
 
 
-def update_mimic_doc_types():
+def update_mimic_doc_types(doc_types):
     es = EntityCentricES.get_instance('./pubmed_test/es_mimic_setting.json')
-    es.update_doc_type('38374', 'Discharge summary')
+    counter = 0
+    for dt in doc_types:
+        es.update_doc_type(str(dt['row_id']), dt['category'])
+        counter += 1
+        if counter % 1000 == 0:
+            print '%s updated' % counter
 
 if __name__ == "__main__":
     # index_mimic_notes()
-    update_mimic_doc_types()
+    print 'reading doc types...'
+    doc_types = get_doc_types()
+    print 'all read, updating index...'
+    update_mimic_doc_types(doc_types)
+    print 'all done'
