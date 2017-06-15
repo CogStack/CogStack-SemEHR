@@ -2,7 +2,7 @@
     var _invitationId = null;
     var _users = ['hepc_hw', 'hepc_gt', 'hepc_km'];
     var _user_feedback = {};
-    var _display_attrs = ["charttime", "fulltext"];
+    var _display_attrs = ["charttime", "chartdate", "docType", "fulltext"];
 
     var _pageNum = 0;
     var _pageSize = 1;
@@ -72,18 +72,11 @@
         }
         var termMaps = queryObj["terms"];
         var query_str = queryObj["query"];
-        var query_body = {
-            from: _pageNum * _entityPageSize,
-            size: _entityPageSize,
-            query: {bool: {must:[]}},
-            highlight:{
-                fields: {_all:{}}
-            }
-        };
+        var query_body = "";
         if (termMaps != null)
-            query_str = termMaps.join(" ");
+            query_str += " " + termMaps.join(" ");
         if (query_str!=null && query_str.trim().length > 0){
-            query_body["query"]["bool"]["must"].push( {match: {"_all": query_str}} );
+            query_body = query_str;
         }
         //query_body["query"]["bool"]["must"].push( {match: {"id": entity_id}} );
         console.log(query_body);
@@ -148,8 +141,8 @@
     }
 
     function smartQuery(query){
-        if (query.match(/(C\d{5,}\b)+/ig)){
-            search({"terms": query.split(" "), "query": ""});
+        if (query.match(/(C\d{5,}\b)+/ig) || !$('#chkSearchConcept').prop('checked')){
+            search({"terms": null, "query": query});
         }else{
             if (query == _prevQueryStr && $('.mappedCls:checked').length > 0){
                 searchChecked();
@@ -193,7 +186,7 @@
         $('#entitySumm').css("visibility", "visible");
         var summ_term = null;
         var cuis = [];
-        if (_queryObj["terms"].length > 0){
+        if (_queryObj["terms"] && _queryObj["terms"].length > 0){
             cuis = _queryObj["terms"];
         }else {
             var keywords = _queryObj["query"].split(" ");
