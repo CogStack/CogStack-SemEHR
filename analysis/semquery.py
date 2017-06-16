@@ -64,6 +64,7 @@ class SemEHRES(object):
         print len(cc_to_ctx)
         patients = self.search_patient(' '.join(concepts))
         results = []
+        valid_docs = set()
         for p in patients:
             sp = {'id': p['_id'], 'all': 0}
             for ann in p['_source']['anns']:
@@ -72,11 +73,12 @@ class SemEHRES(object):
                         # do filter, if filter function returns false, skip it
                         if not filter_func(*tuple(args + [ann, p])):
                             continue
+                    valid_docs.add(ann['appearances'][0]['eprid'])
                     t = cc_to_ctx[ann['contexted_concept']]
                     sp[t] = 1 if t not in sp else sp[t] + 1
                     sp['all'] += 1
             results.append(sp)
-        return results
+        return results, list(valid_docs)
 
     @staticmethod
     def get_instance():
