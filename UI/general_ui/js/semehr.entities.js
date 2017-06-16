@@ -27,14 +27,18 @@ if (typeof semehr == "undefined"){
             }
         };
 
-        semehr.Patient.prototype.analyseMentions = function (concepts) {
+        semehr.Patient.prototype.analyseMentions = function (concepts, validatedDocs) {
             var mentions = new semehr.AggMention("mentions");
             var otherMentions = {};
             var cui_check_str = concepts.join();
+            var validated_doc_check_str = validatedDocs ? validatedDocs.join() : null;
             var cids = [];
             for (var cid in this.annId2Anns){
                 var ann = this.annId2Anns[cid];
                 if (cui_check_str.indexOf(ann.concept)>=0){
+                    if (validated_doc_check_str && validated_doc_check_str.indexOf(ann.appearances[0]['eprid'])<0){
+                        continue;
+                    }
                     cids.push(cid);
                     mentions.addTypedFreq("allM", ann.appearances.length);
                     mentions.addAnnAppearance(ann.uid, ann.appearances);

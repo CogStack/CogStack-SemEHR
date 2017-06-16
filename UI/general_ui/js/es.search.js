@@ -11,11 +11,11 @@ if (typeof semehr == "undefined"){
         semehr.search = {
             __es_need_login: false,
             _es_client: null,
-            __es_server_url: "http://10.200.102.23:9200",
-            __es_index: "mimic", //epr_documents_bioyodie
+            __es_server_url: "http://192.168.100.101:9200/",
+            __es_index: "addiction_20k", //epr_documents_bioyodie
             __es_type: "patient", //patient type
             __es_concept_type: "ctx_concept",
-            __es_fulltext_index: "mimic",
+            __es_fulltext_index: "addiction_20k",
             __es_fulltext_type: "eprdoc",
             _full_text_attr: 'fulltext',
             _fdid: 'eprid',
