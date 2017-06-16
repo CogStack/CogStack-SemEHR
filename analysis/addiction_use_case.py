@@ -40,15 +40,16 @@ def query_hepc_results():
     p2time = load_patient_date('U:/kconnect/complete_addiction_cohort_entry_date.csv')
     d2time = load_doc_date('U:/kconnect/doc_dates.txt')
     es = SemEHRES.get_instance()
-    results = es.summary_patients_by_concepts(['C0019196', 'C2148557', 'C0220847'], time_window_filtering,
+    results, docs = es.summary_patients_by_concepts(['C0019196', 'C2148557', 'C0220847'], time_window_filtering,
                                               args=[p2time, d2time])
     utils.save_json_array(results, './addiction_res/hepc_results.json')
+    utils.save_json_array(docs, './addiction_res/hepc_valid_docs.json')
 
 
 def query_drugs_results(drug, concepts):
     # load patient and document dates
     es = SemEHRES.get_instance()
-    results = es.summary_patients_by_concepts(concepts)
+    results, _ = es.summary_patients_by_concepts(concepts)
     utils.save_json_array(results, './addiction_res/%s_results.json' % drug)
 
 
@@ -76,7 +77,7 @@ def merge_and_output(dir_path):
     print s
 
 if __name__ == "__main__":
-    # query_hepc_results()
+    query_hepc_results()
     # query_drugs_results('RIBAVIRIN', ['C1382829', 'C1128545', 'C0035525'])
     # query_drugs_results('PEGINTERFERON ALPHA',
     #                     ['C0982327','C0907160','C0279030','C0021747','C2599808','C0021734','C0002199','C3165060'])
@@ -87,4 +88,4 @@ if __name__ == "__main__":
     # query_drugs_results('BOCEPREVIR', ['C1738934'])
     # query_drugs_results('TELAPREVIR', ['c1876229'])
     # print(timedelta(days=-365) + datetime.strptime('2016-02-08 00:00:00.000', '%Y-%m-%d %H:%M:%S.%f'))
-    merge_and_output('./addiction_res/')
+    # merge_and_output('./addiction_res/')
