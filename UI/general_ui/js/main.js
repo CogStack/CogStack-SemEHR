@@ -219,6 +219,10 @@
         }
 
         var cohort = new semehr.Cohort("cohort");
+        var validatedDocs = null;
+        if ($('#chkValidDoc').prop('checked') && $('#validatedDocText').val().length>0){
+            validatedDocs = $('#validatedDocText').val().split(',');
+        }
         cohort.setPatients(entities);
         cohort.summaryContextedConcepts(cuis, function(){
             _cid2type = cohort.typedconcepts;
@@ -236,7 +240,7 @@
                     barChartConceptFreq(concepts, concept2label);
                 });
             });
-        });
+        }, validatedDocs);
         _cohort = cohort;
 
 
@@ -581,6 +585,14 @@
                 $("#cohortDiv").css('visibility', 'visible');
             }else{
                 $("#cohortDiv").css('visibility', 'hidden');
+            }
+        });
+
+        $('#chkValidDoc').click(function() {
+            if ($(this).prop('checked')){
+                $("#validatedDocDiv").css('visibility', 'visible');
+            }else{
+                $("#validatedDocDiv").css('visibility', 'hidden');
             }
         });
     })

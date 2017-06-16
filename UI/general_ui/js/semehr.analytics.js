@@ -96,12 +96,12 @@ if (typeof semehr == "undefined"){
             }
         };
 
-        semehr.Cohort.prototype.summaryContextedConcepts = function(concepts, summCB){
+        semehr.Cohort.prototype.summaryContextedConcepts = function(concepts, summCB, validatedDocs){
             var p2mentions = {};
             var mergedUniqueConcepts = {};
             for(var i=0;i<this.patients.length;i++){
                 var p = this.patients[i];
-                var ret = p.analyseMentions(concepts);
+                var ret = p.analyseMentions(concepts, validatedDocs);
                 p2mentions[p.id] = ret;
                 for(var j=0;j<ret["uniqueConcepts"].length;j++){
                     if (ret["uniqueConcepts"][j] in mergedUniqueConcepts){
