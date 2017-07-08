@@ -1,6 +1,6 @@
 from entity_centric_es import EntityCentricES
 import json
-from mimicdao import get_mimic_doc_by_id, get_doc_types, mimic_doc_shift_date
+from mimicdao import get_mimic_doc_by_id, get_doc_types, get_doc_dates
 import utils
 from os.path import isfile, join
 from os import listdir
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     # index_mimic_notes()
     print 'reading doc types...'
     # doc_types = get_doc_types()
-    doc_dates = mimic_doc_shift_date()
+    doc_dates = get_doc_dates()
     print 'all read, updating index...'
     # update_mimic_doc_types(doc_types)
     update_mimic_doc_dates(doc_dates)
