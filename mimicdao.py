@@ -70,7 +70,7 @@ mimic_doc_types = """
 
 # calculate history dates
 mimic_doc_shift_date = """
- select row_id, chartdate, extract(epoch from chartdate::date - 365 * 200) thedate from mimiciii.noteevents
+ select row_id, chartdate, chartdate::date - 365 * 200 thedate from mimiciii.noteevents
 """
 
 # create db connection
