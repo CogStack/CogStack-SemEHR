@@ -277,7 +277,7 @@ class EntityCentricES(object):
 
     def update_doc_date(self, doc_id, date_epoch):
         data = {
-            "script" : "ctx._source.thedate = %s" % date_epoch
+            "script" : "ctx._source.gooddate = %d" % date_epoch
         }
         self._es_instance.update(index=self.index_name, doc_type=self.doc_doc_type, id=doc_id, body=data)
 
