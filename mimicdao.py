@@ -68,6 +68,11 @@ mimic_doc_types = """
  select row_id, category from mimiciii.noteevents 
 """
 
+# calculate history dates
+mimic_doc_shift_date = """
+ select row_id, chartdate, extract(epoch from chartdate::date - 365 * 200) thedate from mimiciii.noteevents
+"""
+
 # create db connection
 def get_db_connection():
     db_conn = psycopg2.connect(db_cnn_str)
@@ -147,6 +152,12 @@ def get_all_patient_ids():
 def get_doc_types():
     docs = []
     query_data(mimic_doc_types, docs)
+    return docs
+
+
+def get_doc_dates():
+    docs = []
+    query_data(mimic_doc_shift_date, docs)
     return docs
 
 if __name__ == "__main__":
