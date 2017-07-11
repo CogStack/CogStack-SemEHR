@@ -77,10 +77,18 @@ if (typeof semehr == "undefined"){
             this.typedconcepts = {};
             this.p2mentions = {};
             this.mergedOtherMentions = null;
+            this.pid2patient = {};
         };
 
         semehr.Cohort.prototype.setPatients = function (patients) {
             this.patients = patients;
+            for (var i=0;i<patients.length;i++){
+                this.pid2patient[patients[i].id] = patients[i];
+            }
+        };
+
+        semehr.Cohort.prototype.getPatientById = function (id) {
+            return this.pid2patient[id];
         };
 
         semehr.Cohort.prototype.assembleTypedData = function () {
