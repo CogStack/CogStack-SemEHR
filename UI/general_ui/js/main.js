@@ -1,8 +1,5 @@
 (function($){
     var _invitationId = null;
-    var _users = ['hepc_hw', 'hepc_gt', 'hepc_km'];
-    var _user_feedback = {};
-    var _display_attrs = ["charttime", "chartdate", "docType", "fulltext"];
 
     var _pageNum = 0;
     var _pageSize = 1;
@@ -216,6 +213,7 @@
             $('#entitySumm').append($('#sumRowTemplate').html());
             var row = $('#entitySumm .sumRow:last');
             $(row).attr('id', "r" + entityObj.id);
+            $('#r' + entityObj.id + " .patientId").html(entityObj.id);
         }
 
         var cohort = new semehr.Cohort("cohort");
@@ -267,6 +265,29 @@
             }
             $('.sum').parent().removeClass('selected');
             $(this).parent().addClass('selected');
+        });
+
+        $('.patientId').click(function(){
+            var pid = $(this).html();
+            var p = _cohort.getPatientById(pid);
+            swal({"title": 'summarising patient...', showConfirmButton: false});
+            p.summarise(function(sum){
+                swal.close();
+                //get terms from query object
+                var cuis = _queryObj.terms;
+                if (cuis == null){
+                    cuis = [];
+                    var m = null;
+                    var re = /(C\d{5,})+/ig
+                    do {
+                        var m = re.exec(_queryObj.query);
+                        if (m) {
+                            cuis.push(m[1]);
+                        }
+                    } while (m);
+                }
+                semehr.Render.renderSummaries(sum, cuis);
+            });
         });
     }
 
@@ -367,45 +388,6 @@
         $('#pageCtrl').show();
     }
 
-    /**
-     * highlight fulltext with annotation metadata
-     *
-     * @param anns
-     * @param text
-     * @param snippet
-     * @returns {string}
-     */
-    function highlight_text(anns, text, snippet, docId){
-        var hos = [];
-        for (var idx in anns){
-            hos.push({"term": "", "s": anns[idx]['start'], "e": anns[idx]['end']});
-        }
-        hos = hos.sort(function(a, b){
-            return a["s"] - b["s"];
-        });
-
-        var moreTextLen = 20;
-        var new_str = "";
-        if (hos.length > 0){
-            var prev_pos = snippet ? (hos[0]['s'] > moreTextLen ? hos[0]['s'] - moreTextLen : hos[0]['s']) : 0;
-            if (prev_pos > 0)
-                new_str += "...";
-            for (var idx in hos){
-                new_str += text.substring(prev_pos, hos[idx]["s"]) +
-                    "<em>" + text.substring(hos[idx]["s"], hos[idx]["e"]) + "</em>";
-                prev_pos = hos[idx]["e"];
-                if (snippet)
-                    break;
-            }
-            var endPos = snippet ? Math.min(parseInt(prev_pos) + moreTextLen, text.length) : text.length;
-            new_str += text.substring(prev_pos, endPos);
-            if (endPos < text.length)
-                new_str += "...";
-        }else{
-            new_str = snippet ? text.substring(0, Math.min(text.length, moreTextLen)) + "...": text;
-        }
-        return new_str;
-    }
 
     function render_results(doc2mentions){
 
@@ -414,7 +396,7 @@
         var docId = docs[_pageNum];
         semehr.search.getDocument(docId, function(resp){
             var doc = {id: docId, mentions: doc2mentions[docId], docDetail: resp['_source']};
-            renderDoc(doc);
+            semehr.Render.renderDoc(doc, $('#results'));
             $('html, body').animate({
                 scrollTop: $("#pageCtrl").offset().top
             }, 500);
@@ -422,36 +404,6 @@
             console.trace(err.message);
         });
 
-    }
-
-    function renderDoc(doc){
-        var attrs = _display_attrs;
-
-        // var head = "<div class='clsField'>doc id</div>";
-        var s =
-            "<div class='clsRow'><div class='clsField'>DocID</div>" +
-            "<div attr='did' class='clsValue'>" + doc['id'] + "</div></div>";
-        var d = doc['docDetail'];
-        for(var i=0;i<attrs.length;i++){
-            var attrS = '';
-            var attr = attrs[i];
-            var val = d[attr];
-            if (attr == "fulltext"){
-                // val = "<span class='partial'>" + highlight_text(doc['mentions'], d[attr], true) + "</span>";
-                val = "<span class='full'>" + highlight_text(doc["mentions"], d[attr], false, doc['id']) + "</span>";
-                // val += "<span class='clsMore'>+</span>";
-            }
-            attrS += "<div class='clsField'>" + attr + "</div>";
-            attrS += "<div attr='" + attr + "' class='clsValue'>" + val + "</div>";
-            s += "<div class='clsRow clsDoc'>" + attrS + "</div>";
-        }
-
-        $('#results').html(s)
-
-        for(var k in _user_feedback){
-            $('#' + k + ' .' + _user_feedback[k]).addClass('fbed');
-        }
-        swal.close();
     }
 
     function barChartConceptFreq(data, item2label){

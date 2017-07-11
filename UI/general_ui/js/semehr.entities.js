@@ -16,6 +16,7 @@ if (typeof semehr == "undefined"){
         semehr.Patient = function(id){
             this.id = id;
             this.annId2Anns = {};
+            this.analysedAnns = null;
         };
 
         semehr.Patient.prototype.addAnnotation = function (ann) {
@@ -27,12 +28,17 @@ if (typeof semehr == "undefined"){
             }
         };
 
+        semehr.Patient.prototype.getAnalyseMentions = function(){
+            return this.analysedAnns;
+        };
+
         semehr.Patient.prototype.analyseMentions = function (concepts, validatedDocs) {
             var mentions = new semehr.AggMention("mentions");
             var otherMentions = {};
             var cui_check_str = concepts.join();
             var validated_doc_check_str = validatedDocs ? validatedDocs.join() : null;
             var cids = [];
+            var mentionedDocs = new Set();
             for (var cid in this.annId2Anns){
                 var ann = this.annId2Anns[cid];
                 if (cui_check_str.indexOf(ann.concept)>=0){
@@ -42,6 +48,9 @@ if (typeof semehr == "undefined"){
                     cids.push(cid);
                     mentions.addTypedFreq("allM", ann.appearances.length);
                     mentions.addAnnAppearance(ann.uid, ann.appearances);
+                    for (var i=0;i<ann.appearances.length;i++){
+                        mentionedDocs.add(ann.appearances[i].doc);
+                    }
                 }else{
                     if (ann.concept in otherMentions){
                         otherMentions[ann.concept] += ann.appearances.length;
@@ -50,7 +59,37 @@ if (typeof semehr == "undefined"){
                     }
                 }
             }
-            return {"mentions": mentions, "uniqueConcepts": cids, "otherConcepts": otherMentions};
+            this.analysedAnns = {"mentions": mentions,
+                "uniqueConcepts": cids,
+                "otherConcepts": otherMentions,
+                "docs": Array.from(mentionedDocs)}
+            return this.analysedAnns;
+        };
+
+        semehr.Patient.prototype.summarise = function(sumCB){
+            var q = "patientId:" + this.id;
+            var matchedDocs = this.analysedAnns.docs;
+            var pid = this.id;
+            semehr.search.queryDocuments(q, ["eprid", "chartdate", "docType"],
+                1000,
+                function(docs){
+                    var docs = docs.docs;
+                    var sum = {"id": pid, "totalDocs": [], "numMatchedDocs": 0, "dischargeSummary": null};
+                    for (var i=0;i<docs.length;i++){
+                        if(jQuery.inArray(docs[i]["_source"].eprid, matchedDocs) !== -1){
+                            docs[i]["_source"].matched = true;
+                        }else
+                            docs[i]["_source"].matched = false;
+                        sum.totalDocs.push(docs[i]["_source"]);
+                        if (docs[i]["_source"].docType == semehr.search.__discharge_summary_type){
+                            sum.dischargeSummary = docs[i]["_source"];
+                        }
+                    }
+                    sum.numMatchedDocs = matchedDocs.length;
+                    console.log(sum);
+                    sumCB(sum);
+            });
+            return null;
         };
     }
 
