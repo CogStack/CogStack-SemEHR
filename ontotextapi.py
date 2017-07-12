@@ -166,5 +166,5 @@ def main():
 
 if __name__ == "__main__":
     # main()
-    print get_transitive_subconcepts('C0011854')
-    # print match_term_to_concept('Type 1 diabetes')
+    print get_transitive_subconcepts('C0599685')
+    # print match_term_to_concept('hepatitis a')
