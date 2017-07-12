@@ -2,10 +2,14 @@ import utils as imutil
 import pyodbc
 
 #SQL db setting
-dsn = 'sqlserverdatasource'
-user = ''
-password = ''
-database = ''
+#dsn = 'sqlserverdatasource'
+#user = 'slam\hwu'
+#password = '123321Bb'
+#database = 'SQLCRIS_User'
+dsn = 'cambdatasource'
+user = 'gateuser'
+password = 'CPga0109U'
+database = 'GateDB_Cris'
 
 
 def get_db_connection():
