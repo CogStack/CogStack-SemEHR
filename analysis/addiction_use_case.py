@@ -20,7 +20,7 @@ def first_time_collector(d2time, ann, patient_obj, ann_type):
         return
     prp_key = 'first_pos_time'
     d_time = None if ann['appearances'][0]['eprid'] not in d2time else d2time[ann['appearances'][0]['eprid']]
-    if d_time is None or patient_obj is None:
+    if d_time is not None or patient_obj is not None:
         patient_obj[prp_key] = d_time if prp_key not in patient_obj else \
             (patient_obj[prp_key] if d_time > patient_obj[prp_key] else d_time)
 
