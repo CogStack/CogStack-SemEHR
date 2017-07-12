@@ -3,13 +3,9 @@ import pyodbc
 
 #SQL db setting
 #dsn = 'sqlserverdatasource'
-#user = 'slam\hwu'
-#password = '123321Bb'
-#database = 'SQLCRIS_User'
-dsn = 'cambdatasource'
-user = 'gateuser'
-password = 'CPga0109U'
-database = 'GateDB_Cris'
+#user = ''
+#password = ''
+#database = ''
 
 
 def get_db_connection():
