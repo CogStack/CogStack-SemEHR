@@ -1,18 +1,18 @@
 (function($){
     var __es_need_login = false;
     var _es_client = null;
-    var __es_server_url = "http://timeline2016-silverash.rhcloud.com/";
-    var __es_index = "pubmed"; //epr_documents_bioyodie
-    var __es_type = "journal"; //semantic_anns
+    var __es_server_url = "http://elastic:changeme@192.168.100.101:9200";
+    var __es_index = "hepcpos"; //epr_documents_bioyodie
+    var __es_type = "patient"; //semantic_anns
     var __es_concept_type = "ctx_concept";
-    var __es_fulltext_index = "pubmed";
-    var __es_fulltext_type = "doc";
-    var _display_attrs = ["title", "fulltext"];
+    var __es_fulltext_index = "hepcpos";
+    var __es_fulltext_type = "eprdoc";
+    var _display_attrs = ["src_table", "fulltext"];
     var _full_text_attr = 'fulltext';
-    var _fdid = 'pmcid';
+    var _fdid = 'eprid';
 
     var _pageNum = 0;
-    var _pageSize = 1;
+    var _pageSize = 1000;
     var _resultSize = 0;
     var _queryObj = null;
     var _currentDocMentions = null;
@@ -71,7 +71,7 @@
                     {
                         host: __es_server_url,
                         auth: result[0] + ':' + result[1],
-                        protocol: 'https',
+                        protocol: 'http',
                         port: 9200
                     }
                 ]
@@ -124,7 +124,7 @@
         if (query_str!=null && query_str.trim().length > 0){
             query_body["query"]["bool"]["must"].push( {match: {"_all": query_str}} );
         }
-        query_body["query"]["bool"]["must"].push( {match: {"id": entity_id}} );
+        //query_body["query"]["bool"]["must"].push( {match: {"id": entity_id}} );
 		console.log(query_body);
 		swal('searching...')
         _es_client.search({
@@ -136,7 +136,7 @@
             var hits = resp.hits.hits;
             console.log(resp.hits);
             if (hits.length > 0) {
-                summarise_entity_result(hits[0]);
+                summaris_cohort(hits);
             }else{
                 $('#sumTermDiv').html('no records found');
             }
@@ -163,12 +163,7 @@
         });
     }
 
-    /**
-     * summarise the entity centric concept matchings
-     *
-     * @param entityObj
-     */
-    function summarise_entity_result(entityObj){
+    function summaris_cohort(entities){
         $('#entitySumm').css("visibility", "visible");
         var summ_term = null;
         var cuis = [];
@@ -194,41 +189,20 @@
         }else{
             sweetAlert('concept term not available')
         }
-        var ctx_concepts = {};
-        var ctx_to_freq = {};
 
-        var totalM = 0;
-        var cui_check_str = cuis.join();
-        for(var i=0;i<entityObj['_source']['anns'].length;i++){
-            var ann = entityObj['_source']['anns'][i];
-            if (cui_check_str.indexOf(ann['CUI']) >= 0){
-                var cc = ann['contexted_concept'];
-                var doc2pos = {};
-                totalM += ann['appearances'].length;
-                ctx_to_freq[cc] = cc in ctx_to_freq ? ctx_to_freq[cc] + ann['appearances'].length : ann['appearances'].length;
-                for (var j=0;j<ann['appearances'].length;j++){
-                    if (ann['appearances'][j][_fdid] in doc2pos){
-                        doc2pos[ann['appearances'][j][_fdid]].push(ann['appearances'][j]);
-                    }else{
-                        doc2pos[ann['appearances'][j][_fdid]] = [ann['appearances'][j]];
-                    }
-                }
-                if (cc in ctx_concepts){
-                    var exist_doc2pos = ctx_concepts[cc];
-                    for (var d in doc2pos){
-                        if (d in exist_doc2pos){
-                            exist_doc2pos[d] = exist_doc2pos[d].concat(doc2pos[d]);
-                        }else{
-                            exist_doc2pos[d] = doc2pos[d];
-                        }
-                    }
-                }else{
-                    ctx_concepts[cc] = doc2pos;
-                }
-            }
+        _context_concepts = {
+            'mentions': {}, 
+            'freqs':{},
+            'typed': {}, 
+            'entityMentions': {},
+            'typedFreqs': {}
+        };
+
+        for (var i=0;i<entities.length;i++){
+            summarise_entity_result(entities[i], cuis);
         }
-        _context_concepts = {'mentions': ctx_concepts, 'freqs':ctx_to_freq,
-            'typed': {}, 'otherM': [], 'posM': [], 'negM':[], 'hisM': []};
+
+        var ctx_concepts = _context_concepts.mentions;
         for(var c in ctx_concepts) {
             _es_client.get({
                 index: __es_index,
@@ -238,28 +212,46 @@
                 console.log(resp);
                 _context_concepts['typed'][resp['_id']] = resp;
                 if (Object.keys(_context_concepts['typed']).length == Object.keys(_context_concepts['mentions']).length){
+                    var cid2type = {};
                     // do typed analysis
                     for (var cid in _context_concepts['typed']){
                         var t = _context_concepts['typed'][cid];
                         if (t['_source']['experiencer'] == 'Patient'){
                             if (t['_source']['temporality'] != "Recent"){
-                                _context_concepts['hisM'].push(t);
+                                //_context_concepts['hisM'].push(t);
+                                cid2type[cid] = 'hisM';
                             }else{
                                 if (t['_source']['negation'] == "Negated"){
-                                    _context_concepts['negM'].push(t);
+                                    //_context_concepts['negM'].push(t);
+                                    cid2type[cid] = 'negM';
                                 }else{
-                                    _context_concepts['posM'].push(t);
+                                    //_context_concepts['posM'].push(t);
+                                    cid2type[cid] = 'posM';
                                 }
                             }
                         }else{
-                            _context_concepts['otherM'].push(t);
+                            //_context_concepts['otherM'].push(t);
+                            cid2type[cid] = 'otherM';
                         }
                     }
 
-                    $('.posM').html(count_typed_freq('posM'));
-                    $('.negM').html(count_typed_freq('negM'));
-                    $('.otherM').html(count_typed_freq('otherM'));
-                    $('.hisM').html(count_typed_freq('hisM'));
+                    for(var entityId in _context_concepts.freqs){
+                        var row = '#r' + entityId;
+                        var entityMention = _context_concepts.entityMentions[entityId];
+                        var typedFreq = {'otherM': 0, 'posM': 0, 'negM':0, 'hisM': 0}
+                        var cc2freq = _context_concepts.freqs[entityId];
+                        for(var cc in cc2freq){
+                            //entityMention['all'].push(cc);
+                            entityMention[cid2type[cc]].push(entityMention['all'][cc]);
+                            typedFreq[cid2type[cc]] += cc2freq[cc];
+                        }
+                        //_context_concepts.entityMentions[entityId] = entityMention;
+                        _context_concepts.typedFreqs[entityId] = typedFreq;
+                        $(row).find('.posM').html(typedFreq['posM']);
+                        $(row).find('.negM').html(typedFreq['negM']);
+                        $(row).find('.otherM').html(typedFreq['otherM']);
+                        $(row).find('.hisM').html(typedFreq['hisM']);
+                    }
                 }
             }, function (err) {
                 console.trace(err.message);
@@ -267,8 +259,93 @@
         }
         console.log(ctx_concepts);
 
+        $('.sum').click(function(){
+            var entityId = $(this).attr('entityId');
+            if ($(this).hasClass('allM')){
+                console.log(_context_concepts['entityMentions'][entityId]['all']);
+                show_matched_docs(_context_concepts['entityMentions'][entityId]['all']);
+            }else if ($(this).hasClass('posM')){
+                var ctx_concept = _context_concepts['entityMentions'][entityId]['posM'];
+                show_matched_docs(ctx_concept);
+            }else if ($(this).hasClass('negM')){
+                var ctx_concept = _context_concepts['entityMentions'][entityId]['negM'];
+                show_matched_docs(ctx_concept);
+            }else if ($(this).hasClass('hisM')){
+                var ctx_concept = _context_concepts['entityMentions'][entityId]['hisM'];
+                show_matched_docs(ctx_concept);
+            }else if ($(this).hasClass('otherM')){
+                var ctx_concept = _context_concepts['entityMentions'][entityId]['otherM'];
+                show_matched_docs(ctx_concept);
+            }
+            $('.sum').parent().removeClass('selected');
+            $(this).parent().addClass('selected');
+        });
+    }
+
+    /**
+     * summarise the entity centric concept matchings
+     *
+     * @param entityObj
+     */
+    function summarise_entity_result(entityObj, cuis){
+        $('#entitySumm').append($('#sumRowTemplate').html());
+        var row = $('#entitySumm .sumRow:last');
+        $(row).attr('id', "r" + entityObj['_id']);
+        $(row).find('.patientId').html(entityObj['_id']);
+        var ctx_concepts = {};
+        var entityMention = {'otherM': [], 'posM': [], 'negM':[], 'hisM': [], 'all':[]};        
+        _context_concepts.entityMentions[entityObj['_id']] = entityMention;
+        var ctx_to_freq = {};
+
+        var totalM = 0;
+        var cui_check_str = cuis.join();
+
+        var duplicate_detect_obj = {};
+        for(var i=0;i<entityObj['_source']['anns'].length;i++){
+            var ann = entityObj['_source']['anns'][i];
+            if (cui_check_str.indexOf(ann['CUI']) >= 0){
+                var cc = ann['contexted_concept'];
+                var doc2pos = {};
+                totalM += ann['appearances'].length;
+                //ctx_to_freq[cc] = cc in ctx_to_freq ? ctx_to_freq[cc] + ann['appearances'].length : ann['appearances'].length;
+                for (var j=0;j<ann['appearances'].length;j++){
+                    var key = cc + ' ' + ann['appearances'][j][_fdid] + ' ' + ann['appearances'][j]['offset_start'] + ' ' + ann['appearances'][j]['offset_end'];
+                    if (key in duplicate_detect_obj){
+                        break;
+                    }else{
+                        duplicate_detect_obj[key] = 1;
+                        ctx_to_freq[cc] = cc in ctx_to_freq ? ctx_to_freq[cc] + 1 : 1;
+                    }
+                    if (ann['appearances'][j][_fdid] in doc2pos){
+                        doc2pos[ann['appearances'][j][_fdid]].push(ann['appearances'][j]);
+                    }else{
+                        doc2pos[ann['appearances'][j][_fdid]] = [ann['appearances'][j]];
+                    }
+                }
+                if (Object.keys(doc2pos).length > 0){
+                    if (cc in ctx_concepts){
+                        var exist_doc2pos = ctx_concepts[cc];
+                        for (var d in doc2pos){
+                            if (d in exist_doc2pos){
+                                exist_doc2pos[d] = exist_doc2pos[d].concat(doc2pos[d]);
+                            }else{
+                                exist_doc2pos[d] = doc2pos[d];
+                            }
+                        }
+                    }else{
+                        ctx_concepts[cc] = doc2pos;
+                    }
+                }                
+            }
+        }
+        console.log(ctx_concepts);
+        entityMention.all = ctx_concepts;
+        _context_concepts.freqs[entityObj['_id']] = ctx_to_freq;
+        $.extend(_context_concepts.mentions, ctx_concepts);
+
         //render summarise result
-        $('.allM').html(totalM);
+        $(row).find('.allM').html(totalM);
+        $(row).find('.sum').attr('entityId', entityObj['_id']);
     }
 
     function count_typed_freq(mentionType){
@@ -449,8 +526,7 @@
         $('#sumTermDiv').html('');
         $('#entitySumm').css("visibility", "hidden");
         _context_concepts = null;
-        $('.sum').html('-');
-        $('.sum').parent().removeClass('selected');
+        $('#entitySumm').find('.dataRow').remove();
         resetDocConceptCanvas();
     }
 
@@ -470,7 +546,7 @@
             resetSearchResult();
             var q = $('#searchInput').val().trim();
             var entity = $('#entityInput').val().trim();
-            if (q.length == 0 || entity.length == 0){
+            if (q.length == 0){
                 swal({text:"please input your query", showConfirmButton: true});
             }else{
                 _queryObj = getUMLSFromHPO(q.split(" "));
@@ -492,51 +568,7 @@
                 showCurrentPage();
             }
         });
-
-        $('.sum').click(function(){
-            if ($(this).hasClass('allM')){
-                console.log('allM clicked');
-                show_matched_docs(_context_concepts['mentions']);
-            }else if ($(this).hasClass('posM')){
-                console.log('posM clicked');
-                var ctx_concept = {};
-                for (var i=0;i<_context_concepts['posM'].length;i++){
-                    var cc = _context_concepts['posM'][i]['_id'];
-                    ctx_concept[cc] = _context_concepts['mentions'][cc];
-                }
-
-                show_matched_docs(ctx_concept);
-            }else if ($(this).hasClass('negM')){
-                console.log('negM clicked');
-                var ctx_concept = {};
-                for (var i=0;i<_context_concepts['negM'].length;i++){
-                    var cc = _context_concepts['negM'][i]['_id'];
-                    ctx_concept[cc] = _context_concepts['mentions'][cc];
-                }
-
-                show_matched_docs(ctx_concept);
-            }else if ($(this).hasClass('hisM')){
-                console.log('hisM clicked');
-                var ctx_concept = {};
-                for (var i=0;i<_context_concepts['hisM'].length;i++){
-                    var cc = _context_concepts['hisM'][i]['_id'];
-                    ctx_concept[cc] = _context_concepts['mentions'][cc];
-                }
-
-                show_matched_docs(ctx_concept);
-            }else if ($(this).hasClass('otherM')){
-                console.log('otherM clicked');
-                var ctx_concept = {};
-                for (var i=0;i<_context_concepts['otherM'].length;i++){
-                    var cc = _context_concepts['otherM'][i]['_id'];
-                    ctx_concept[cc] = _context_concepts['mentions'][cc];
-                }
-
-                show_matched_docs(ctx_concept);
-            }
-            $('.sum').parent().removeClass('selected');
-            $(this).parent().addClass('selected');
-        });
+        
 
 	})
 

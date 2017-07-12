@@ -67,36 +67,41 @@
     <div class="banner">
         <div><img src="./imgs/KConnect_logo_150px.png"/> <img src="./imgs/logo.png" width="46"/></div>
         <div class="head">PHI <br/><span>PRECISION HEALTH INFORMATICS</span></div>
-        <div class="projectName">Semantic EHR for 100K </div>
+        <div class="projectName">Semantic EHR for CRIS </div>
     </div>
     <nav id="primaryNav"/>
     <div style="display:block;width: 100%;font-size:200%;margin-bottom:30px;text-align: center">&nbsp; </div>
     <div id="searchDiv">
-        <div><label for="entityInput">Patient ID</label> <input type="text" id="entityInput" value="6A3DBC58A865EB42303A02769035AC03"/>
-        <label for="searchInput">Terms</label> <input type="text" id="searchInput" value="HP:0002019"/>
+        <div><label for="entityInput" style="display:none">Patient ID</label> <input type="text" id="entityInput" value=""  style="display:none"/>
+        <label for="searchInput">Terms</label> <input type="text" id="searchInput" value=""/>
         <button id="btnSearch">search</button></div>
     </div>
     <div id="sumTermDiv"></div>
     <div id="entitySumm">
         <div class="sumRow headerRow">
+            <div class="sumCol">Patient ID</div>
             <div class="sumCol">Total Mentions</div>
             <div class="sumCol">Positive Mentions</div>
             <div class="sumCol">History/hypothetical Mentions</div>
             <div class="sumCol">Negative Mentions</div>
             <div class="sumCol">Other Experiencers</div>
         </div>
-        <div class="sumRow dataRow">
-            <div class="sumCol"><span class="allM sum">-</span></div>
-            <div class="sumCol"><span class="posM sum">-</span></div>
-            <div class="sumCol"><span class="hisM sum">-</span></div>
-            <div class="sumCol"><span class="negM sum">-</span></div>
-            <div class="sumCol"><span class="otherM sum">-</span></div>
-        </div>
     </div>
     <div id="pageCtrl">
         <span class="clsPrev">&lt; prev</span> <span class="clsPageInfo">1/1</span> <span class="clsNext">next &gt;</span>
     </div>
     <div id="results"></div>
+</div>
+
+<div id="sumRowTemplate" style="display:none">
+    <div class="sumRow dataRow">
+        <div class="sumCol"><span class="patientId">-</span></div>
+        <div class="sumCol"><span class="allM sum">-</span></div>
+        <div class="sumCol"><span class="posM sum">-</span></div>
+        <div class="sumCol"><span class="hisM sum">-</span></div>
+        <div class="sumCol"><span class="negM sum">-</span></div>
+        <div class="sumCol"><span class="otherM sum">-</span></div>
+    </div>
 </div>
 </body>
 </html>
