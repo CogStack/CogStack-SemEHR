@@ -175,6 +175,7 @@ nav span{
     height: 80%;
     position: relative;
     transition: all 5s ease-in-out;
+    overflow: auto;
 }
 
 .popup h2 {
@@ -248,3 +249,126 @@ nav span{
     text-align: center;
 }
 #cohortText, #validatedDocText{height: 40px;font-size: 60%;width: 400px;color:#678;padding: 5px;margin:5px;}
+
+.dsSecTitle {
+    line-height: 38px;
+    padding:6px;
+    background-color: #f3f2f2;
+    font-size: 120%;
+    font-style: italic;
+    text-align: left;
+    margin-top: 30px;
+    margin-left: 20px;
+    cursor:pointer;
+}
+.dsSecTitle:hover{
+    background-color: #ffedca;
+}
+div.full{
+    text-align: left;
+    margin-left: 20px;
+    white-space: pre-wrap;       /* css-3 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    line-height: 160%;
+    font-size:110%;
+    text-align: justify;
+    border: solid 1px #ffddaa;
+    padding: 10px;
+}
+div.full em{
+    font-size:120%;
+    color:#2980b9;
+    background-color: transparent;
+    border-bottom: dashed 1px olivedrab;
+    cursor:pointer;
+}
+.dsSec{
+    display: none;
+}
+.openSec{
+    background-color: #ffddaa;
+}
+
+.sumTitle{
+    ine-height: 40px;
+    padding: 6px;
+    background-color: #2980b9;
+    font-size: 150%;
+    text-align: center;
+    margin-top: 30px;
+    margin-left: 20px;
+    cursor: pointer;
+    color: white;
+}
+.sumDocList{
+    overflow: scroll;
+    left: 20%;
+    right: 20%;
+    text-align: center;
+    white-space: nowrap;
+    border-bottom: dashed 1px gray;
+}
+.sumDoc{
+    width: 120px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border: solid 1px #333333;
+    background-color: #ffddaa;
+    font-size: 90%;
+    text-align: center;
+    margin: 20px;
+    display: inline-block;
+}
+
+.sumMatched{
+    background-image: url(../imgs/tick.png);
+    background-size: 20px 20px;
+    background-repeat: no-repeat;
+    background-position-x: right;
+    background-position-y: top;
+}
+h1.sumHeading{
+    text-align: center;
+    color: #87adbd;
+    font-size:160%;
+}
+.sumMsg{
+    margin: 30px;
+    text-align: center;
+    color: #888;
+    font-size: 120%;
+    font-weight: normal;
+}
+
+.sumMTTable{
+    display: table;
+    width: 100%;
+    margin: 20px;
+}
+.sumMTRow{
+    float:left;
+    white-space: nowrap;
+    margin:5px;
+}
+.sumMTCell{
+    font-size: 100%;
+    line-height: 20px;
+    display: inline-block;
+    overflow: auto;
+    margin-right: 3px;
+    background-color: aliceblue;
+}
+.sumMTKey{
+    width: 120px;
+    background-color: aliceblue;
+}
+.sumMTVal{
+    width: 50px;
+    background-color: #F9F9f9;
+}
+.sumMTMatched{
+    border: solid 1px #dd5555;
+}
