@@ -231,7 +231,7 @@ def study(folder, cohort_name):
 
 if __name__ == "__main__":
     # study('./studies/slam_physical_health/', 'CC_physical_health')
-    # study('./studies/autoimmune.v2/', 'auto_immune')
-    study('./studies/autoimmune', 'auto_immune')
+    study('./studies/autoimmune.v2/', 'auto_immune')
+    # study('./studies/autoimmune', 'auto_immune')
     # study('./studies/HCVpos', 'HCVpos_cohort')
     # study('./studies/liver', 'auto_immune')
