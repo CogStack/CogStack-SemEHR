@@ -1,4 +1,4 @@
-from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions
+from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions, helpers
 from datetime import timedelta, datetime
 import utils
 
@@ -80,11 +80,46 @@ class SemEHRES(object):
             results.append(sp)
         return results, list(valid_docs)
 
+    def get_doc_detail(self, doc_id):
+        es_doc = self._es_instance.get(self._index, doc_id, doc_type=self._doc_type)
+        if es_doc is not None:
+            return es_doc['_source']
+        else:
+            return None
+
+    def search(self, entity, q, offset=0, size=10, include_fields=None):
+        query = {"query": {"match": {"_all": q}},
+                 "from": offset,
+                 "size": size}
+        if include_fields is not None:
+            query['_source'] = {
+                "includes": include_fields
+            }
+        results = self._es_instance.search(self._index, entity, query)
+        return results['hits']['total'], results['hits']['hits']
+
+    def scroll(self, q, entity, size=100, include_fields=None):
+        query = {"query": {"match": {"_all": q}},
+                 "size": size}
+        if include_fields is not None:
+            query['_source'] = {
+                "includes": include_fields
+            }
+        return helpers.scan(self._es_instance, query,
+                            size=size, scroll='10m', index=self._index, doc_type=entity)
+
     @staticmethod
     def get_instance():
         global _es_instance
         if _es_instance is None:
             _es_instance = SemEHRES(_es_host, _es_index, _doc_type, _concept_type, _patient_type)
+        return _es_instance
+
+    @staticmethod
+    def get_instance_by_setting(es_host, es_index, es_doc_type, es_concept_type, es_patient_type):
+        global _es_instance
+        if _es_instance is None:
+            _es_instance = SemEHRES(es_host, es_index, es_doc_type, es_concept_type, es_patient_type)
         return _es_instance
 
 

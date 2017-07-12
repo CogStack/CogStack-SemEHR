@@ -76,8 +76,18 @@ def merge_and_output(dir_path):
         s += '\t'.join(row) + '\n'
     print s
 
+
+def print_manual_checked_liver_concepts():
+    concepts = utils.load_json_data('./concept_maps/liver_disease_concepts.json')
+    checked = utils.load_json_data('./concept_maps/liver_diseases_checked.json')
+    chked_concepts = []
+    for cname in checked:
+        if checked[cname] == 'correct':
+            chked_concepts.append(concepts[cname]['mapped'])
+    print json.dumps(chked_concepts)
+
 if __name__ == "__main__":
-    query_hepc_results()
+    # query_hepc_results()
     # query_drugs_results('RIBAVIRIN', ['C1382829', 'C1128545', 'C0035525'])
     # query_drugs_results('PEGINTERFERON ALPHA',
     #                     ['C0982327','C0907160','C0279030','C0021747','C2599808','C0021734','C0002199','C3165060'])
@@ -89,3 +99,4 @@ if __name__ == "__main__":
     # query_drugs_results('TELAPREVIR', ['c1876229'])
     # print(timedelta(days=-365) + datetime.strptime('2016-02-08 00:00:00.000', '%Y-%m-%d %H:%M:%S.%f'))
     # merge_and_output('./addiction_res/')
+    print_manual_checked_liver_concepts()
