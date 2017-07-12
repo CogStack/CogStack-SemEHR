@@ -511,6 +511,90 @@
         _context_concepts.freqs[entityObj['_id']] = ctx_to_freq;
         $.extend(_context_concepts.mentions, ctx_concepts);
 
+        $('.sum').click(function(){
+            var entityId = $(this).attr('entityId');
+            if ($(this).hasClass('allM')){
+                console.log(_context_concepts['entityMentions'][entityId]['all']);
+                show_matched_docs(_context_concepts['entityMentions'][entityId]['all']);
+            }else if ($(this).hasClass('posM')){
+                var ctx_concept = _context_concepts['entityMentions'][entityId]['posM'];
+                show_matched_docs(ctx_concept);
+            }else if ($(this).hasClass('negM')){
+                var ctx_concept = _context_concepts['entityMentions'][entityId]['negM'];
+                show_matched_docs(ctx_concept);
+            }else if ($(this).hasClass('hisM')){
+                var ctx_concept = _context_concepts['entityMentions'][entityId]['hisM'];
+                show_matched_docs(ctx_concept);
+            }else if ($(this).hasClass('otherM')){
+                var ctx_concept = _context_concepts['entityMentions'][entityId]['otherM'];
+                show_matched_docs(ctx_concept);
+            }
+            $('.sum').parent().removeClass('selected');
+            $(this).parent().addClass('selected');
+        });
+    }
+
+    /**
+     * summarise the entity centric concept matchings
+     *
+     * @param entityObj
+     */
+    function summarise_entity_result(entityObj, cuis){
+        $('#entitySumm').append($('#sumRowTemplate').html());
+        var row = $('#entitySumm .sumRow:last');
+        $(row).attr('id', "r" + entityObj['_id']);
+        $(row).find('.patientId').html(entityObj['_id']);
+        var ctx_concepts = {};
+        var entityMention = {'otherM': [], 'posM': [], 'negM':[], 'hisM': [], 'all':[]};        
+        _context_concepts.entityMentions[entityObj['_id']] = entityMention;
+        var ctx_to_freq = {};
+
+        var totalM = 0;
+        var cui_check_str = cuis.join();
+
+        var duplicate_detect_obj = {};
+        for(var i=0;i<entityObj['_source']['anns'].length;i++){
+            var ann = entityObj['_source']['anns'][i];
+            if (cui_check_str.indexOf(ann['CUI']) >= 0){
+                var cc = ann['contexted_concept'];
+                var doc2pos = {};
+                totalM += ann['appearances'].length;
+                //ctx_to_freq[cc] = cc in ctx_to_freq ? ctx_to_freq[cc] + ann['appearances'].length : ann['appearances'].length;
+                for (var j=0;j<ann['appearances'].length;j++){
+                    var key = cc + ' ' + ann['appearances'][j][_fdid] + ' ' + ann['appearances'][j]['offset_start'] + ' ' + ann['appearances'][j]['offset_end'];
+                    if (key in duplicate_detect_obj){
+                        break;
+                    }else{
+                        duplicate_detect_obj[key] = 1;
+                        ctx_to_freq[cc] = cc in ctx_to_freq ? ctx_to_freq[cc] + 1 : 1;
+                    }
+                    if (ann['appearances'][j][_fdid] in doc2pos){
+                        doc2pos[ann['appearances'][j][_fdid]].push(ann['appearances'][j]);
+                    }else{
+                        doc2pos[ann['appearances'][j][_fdid]] = [ann['appearances'][j]];
+                    }
+                }
+                if (Object.keys(doc2pos).length > 0){
+                    if (cc in ctx_concepts){
+                        var exist_doc2pos = ctx_concepts[cc];
+                        for (var d in doc2pos){
+                            if (d in exist_doc2pos){
+                                exist_doc2pos[d] = exist_doc2pos[d].concat(doc2pos[d]);
+                            }else{
+                                exist_doc2pos[d] = doc2pos[d];
+                            }
+                        }
+                    }else{
+                        ctx_concepts[cc] = doc2pos;
+                    }
+                }                
+            }
+        }
+        console.log(ctx_concepts);
+        entityMention.all = ctx_concepts;
+        _context_concepts.freqs[entityObj['_id']] = ctx_to_freq;
+        $.extend(_context_concepts.mentions, ctx_concepts);
+
         //render summarise result
         $(row).find('.allM').html(totalM);
         $(row).find('.sum').attr('entityId', entityObj['_id']);
