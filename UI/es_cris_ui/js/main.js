@@ -1,18 +1,23 @@
 (function($){
+    var _invitationId = null;
+    var _users = ['hepc_hw', 'hepc_gt', 'hepc_km'];
+    var _user_feedback = {};
+
     var __es_need_login = false;
     var _es_client = null;
-    var __es_server_url = "http://elastic:changeme@192.168.100.101:9200";
-    var __es_index = "hepcpos"; //epr_documents_bioyodie
+    var __es_server_url = "http://localhost:9200";
+    var __es_index = "hepcpos_300"; //epr_documents_bioyodie
     var __es_type = "patient"; //semantic_anns
     var __es_concept_type = "ctx_concept";
-    var __es_fulltext_index = "hepcpos";
+    var __es_fulltext_index = "hepcpos_300";
     var __es_fulltext_type = "eprdoc";
     var _display_attrs = ["src_table", "fulltext"];
     var _full_text_attr = 'fulltext';
     var _fdid = 'eprid';
 
     var _pageNum = 0;
-    var _pageSize = 1000;
+    var _pageSize = 1;
+    var _entityPageSize = 10000;
     var _resultSize = 0;
     var _queryObj = null;
     var _currentDocMentions = null;
@@ -20,6 +25,7 @@
     var _umlsToHPO = {};
 
     var _context_concepts = null;
+    var _cid2type = {};
 
     function initESClient(){
         if (__es_need_login){
@@ -101,15 +107,65 @@
         })
     }
 
+    function userLogin(){
+        swal.setDefaults({
+            confirmButtonText: 'Next &rarr;',
+            showCancelButton: true,
+            animation: false,
+            progressSteps: ['1']
+        })
+
+        var steps = [
+            {
+                title: 'Login',
+                text: 'name',
+                input: 'text',
+                confirmButtonText: 'login'
+            }
+        ]
+
+        swal.queue(steps).then(function (result) {
+            swal.resetDefaults();
+            _invitationId = result[0];
+            var matched = false;
+            for(var i=0;i<_users.length;i++){
+                if (_users[i] == _invitationId){
+                    matched = true;
+                    break;
+                }
+            }
+            if (matched){
+                swal('welcome ' + _invitationId + '!');
+                $('#primaryNav').html('<span>' + _invitationId + '</span>');
+                initESClient();
+                // read user feedbacks from the server
+                getUserFeedback();
+            }else{
+                _invitationId = null;
+                swal('invalid user!');
+            }
+        });
+    }
+
+    function getUserFeedback(){
+        qbb.inf.getEvalResult(_invitationId, function(s){
+            _user_feedback = $.parseJSON(s);
+        });
+    }
+
     function search(queryObj){
         var termMaps = queryObj["terms"];
         var query_str = queryObj["query"];
         var entity_id = queryObj["entity"]
         var query_body = {
-            from: _pageNum * _pageSize,
-            size: _pageSize,
-            query: {bool: {must:[]}}
+            from: _pageNum * _entityPageSize,
+            size: _entityPageSize,
+            query: {bool: {must:[]}},
+            highlight:{
+                fields: {_all:{}}
+            }
         };
+        getUserFeedback();
         if (termMaps!=null){
             var bq = query_body["query"]["bool"]["must"];
             for (var hpo in termMaps){
@@ -125,18 +181,38 @@
             query_body["query"]["bool"]["must"].push( {match: {"_all": query_str}} );
         }
         //query_body["query"]["bool"]["must"].push( {match: {"id": entity_id}} );
-		console.log(query_body);
-		swal('searching...')
+        //console.log(query_body);
+        swal('searching...')
         _es_client.search({
             index: __es_index,
             type: __es_type,
             body: query_body
         }).then(function (resp) {
+            swal.resetDefaults();
             swal('analysing...');
             var hits = resp.hits.hits;
-            console.log(resp.hits);
+            //console.log(resp.hits);
             if (hits.length > 0) {
-                summaris_cohort(hits);
+                //do filter
+                var toFilter = [];
+                if ($('#chk_pos').is(":checked")){
+                    toFilter = toFilter.concat(hepcpos_100);
+                }
+                if ($('#chk_neg').is(":checked")){
+                    toFilter = toFilter.concat(hepcneg_100);
+                }
+                if ($('#chk_unknown').is(":checked")){
+                    toFilter = toFilter.concat(hepcunknown_100);
+                }
+                var filtered = [];
+                for (var i=0;i<hits.length;i++){
+                    if ($.inArray(hits[i]['_id'], toFilter)>=0){
+                        filtered.push(hits[i]);
+                    }
+                }
+
+                console.log("=>>" + filtered.length)
+                summaris_cohort(filtered);
             }else{
                 $('#sumTermDiv').html('no records found');
             }
@@ -164,6 +240,8 @@
     }
 
     function summaris_cohort(entities){
+        $('#entitySummHeader').css("visibility", "visible");
+        $('#dataRowDiv').show();
         $('#entitySumm').css("visibility", "visible");
         var summ_term = null;
         var cuis = [];
@@ -182,9 +260,11 @@
             }
         }
         if (summ_term != null) {
-            $('#sumTermDiv').html(summ_term);
+            $('#sumTermDiv').html('<span id="termSumText">' + summ_term + '</span>');
             getTermDesc(cuis.join(' '), function(s){
-                $('#sumTermDiv').html(s['_source']['prefLabel'] + "(" + summ_term + ")");
+                $('#termSumText').html(s['_source']['prefLabel'] + 
+                    // "(" + summ_term + ") " + 
+                    " matched " + entities.length + " patients");
             });
         }else{
             sweetAlert('concept term not available')
@@ -197,7 +277,9 @@
             'entityMentions': {},
             'typedFreqs': {}
         };
-
+        entities = entities.sort(function(a, b){
+            return a['_id'] - b['_id'];
+        });
         for (var i=0;i<entities.length;i++){
             summarise_entity_result(entities[i], cuis);
         }
@@ -209,7 +291,7 @@
                 type: __es_concept_type,
                 id: c
             }).then(function (resp) {
-                console.log(resp);
+                //console.log(resp);
                 _context_concepts['typed'][resp['_id']] = resp;
                 if (Object.keys(_context_concepts['typed']).length == Object.keys(_context_concepts['mentions']).length){
                     var cid2type = {};
@@ -234,30 +316,200 @@
                             cid2type[cid] = 'otherM';
                         }
                     }
+                    _cid2type = cid2type;
 
-                    for(var entityId in _context_concepts.freqs){
-                        var row = '#r' + entityId;
-                        var entityMention = _context_concepts.entityMentions[entityId];
-                        var typedFreq = {'otherM': 0, 'posM': 0, 'negM':0, 'hisM': 0}
-                        var cc2freq = _context_concepts.freqs[entityId];
-                        for(var cc in cc2freq){
-                            //entityMention['all'].push(cc);
-                            entityMention[cid2type[cc]].push(entityMention['all'][cc]);
-                            typedFreq[cid2type[cc]] += cc2freq[cc];
-                        }
-                        //_context_concepts.entityMentions[entityId] = entityMention;
-                        _context_concepts.typedFreqs[entityId] = typedFreq;
-                        $(row).find('.posM').html(typedFreq['posM']);
-                        $(row).find('.negM').html(typedFreq['negM']);
-                        $(row).find('.otherM').html(typedFreq['otherM']);
-                        $(row).find('.hisM').html(typedFreq['hisM']);
-                    }
+                    renderSumTable(true);
+
+                    $('#sumTermDiv').append('<span class="btnExport">export tsv</span>');
+                    $('.btnExport').click(function(){
+                        export_tsv();
+                    });
                 }
             }, function (err) {
                 console.trace(err.message);
             });
         }
-        console.log(ctx_concepts);
+        //console.log(ctx_concepts);
+
+        $('.sum').click(function(){
+            if ($(this).html() == '-')
+                return;
+            var entityId = $(this).attr('entityId');
+            if ($(this).hasClass('allM')){
+                //console.log(_context_concepts['entityMentions'][entityId]['all']);
+                show_matched_docs(_context_concepts['entityMentions'][entityId]['all']);
+            }else if ($(this).hasClass('posM')){
+                var ctx_concept = _context_concepts['entityMentions'][entityId]['posM'];
+                show_matched_docs(ctx_concept);
+            }else if ($(this).hasClass('negM')){
+                var ctx_concept = _context_concepts['entityMentions'][entityId]['negM'];
+                show_matched_docs(ctx_concept);
+            }else if ($(this).hasClass('hisM')){
+                var ctx_concept = _context_concepts['entityMentions'][entityId]['hisM'];
+                show_matched_docs(ctx_concept);
+            }else if ($(this).hasClass('otherM')){
+                var ctx_concept = _context_concepts['entityMentions'][entityId]['otherM'];
+                show_matched_docs(ctx_concept);
+            }
+            $('.sum').parent().removeClass('selected');
+            $(this).parent().addClass('selected');
+        });
+    }
+
+    function renderSumTable(inital){
+        var cid2type = _cid2type;
+        for(var entityId in _context_concepts.freqs){
+            var row = '#r' + entityId;
+            var entityMention = _context_concepts.entityMentions[entityId];
+            var typedFreq = {'otherM': 0, 'posM': 0, 'negM':0, 'hisM': 0}
+            
+            var cc2freq = _context_concepts.freqs[entityId];
+            for(var cc in cc2freq){
+                //entityMention['all'].push(cc);
+                if (inital){
+                    entityMention[cid2type[cc]].push(entityMention['all'][cc]);
+                }
+                typedFreq[cid2type[cc]] += cc2freq[cc];
+            }
+            //_context_concepts.entityMentions[entityId] = entityMention;
+            _context_concepts.typedFreqs[entityId] = typedFreq;
+
+            if (typedFreq['posM'] > 0){
+                var fbr = fbNumbers(entityMention, 'posM');
+                $(row).find('.posM').html(typedFreq['posM'] + 
+                    ' [<span class="num correct">' + fbr['correct'] + '</span>' +
+                    '<span class="num wrong">' + fbr['wrong'] + '</span>]');
+            }
+                
+            if (typedFreq['negM'] > 0){
+                var fbr = fbNumbers(entityMention, 'negM');
+                $(row).find('.negM').html(typedFreq['negM'] + 
+                    ' [<span class="num correct">' + fbr['correct'] + '</span>' +
+                    '<span class="num wrong">' + fbr['wrong'] + '</span>]');
+            }
+            
+            if (typedFreq['otherM'] > 0){
+                var fbr = fbNumbers(entityMention, 'otherM');
+                $(row).find('.otherM').html(typedFreq['otherM'] + 
+                    ' [<span class="num correct">' + fbr['correct'] + '</span>' +
+                    '<span class="num wrong">' + fbr['wrong'] + '</span>]');
+            }
+
+            if (typedFreq['hisM'] > 0){
+                var fbr = fbNumbers(entityMention, 'hisM');
+                $(row).find('.hisM').html(typedFreq['hisM'] + 
+                    ' [<span class="num correct">' + fbr['correct'] + '</span>' +
+                    '<span class="num wrong">' + fbr['wrong'] + '</span>]');
+            }
+        }
+    }
+
+    function fbNumbers(entityMention, type){
+        var mentions = entityMention[type];
+        var c = 0;
+        var w = 0;
+        for (var i=0;i<mentions.length;i++){
+            for (var did in mentions[i]){
+                for(var j=0;j<mentions[i][did].length;j++){
+                    var id = 'd' + did + "_s" + mentions[i][did][j]['offset_start'] + "_e" + mentions[i][did][j]['offset_end'];
+                    if (id in _user_feedback){
+                        if (_user_feedback[id] == type)
+                            c += 1;
+                        else
+                            w += 1;
+                    }
+                }
+            }
+        }
+        return {'correct':c, 'wrong':w};
+    }
+
+    function export_tsv(){
+        var w = window.open();
+        var html = '';
+        var header = ['Patient ID', 'Total Mentions', 'Positive Mentions', 'History/hypothetical Mentions', 'Negative Mentions', 'Other Experiencers'];
+        html += header.join('\t') + '\n';
+        for(var entityId in _context_concepts.freqs){
+            var row = [entityId];
+            var entityMention = _context_concepts.entityMentions[entityId];
+            var typedFreq = {'otherM': 0, 'posM': 0, 'negM':0, 'hisM': 0}
+            var cc2freq = _context_concepts.freqs[entityId];
+            var allM = 0;
+            for(var cc in cc2freq){
+                typedFreq[_cid2type[cc]] += cc2freq[cc];
+                allM += cc2freq[cc];
+            }
+            row.push(allM);  
+            row.push(typedFreq['posM']);            
+            row.push(typedFreq['hisM']);
+            row.push(typedFreq['negM']);
+            row.push(typedFreq['otherM']);
+            html += row.join('\t') + '\n';
+        }
+        html = '<pre>' + html + '</pre>';
+        $(w.document.body).html(html);
+    }
+
+    /**
+     * summarise the entity centric concept matchings
+     *
+     * @param entityObj
+     */
+    function summarise_entity_result(entityObj, cuis){
+        $('#entitySumm').append($('#sumRowTemplate').html());
+        var row = $('#entitySumm .sumRow:last');
+        $(row).attr('id', "r" + entityObj['_id']);
+        $(row).find('.patientId').html(entityObj['_id']);
+        var ctx_concepts = {};
+        var entityMention = {'otherM': [], 'posM': [], 'negM':[], 'hisM': [], 'all':[]};        
+        _context_concepts.entityMentions[entityObj['_id']] = entityMention;
+        var ctx_to_freq = {};
+
+        var totalM = 0;
+        var cui_check_str = cuis.join();
+
+        var duplicate_detect_obj = {};
+        for(var i=0;i<entityObj['_source']['anns'].length;i++){
+            var ann = entityObj['_source']['anns'][i];
+            if (cui_check_str.indexOf(ann['CUI']) >= 0){
+                var cc = ann['contexted_concept'];
+                var doc2pos = {};
+                //ctx_to_freq[cc] = cc in ctx_to_freq ? ctx_to_freq[cc] + ann['appearances'].length : ann['appearances'].length;
+                for (var j=0;j<ann['appearances'].length;j++){
+                    var key = cc + ' ' + ann['appearances'][j][_fdid] + ' ' + ann['appearances'][j]['offset_start'] + ' ' + ann['appearances'][j]['offset_end'];
+                    if (key in duplicate_detect_obj){
+                        break;
+                    }else{
+                        duplicate_detect_obj[key] = 1;
+                        totalM += ann['appearances'].length;
+                        ctx_to_freq[cc] = cc in ctx_to_freq ? ctx_to_freq[cc] + 1 : 1;
+                    }
+                    if (ann['appearances'][j][_fdid] in doc2pos){
+                        doc2pos[ann['appearances'][j][_fdid]].push(ann['appearances'][j]);
+                    }else{
+                        doc2pos[ann['appearances'][j][_fdid]] = [ann['appearances'][j]];
+                    }
+                }
+                if (Object.keys(doc2pos).length > 0){
+                    if (cc in ctx_concepts){
+                        var exist_doc2pos = ctx_concepts[cc];
+                        for (var d in doc2pos){
+                            if (d in exist_doc2pos){
+                                exist_doc2pos[d] = exist_doc2pos[d].concat(doc2pos[d]);
+                            }else{
+                                exist_doc2pos[d] = doc2pos[d];
+                            }
+                        }
+                    }else{
+                        ctx_concepts[cc] = doc2pos;
+                    }
+                }                
+            }
+        }
+        //console.log(ctx_concepts);
+        entityMention.all = ctx_concepts;
+        _context_concepts.freqs[entityObj['_id']] = ctx_to_freq;
+        $.extend(_context_concepts.mentions, ctx_concepts);
 
         $('.sum').click(function(){
             var entityId = $(this).attr('entityId');
@@ -418,7 +670,7 @@
      * @param snippet
      * @returns {string}
      */
-    function highlight_text(anns, text, snippet){
+    function highlight_text(anns, text, snippet, docId){
         var hos = [];
         for (var idx in anns){
             hos.push({"term": "", "s": anns[idx]['offset_start'], "e": anns[idx]['offset_end']});
@@ -435,7 +687,9 @@
                 new_str += "...";
             for (var idx in hos){
                 new_str += text.substring(prev_pos, hos[idx]["s"]) +
-                    "<em>" + text.substring(hos[idx]["s"], hos[idx]["e"]) + "</em>";
+                    "<em>" + text.substring(hos[idx]["s"], hos[idx]["e"]) + 
+                    "<span class='feedback' id='d" + docId + "_s" + hos[idx]["s"] + "_e" + hos[idx]["e"] + "'> <button class='fbBtn posM'>posM</button> <button class='fbBtn hisM'>hisM</button> <button class='fbBtn negM'>negM</button> <button class='fbBtn otherM'>otherM</button></span>" + 
+                    "</em>";
                 prev_pos = hos[idx]["e"];
                 if (snippet)
                     break;
@@ -461,9 +715,11 @@
             type: __es_fulltext_type,
             id: docId
         }).then(function (resp) {
-            console.log(resp);
             var doc = {id: docId, mentions: doc2mentions[docId], docDetail: resp['_source']};
             renderDoc(doc);
+            $('html, body').animate({
+                scrollTop: $("#pageCtrl").offset().top
+            }, 500);
         }, function (err) {
             console.trace(err.message);
         });
@@ -485,7 +741,7 @@
             var val = d[attr];
             if (attr == _full_text_attr){
                 // val = "<span class='partial'>" + highlight_text(doc['mentions'], d[attr], true) + "</span>";
-                val = "<span class='full'>" + highlight_text(doc["mentions"], d[attr], false) + "</span>";
+                val = "<span class='full'>" + highlight_text(doc["mentions"], d[attr], false, doc['id']) + "</span>";
                 // val += "<span class='clsMore'>+</span>";
             }
             attrS += "<div class='clsField'>" + attr + "</div>";
@@ -495,6 +751,27 @@
 
         $('#results').html(s)
 
+        for(var k in _user_feedback){
+            $('#' + k + ' .' + _user_feedback[k]).addClass('fbed');
+        }
+        $('.fbBtn').click(function(){
+            var annId = $(this).parent().attr('id');
+            var data = {};
+            var sel = $(this).html();
+            data[annId] = sel;
+            qbb.inf.saveEvalResult($.toJSON(data), _invitationId, function(s){
+                if(s == 'true'){
+                    swal('saved!');
+                    $('#' + annId + ' button').removeClass('fbed');
+                    $('#' + annId + ' .' + sel).addClass('fbed');
+                    // rerender table to reflect the update
+                    _user_feedback[annId] = sel;
+                    renderSumTable();
+                }else{
+                    swal('failed in saving!');
+                }
+            });
+        });
         swal.close();
     }
 
@@ -524,8 +801,11 @@
 
     function resetSearchResult(){
         $('#sumTermDiv').html('');
+        $('#entitySummHeader').css("visibility", "hidden");
+        $('#dataRowDiv').hide();
         $('#entitySumm').css("visibility", "hidden");
         _context_concepts = null;
+        _cid2type = {};
         $('#entitySumm').find('.dataRow').remove();
         resetDocConceptCanvas();
     }
@@ -538,9 +818,10 @@
         $('#pageCtrl').hide();
     }
 
-	$(document).ready(function(){
+    $(document).ready(function(){
         genUMLSToHPO();
-        initESClient();
+        userLogin();
+        // initESClient();
 
         $('#btnSearch').click(function () {
             resetSearchResult();
@@ -568,8 +849,6 @@
                 showCurrentPage();
             }
         });
-        
-
-	})
+    })
 
 })(this.jQuery)

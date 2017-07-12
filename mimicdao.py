@@ -63,6 +63,15 @@ mimic_patient_ids = """
  select distinct subject_id from patient
 """
 
+# get doc type
+mimic_doc_types = """
+ select row_id, category from mimiciii.noteevents 
+"""
+
+# calculate history dates
+mimic_doc_shift_date = """
+ select row_id, chartdate, chartdate::date - 365 * 200 thedate from mimiciii.noteevents
+"""
 
 # create db connection
 def get_db_connection():
@@ -138,6 +147,18 @@ def get_all_patient_ids():
     patients = []
     query_data(mimic_patient_ids, patients)
     return patients
+
+
+def get_doc_types():
+    docs = []
+    query_data(mimic_doc_types, docs)
+    return docs
+
+
+def get_doc_dates():
+    docs = []
+    query_data(mimic_doc_shift_date, docs)
+    return docs
 
 if __name__ == "__main__":
     # adms = get_admissions('99592')
