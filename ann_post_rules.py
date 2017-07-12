@@ -1,7 +1,7 @@
 import re
 import utils
 
-_text_window = 50
+_text_window = 60
 
 
 class AnnRuleExecutor(object):

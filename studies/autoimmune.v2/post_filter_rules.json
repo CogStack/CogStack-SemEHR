@@ -1,5 +1,23 @@
 [
-  {"offset": -1, "regs": [".*(\\s)+died of(\\s)+.{,10}", ".*(\\s)+died from(\\s)+.{,10}", ".*(\\s)+death from(\\s)+.{,10}"]},
-  {"offset": 1, "regs": ["\\s+society\\s+", "\\s+team\\s+", "\\s+service(s){0,1}\\s+",
-    "\\s+nurse\\s+", "\\s+clinic\\s+"]}
+  {"offset": -1, "regs": [
+    ".*(\\s)+died of(\\s)+.{,10}", ".*(\\s)+died from(\\s)+.{,10}",
+    ".*(\\s)+death from(\\s)+.{,10}", ".*(\\s)+death .{,10} result of .{,5}(\\s)+.{,10}",
+    ".*(\\s)+(mother|father|brother|sister|partner|QQQQQ|mum|dad|daughter|son|friend)(\\s)+.{,30}",
+    ".*(\\s)+rule out(\\s)+.{,10}",
+    ".*(\\s)+would have(\\s)+.{,10}",
+    ".*(\\s)+worried|worries(\\s)+.{,20}",
+    ".*(\\s)+danger of having(\\s)+.{,20}",
+    ".*(\\s)+unsure whether(\\s)+.{,40}",
+    ".*(\\s)+non\\-",
+    ".*(\\s)+symptoms suggestive of(\\s)+.{,10}",
+    ".*(\\s)+doesn't have(\\s)+.{,10}",
+    ".*(\\s)+ix|investigation of(\\s)+.{,10}",
+    ".*(\\s)+\\?",
+    ".*(\\s)+look up(\\s)+.{,10}"
+  ]},
+  {"offset": 1, "regs": [
+    "\\s+society(\\s|\\.|;)+", "\\s+team(\\s|\\.|;)+", "\\s+service(s){0,1}(\\s|\\.|;)+",
+    "\\s+nurse(\\s|\\.|;)+", "\\s+doctor(\\s|\\.|;)+", "\\s+clinic(\\s|\\.|;)+", "\\s+association(\\s|\\.|;)+",
+    "\\s+ward(\\s|\\.|;)+", "\\s+interpreter(\\s|\\.|;)+", "\\s+date(\\s|\\.|;)+", "\\s+corner(\\s|\\.|;)+"
+  ]}
 ]
