@@ -51,21 +51,22 @@ class UMLSAPI(object):
 
     def get_narrower_concepts(self, cui):
         content_endpoint = self.api_url + ('/content/current/CUI/%s/relations' % cui)
-        return [(c['relatedId'][c['relatedId'].rfind('/')+1:], c['relationLabel']) for c in self.get_all_objects(content_endpoint)]
+        return [(c['relatedId'][c['relatedId'].rfind('/')+1:], c['relationLabel'])
+                for c in self.get_all_objects(content_endpoint) if c['relationLabel'] == 'RB']
 
     def get_all_objects(self, content_endpoint):
         objects = []
         obj = self.get_object(content_endpoint)
         objects += obj['result']
-        print 'page count: %s ' % obj['pageCount']
+        # print 'page count: %s ' % obj['pageCount']
         for i in range(2, obj['pageCount'] + 1):
             objects += self.get_object(content_endpoint, page_number=i)['result']
         return objects
 
     def get_object(self, uri, page_number=1):
-        print uri
+        # print uri
         content = requests.get(uri, params={'ticket': self.get_st(), 'pageNumber': page_number}).content
-        print content
+        # print content
         return json.loads(content)
 
 
@@ -84,9 +85,15 @@ def align_mapped_concepts(map_file, disorder_file):
 if __name__ == "__main__":
     # align_mapped_concepts('./resources/autoimmune-concepts.json', './resources/auto_immune_gazetteer.txt')
     umls = UMLSAPI('148475b7-ad37-4e15-95a0-ff4d4060c132')
-    rets = umls.match_term('Diabetes Mellitus')
-    cui = rets[0]['ui']
-    print cui
-    # subconcepts = umls.get_narrower_concepts(cui)
-    # print len(subconcepts), json.dumps(subconcepts)
+    # rets = umls.match_term('Diabetes Mellitus')
+    # cui = rets[0]['ui']
+    # print cui
+    subconcepts = umls.get_narrower_concepts('C0023895')
+    print len(subconcepts), json.dumps(subconcepts)
+    next_scs = set([c[0] for c in subconcepts])
+    for sc in subconcepts:
+        local_scs = umls.get_narrower_concepts(sc[0])
+        next_scs |= set([c[0] for c in local_scs])
+        print len(local_scs)
+    print 'total concepts: %s' % len(next_scs), json.dumps(list(next_scs))
     # print umls.get_object('https://uts-ws.nlm.nih.gov/rest/search/current?string=fracture')
