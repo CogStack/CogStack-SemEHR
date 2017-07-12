@@ -207,8 +207,16 @@ def study(folder, cohort_name):
     merged_mappings = {}
     for c in sa.study_concepts:
         for t in c.term_to_concept:
-            merged_mappings['(%s) %s' % (c.name, t)] = c.term_to_concept[t]
+            all_concepts = list(c.concept_closure)
+            if len(all_concepts) > 1:
+                idx = 0
+                for cid in all_concepts:
+                    merged_mappings['(%s) %s (%s)' % (c.name, t, idx)] = {'closure': len(all_concepts), 'mapped': cid}
+                    idx += 1
+            else:
+                merged_mappings['(%s) %s' % (c.name, t)] = c.term_to_concept[t]
         print c.name, c.term_to_concept, c.concept_closure
+        print json.dumps(list(c.concept_closure))
     print json.dumps(merged_mappings)
     print 'generating result table...'
     # sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
@@ -226,3 +234,4 @@ if __name__ == "__main__":
     # study('./studies/autoimmune.v2/', 'auto_immune')
     study('./studies/autoimmune', 'auto_immune')
     # study('./studies/HCVpos', 'HCVpos_cohort')
+    # study('./studies/liver', 'auto_immune')
