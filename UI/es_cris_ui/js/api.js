@@ -6,43 +6,26 @@ if (typeof qbb == "undefined"){
 	if(typeof qbb.inf == "undefined") {
 
 		qbb.inf = {
-			service_url: "http://54.218.95.198:8080/fbrain/api",
+			service_url: "http://napeasy.org/napeasy_api/api",
 
-			saveDisOrderMapping: function(map, searchCB){
-				var apiName = "saveDisOrderMapping";
+			saveEvalResult: function(result, invitationId, searchCB){
+				var apiName = "saveEvalResult";
 				var sendObject={
 						r:apiName,
-						map: map
+	                    result: result,
+	                    invitationId: invitationId
 				};
 				qbb.inf.callAPI(sendObject, searchCB);
 			},
 
-            saveNewMappings: function(map, searchCB){
-                var apiName = "saveNewMappings";
-                var sendObject={
-                    r:apiName,
-                    map: map
-                };
-                qbb.inf.callAPI(sendObject, searchCB);
-            },
-
-			getDisorderMappings: function(url, searchCB){
-				var apiName = "getDisorderMappings";
+			getEvalResult: function(invitationId, searchCB){
+				var apiName = "getEvalResult";
 				var sendObject={
 						r:apiName,
-						url: url
+	                    invitationId: invitationId
 				};
 				qbb.inf.callAPI(sendObject, searchCB);
 			},
-
-            getDisorderConceptMappings: function(url, searchCB){
-                var apiName = "getDisorderConceptMappings";
-                var sendObject={
-                    r:apiName,
-                    url: url
-                };
-                qbb.inf.callAPI(sendObject, searchCB);
-            },
 
 			callAPI: function(sendObject, cb){
 				qbb.inf.ajax.doPost(sendObject, function(s){
