@@ -63,6 +63,34 @@ def multi_thread_tasking(lst, num_threads, process_func,
         callback_func(*tuple(args))
 
 
+def multi_thread_tasking_it(it_lst, num_threads, process_func,
+                            proc_desc='processed', args=None, multi=None,
+                            file_filter_func=None, callback_func=None, thread_wise_objs=None):
+    pdf_queque = Queue.Queue(1000)
+    thread_num = num_threads
+    arr = [process_func] if args is None else [process_func] + args
+    arr.insert(0, pdf_queque)
+    # print('queue filled, threading...')
+    for i in range(thread_num):
+        tarr = arr[:]
+        thread_obj = None
+        if thread_wise_objs is not None and isinstance(thread_wise_objs, list):
+            thread_obj = thread_wise_objs[i]
+        tarr.insert(0, thread_obj)
+        t = threading.Thread(target=multi_thread_do, args=tuple(tarr))
+        t.daemon = True
+        t.start()
+
+    # print('waiting jobs to finish')
+    # print('putting list into queue...')
+    for item in it_lst:
+        pdf_queque.put(item)
+    pdf_queque.join()
+    # print('{0} files {1}'.format(num_pdfs, proc_desc))
+    if callback_func is not None:
+        callback_func(*tuple(args))
+
+
 def multi_thread_do(thread_obj, q, func, *args):
     while True:
         p = q.get()
