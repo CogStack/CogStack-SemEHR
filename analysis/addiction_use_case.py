@@ -112,10 +112,10 @@ if __name__ == "__main__":
     ps, p2time, d2time = read_patient_time_windows('.')
     pids = utils.read_text_file('./valid_doc_files/hcv_full_cohort.csv')
     ps = pids
-    query_hepc_results(["C0679412", "C0019187", "C0400966", "C0020541", "C0015695", "C2718067", "C0015695",
-                        "C0151763", "C2711227", "C0023896", "C0023892", "C0152254", "C0023891", "C0001306",
-                        "C0238065", "C0085605", "C0524610", "C0015696", "C0341439", "C0348754", "C0023890"]
-                       , 'liver_diseases', ps, p2time, d2time)
+    query_liver_diseases(["C0679412", "C0019187", "C0400966", "C0020541", "C0015695", "C2718067", "C0015695",
+                          "C0151763", "C2711227", "C0023896", "C0023892", "C0152254", "C0023891", "C0001306",
+                          "C0238065", "C0085605", "C0524610", "C0015696", "C0341439", "C0348754", "C0023890"]
+                         , 'liver_diseases', ps, d2time)
     # query_hepc_results(['C0019196', 'C2148557', 'C0220847'], 'hepc', ps, p2time, d2time)
     #query_hepc_results(['C1382829', 'C1128545', 'C0035525'], 'RIBAVIRIN', ps, p2time, d2time)
     #query_hepc_results(['C0982327','C0907160','C0279030','C0021747','C2599808','C0021734','C0002199','C3165060'],
