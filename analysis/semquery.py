@@ -1,14 +1,14 @@
-from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions, helpers
+from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions
 from datetime import timedelta, datetime
 import utils
 
 _es_host = 'localhost'
-_es_index = 'hepc_unknown'
+_es_index = 'addiction_20k'
 _doc_type = 'eprdoc'
 _concept_type = 'ctx_concept'
 _patient_type = 'patient'
 _es_instance = None
-_page_size = 100
+_page_size = 200
 
 
 class SemEHRES(object):
@@ -26,7 +26,8 @@ class SemEHRES(object):
         need_next_query = True
         offset = 0
         while need_next_query:
-            results = self._es_instance.search(self._index, self._patient_type, {"query": {"match": {"_all": q}},
+            query = {"match": {"_all": q}} if len(q) > 0 else {"match_all": {}}
+            results = self._es_instance.search(self._index, self._patient_type, {"query": query,
                                                                                  "from": offset,
                                                                                  "size": _page_size})
             total = results['hits']['total']
@@ -57,7 +58,7 @@ class SemEHRES(object):
                 cc_to_ctx[cid] = 'positive'
         return cc_to_ctx
 
-    def summary_patients_by_concepts(self, concepts, filter_func=None, args=[]):
+    def summary_patients_by_concepts(self, concepts, filter_func=None, args=[], patient_filters=None):
         cc_to_ctx = {}
         for t in concepts:
             cc_to_ctx.update(self.get_contexted_concepts(t))
@@ -66,6 +67,8 @@ class SemEHRES(object):
         results = []
         valid_docs = set()
         for p in patients:
+            if patient_filters is not None and p['_id'] not in patient_filters:
+                continue
             sp = {'id': p['_id'], 'all': 0}
             for ann in p['_source']['anns']:
                 if ann['contexted_concept'] in cc_to_ctx:
@@ -80,46 +83,11 @@ class SemEHRES(object):
             results.append(sp)
         return results, list(valid_docs)
 
-    def get_doc_detail(self, doc_id):
-        es_doc = self._es_instance.get(self._index, doc_id, doc_type=self._doc_type)
-        if es_doc is not None:
-            return es_doc['_source']
-        else:
-            return None
-
-    def search(self, entity, q, offset=0, size=10, include_fields=None):
-        query = {"query": {"match": {"_all": q}},
-                 "from": offset,
-                 "size": size}
-        if include_fields is not None:
-            query['_source'] = {
-                "includes": include_fields
-            }
-        results = self._es_instance.search(self._index, entity, query)
-        return results['hits']['total'], results['hits']['hits']
-
-    def scroll(self, q, entity, size=100, include_fields=None):
-        query = {"query": {"match": {"_all": q}},
-                 "size": size}
-        if include_fields is not None:
-            query['_source'] = {
-                "includes": include_fields
-            }
-        return helpers.scan(self._es_instance, query,
-                            size=size, scroll='10m', index=self._index, doc_type=entity)
-
     @staticmethod
     def get_instance():
         global _es_instance
         if _es_instance is None:
             _es_instance = SemEHRES(_es_host, _es_index, _doc_type, _concept_type, _patient_type)
-        return _es_instance
-
-    @staticmethod
-    def get_instance_by_setting(es_host, es_index, es_doc_type, es_concept_type, es_patient_type):
-        global _es_instance
-        if _es_instance is None:
-            _es_instance = SemEHRES(es_host, es_index, es_doc_type, es_concept_type, es_patient_type)
         return _es_instance
 
 
