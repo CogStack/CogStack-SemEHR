@@ -242,3 +242,9 @@ nav span{
         width: 70%;
     }
 }
+
+#cohortDiv, #validatedDocDiv{
+    visibility: hidden;
+    text-align: center;
+}
+#cohortText, #validatedDocText{height: 40px;font-size: 60%;width: 400px;color:#678;padding: 5px;margin:5px;}

@@ -1,6 +1,6 @@
 from entity_centric_es import EntityCentricES
 import json
-from mimicdao import get_mimic_doc_by_id
+from mimicdao import get_mimic_doc_by_id, get_doc_types, get_doc_dates
 import utils
 from os.path import isfile, join
 from os import listdir
@@ -55,5 +55,38 @@ def index_patients(patients, es):
     print 'patient indexing done'
 
 
+def do_doc_update(dt, es_inst, container):
+    es_inst.update_doc_type(str(dt['row_id']), dt['category'])
+    container.append('1')
+    if len(container) % 1000 == 0:
+        print '%s updated' % len(container)
+
+
+def update_mimic_doc_types(doc_types):
+    es = EntityCentricES.get_instance('./pubmed_test/es_mimic_setting.json')
+    container = []
+    utils.multi_thread_tasking(doc_types, 20, do_doc_update, args=[es, container])
+
+
+def do_doc_update_date(dt, es_inst, container):
+    es_inst.update_doc_date(str(dt['row_id']), dt['thedate'])
+    container.append('1')
+    if len(container) % 1000 == 0:
+        print '%s updated' % len(container)
+
+
+def update_mimic_doc_dates(doc_dates):
+    es = EntityCentricES.get_instance('./pubmed_test/es_mimic_setting.json')
+    container = []
+    utils.multi_thread_tasking(doc_dates, 20, do_doc_update_date, args=[es, container])
+
+
 if __name__ == "__main__":
-    index_mimic_notes()
+    # index_mimic_notes()
+    print 'reading doc types...'
+    # doc_types = get_doc_types()
+    doc_dates = get_doc_dates()
+    print 'all read, updating index...'
+    # update_mimic_doc_types(doc_types)
+    update_mimic_doc_dates(doc_dates)
+    print 'all done'
