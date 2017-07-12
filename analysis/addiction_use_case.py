@@ -15,6 +15,16 @@ def time_window_filtering(p2time, d2time, ann, patient):
         return timedelta(days=-365) + p_time <= d_time <= timedelta(days=7) + p_time
 
 
+def first_time_collector(d2time, ann, patient_obj, ann_type):
+    if ann_type != 'positive':
+        return
+    prp_key = 'first_pos_time'
+    d_time = None if ann['appearances'][0]['eprid'] not in d2time else d2time[ann['appearances'][0]['eprid']]
+    if d_time is None or patient_obj is None:
+        patient_obj[prp_key] = d_time if prp_key not in patient_obj else \
+            (patient_obj[prp_key] if d_time > patient_obj[prp_key] else d_time)
+
+
 def load_patient_date(patient_date_file):
     lines = utils.read_text_file(patient_date_file)
     print 'patient file read. parsing...'
@@ -51,6 +61,17 @@ def query_hepc_results(concepts, prefix, patient_filter, p2time, d2time):
     utils.save_json_array(docs, './valid_doc_files/%s_valid_docs.json' % prefix)
 
 
+def query_liver_diseases(concepts, prefix, patient_filter, d2time):
+    es = SemEHRES.get_instance()
+    results, docs = es.summary_patients_by_concepts(concepts,
+                                                    filter_func=None,
+                                                    args=[d2time],
+                                                    patient_filters=patient_filter,
+                                                    data_collection_func=first_time_collector)
+    utils.save_json_array(results, './addiction_res/%s_results.json' % prefix)
+    utils.save_json_array(docs, './valid_doc_files/%s_valid_docs.json' % prefix)
+
+
 def query_drugs_results(drug, concepts):
     # load patient and document dates
     es = SemEHRES.get_instance()
@@ -59,7 +80,7 @@ def query_drugs_results(drug, concepts):
 
 
 def merge_and_output(dir_path, cohort, default_results='hepc_results.json'):
-    headers = ['all', 'positive', 'Negated', 'hypothetical', 'historical', 'Other']
+    headers = ['all', 'positive', 'Negated', 'hypothetical', 'historical', 'Other', 'first_pos_time']
 
     results = {}
     for pid in cohort:
@@ -82,15 +103,17 @@ def merge_and_output(dir_path, cohort, default_results='hepc_results.json'):
         p = results[pid]
         row = [pid] + ['-' if h not in p else str(p[h]) for h in headers]
         s += '\t'.join(row) + '\n'
-    utils.save_string(s, './valid_doc_files/merged_output_liverdiseases_7d.tsv')
+    utils.save_string(s, './valid_doc_files/merged_output_liverdiseases.tsv')
     print 'output generated'
 
 if __name__ == "__main__":
     ps, p2time, d2time = read_patient_time_windows('.')
     pids = utils.read_text_file('./valid_doc_files/hcv_full_cohort.csv')
     ps = pids
-    query_hepc_results(["C0679412", "C0019187", "C0400966", "C0020541", "C0015695", "C2718067", "C0015695", "C0151763", "C2711227", "C0023896", "C0023892", "C0152254", "C0023891", "C0001306", "C0238065", "C0085605", "C0524610", "C0015696", "C0341439", "C0348754", "C0023890"]
-, 'liver_diseases', ps, p2time, d2time)
+    query_hepc_results(["C0679412", "C0019187", "C0400966", "C0020541", "C0015695", "C2718067", "C0015695",
+                        "C0151763", "C2711227", "C0023896", "C0023892", "C0152254", "C0023891", "C0001306",
+                        "C0238065", "C0085605", "C0524610", "C0015696", "C0341439", "C0348754", "C0023890"]
+                       , 'liver_diseases', ps, p2time, d2time)
     # query_hepc_results(['C0019196', 'C2148557', 'C0220847'], 'hepc', ps, p2time, d2time)
     #query_hepc_results(['C1382829', 'C1128545', 'C0035525'], 'RIBAVIRIN', ps, p2time, d2time)
     #query_hepc_results(['C0982327','C0907160','C0279030','C0021747','C2599808','C0021734','C0002199','C3165060'],

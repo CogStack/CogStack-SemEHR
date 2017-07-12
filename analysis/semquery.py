@@ -58,7 +58,9 @@ class SemEHRES(object):
                 cc_to_ctx[cid] = 'positive'
         return cc_to_ctx
 
-    def summary_patients_by_concepts(self, concepts, filter_func=None, args=[], patient_filters=None):
+    def summary_patients_by_concepts(self, concepts,
+                                     filter_func=None, args=[], patient_filters=None,
+                                     data_collection_func=None):
         cc_to_ctx = {}
         for t in concepts:
             cc_to_ctx.update(self.get_contexted_concepts(t))
@@ -80,6 +82,9 @@ class SemEHRES(object):
                     t = cc_to_ctx[ann['contexted_concept']]
                     sp[t] = 1 if t not in sp else sp[t] + 1
                     sp['all'] += 1
+
+                    if data_collection_func is not None:
+                        data_collection_func(*tuple(args + [ann, sp, t]))
             results.append(sp)
         return results, list(valid_docs)
 
