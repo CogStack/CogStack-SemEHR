@@ -24,7 +24,7 @@ if (typeof semehr == "undefined"){
                 do {
                     m = re.exec(s);
                     if (m) {
-                        sections.push({"section": m[1], "pos": [m.index, m.index + m[0].length]});
+                        sections.push({"section": m[1], "pos": [m.index, m.index + m[1].length]});
                     }
                 } while (m);
                 return sections;
