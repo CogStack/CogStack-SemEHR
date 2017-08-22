@@ -1,0 +1,78 @@
+{
+  "Cerebrovascular Disease": [
+    "Stroke",
+    "Cerebrovascular Accident",
+    "CVA",
+    "Ischaemic stroke",
+    "Haemorrhagic Stroke",
+    "Brain Aneurysm",
+    "Infarct",
+    "Brain haemorrhage",
+    "Intracranial haemorrhage",
+    "Occlusion of cerebral arteries",
+    "Stenosis of cerebral arteries",
+    "Transient Ischaemic attack",
+    "TIA",
+    "Mini stroke"
+  ],
+  "Hypercholesterolemia": [
+    "Hypercholesterolemia",
+    "High cholesterol",
+    "Hyperlipidaemia"
+  ],
+  "Hypotension": [
+    "Hypotension",
+    "Low Blood Pressure",
+    "Postural Hypotension",
+    "Orthostatic Hypotension",
+    "Idiopathic hypotension"
+  ],
+  "Ischaemic heart disease": [
+    "Coronary Heart Disease",
+    "Heart disease",
+    "Heart attack",
+    "STEMI",
+    "NSTEMI",
+    "Myocardial infarction",
+    "Atherosclerosis",
+    "Angina pectoris",
+    "Atherosclerotic heart disease",
+    "Atherosclerotic cardiovascular disease",
+    "Double bypass operation",
+    "Triple bypass operation"
+  ],
+  "Congestive Cardiac Failure": [
+    "Congestive cardiac failure",
+    "Congestive heart failure",
+    "Heart failure"
+  ],
+  "Cardiac arrhythmias": [
+    "Cardiac arrhythmia",
+    "Atrioventricular block",
+    "AV block",
+    "Left bundle branch block",
+    "Bifascicular block",
+    "Trifascicular block",
+    "Atrial fibrillation",
+    "Ventricular fibrillation",
+    "Heart block",
+    "Ventricular Tachycardia"
+  ],
+  "Valvular heart disease": [
+    "Rheumatic valve disease",
+    "Tricuspid stenosis",
+    "Aortic stenosis",
+    "Mitral stenosis"
+  ],
+  "Diabetes": [
+    "Diabetes",
+    "Diabetes mellitus",
+    "Type II diabetes",
+    "Type I diabetes"
+  ],
+  "Hypertension": [
+    "Hypertension",
+    "High Blood pressure",
+    "Renovascular hypertension"
+  ]
+}
