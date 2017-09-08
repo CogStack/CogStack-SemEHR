@@ -2,7 +2,7 @@
   {"offset": -1, "regs": [
     ".*(\\s)+died of(\\s)+.{0,10}", ".*(\\s)+died from(\\s)+.{0,10}",
     ".*(\\s)+died(\\s)+.{0,30}",
-    ".*(\\s)+death from(\\s)+.{0,10}", ".*(\\s)+death .{0,10} result of .{0,5}(\\s)+.{0,10}",
+    ".*(\\s)+death from(\\s)+.{0,10}", ".*(\\s)+deaths from(\\s)+.{0,10}", ".*(\\s)+death by(\\s)+.{0,10}", ".*(\\s)+death .{0,10} result of .{0,5}(\\s)+.{0,10}",
     ".*(\\s)+(mother|father|brother|sister|partner|QQQQQ|mum|dad|daughter|son|friend|friends|cousin)(\\s)+.{0,30}",
     ".*(\\s)+rule out(\\s)+.{0,10}",
     ".*(\\s)+would have(\\s)+.{0,10}",
@@ -20,8 +20,17 @@
     ".*(\\s)+risk of(\\s)+.{0,20}",
     ".*(\\s)+turn to(\\s)+.{0,5}",
     ".*(\\s)+possibly(\\s)+.{0,20}",
+    ".*(\\s)+possible(\\s)+.{0,5}",
     ".*(\\s)+suspicion(\\s)+.{0,40}",
-    ".*(\\s)+telling people(\\s)+.{0,40}"
+    ".*(\\s)+telling people(\\s)+.{0,40}",
+    ".*(\\s)+would be(\\s)+.{0,5}",
+    ".*(\\s)+would be(\\s)+.{0,5}",
+    ".*(\\s)+potential(\\s)+.{0,5}",
+    ".*(\\s)+in case(\\s)+.{0,15}",
+    ".*(\\s)+believes(\\s)+.{0,15}",
+    ".*(\\s)+ideas of having(\\s)+.{0,15}",
+    ".*(\\s)+concerned about having(\\s)+.{0,15}",
+    ".*(\\s)+thought(\\s)+.{0,15}"
   ]},
   {"offset": 1, "regs": [
     "\\s+society(\\s|\\.|;)+", "\\s+team(\\s|\\.|;)+", "\\s+service(s){0,1}(\\s|\\.|;)+",
