@@ -4,6 +4,7 @@
     ".*(\\s)+died(\\s)+.{0,30}",
     ".*(\\s)+death from(\\s)+.{0,10}", ".*(\\s)+deaths from(\\s)+.{0,10}", ".*(\\s)+death by(\\s)+.{0,10}", ".*(\\s)+death .{0,10} result of .{0,5}(\\s)+.{0,10}",
     ".*(\\s)+(mother|father|brother|sister|partner|QQQQQ|mum|dad|daughter|son|friend|friends|cousin)(\\s)+.{0,30}",
+    ".*(\\s)+(mother|father|brother|sister|partner|QQQQQ|mum|dad|daughter|son|friend|friends|cousin)'s(\\s)+.{0,30}",
     ".*(\\s)+rule out(\\s)+.{0,10}",
     ".*(\\s)+would have(\\s)+.{0,10}",
     ".*(\\s)+worried|worries|concern|concerns|inkling(\\s)+.{0,40}",
@@ -34,12 +35,13 @@
     ".*(\\s)+worries about(\\s)+.{0,5}",
     ".*(\\s)+of having(\\s)+.{0,5}",
     ".*(\\s)+going to have(\\s)+.{0,5}",
-    ".*(\\s)+like(\\s)+.{0,5}"
+    ".*(\\s)+like(\\s)+.{0,5}",
+    ".*(\\s)+rumination(s){0,1}(\\s)+.{0,1}"
   ]},
   {"offset": 1, "regs": [
     "\\s+society(\\s|\\.|;)+", "\\s+team(\\s|\\.|;)+", "\\s+service(s){0,1}(\\s|\\.|;)+",
     "\\s+nurse(\\s|\\.|;)+", "\\s+nurses(\\s|\\.|;)+", "\\s+doctor(\\s|\\.|;)+", "\\s+clinic(\\s|\\.|;)+", "\\s+association(\\s|\\.|;)+",
     "\\s+ward(\\s|\\.|;)+", "\\s+interpreter(\\s|\\.|;)+", "\\s+date(\\s|\\.|;)+", "\\s+corner(\\s|\\.|;)+",
-    "\\s+centre(\\s|\\.|;)+", "\\s+specialist(\\s|\\.|;)+", "\\s+medicine(\\s|\\.|;)+"
+    "\\s+centre(\\s|\\.|;)+", "\\s+specialist(\\s|\\.|;)+", "\\s+medicine(\\s|\\.|;)+", "\\s+scare(\\s|\\.|;)+"
   ]}
 ]
