@@ -25,6 +25,7 @@ class AnnRuleExecutor(object):
         matched = []
         for r in self._filter_rules:
             s_compare = s_end if r['offset'] > 0 else s_before
+            s_compare = s_compare.replace('\n', '')
             reg_p = re.compile('|'.join(r['regs']), re.IGNORECASE)
             # print 'matching %s on %s' % (reg_p, s_compare)
             m = reg_p.match(s_compare)
@@ -37,11 +38,10 @@ class AnnRuleExecutor(object):
 
 
 if __name__ == "__main__":
-    t = "The length of time will depend on the exact medicines you're taking and which version " \
-        "(strain) died of the hepatitis C services you have."
+    t = "\na close\n frined of hers died of cancer"
     e = AnnRuleExecutor()
     rules = utils.load_json_data('./studies/autoimmune.v2/post_filter_rules.json')
     for r in rules:
         print r
         e.add_filter_rule(r['offset'], r['regs'])
-    print e.execute(t, 107, 118)
+    print e.execute(t, 33,38)

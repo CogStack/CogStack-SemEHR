@@ -33,12 +33,13 @@
     ".*(\\s)+thought(\\s)+.{0,15}",
     ".*(\\s)+worries about(\\s)+.{0,5}",
     ".*(\\s)+of having(\\s)+.{0,5}",
-    ".*(\\s)+going to have(\\s)+.{0,5}"
+    ".*(\\s)+going to have(\\s)+.{0,5}",
+    ".*(\\s)+like(\\s)+.{0,5}"
   ]},
   {"offset": 1, "regs": [
     "\\s+society(\\s|\\.|;)+", "\\s+team(\\s|\\.|;)+", "\\s+service(s){0,1}(\\s|\\.|;)+",
     "\\s+nurse(\\s|\\.|;)+", "\\s+nurses(\\s|\\.|;)+", "\\s+doctor(\\s|\\.|;)+", "\\s+clinic(\\s|\\.|;)+", "\\s+association(\\s|\\.|;)+",
     "\\s+ward(\\s|\\.|;)+", "\\s+interpreter(\\s|\\.|;)+", "\\s+date(\\s|\\.|;)+", "\\s+corner(\\s|\\.|;)+",
-    "\\s+centre(\\s|\\.|;)+", "\\s+specialist(\\s|\\.|;)+"
+    "\\s+centre(\\s|\\.|;)+", "\\s+specialist(\\s|\\.|;)+", "\\s+medicine(\\s|\\.|;)+"
   ]}
 ]
