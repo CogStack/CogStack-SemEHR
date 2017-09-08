@@ -6,22 +6,27 @@
     ".*(\\s)+(mother|father|brother|sister|partner|QQQQQ|mum|dad|daughter|son|friend|friends|cousin)(\\s)+.{0,30}",
     ".*(\\s)+rule out(\\s)+.{0,10}",
     ".*(\\s)+would have(\\s)+.{0,10}",
-    ".*(\\s)+worried|worries|concern|concerns(\\s)+.{0,40}",
+    ".*(\\s)+worried|worries|concern|concerns|inkling(\\s)+.{0,40}",
     ".*(\\s)+danger of having(\\s)+.{0,20}",
     ".*(\\s)+unsure whether(\\s)+.{0,40}",
     ".*(\\s)+non\\-",
     ".*(\\s)+suggestive of(\\s)+.{0,10}",
+    ".*(\\s)+fearful of(\\s)+.{0,20}",
+    ".*(\\s)+perceive .{1,20} as(\\s)+.{0,20}",
     ".*(\\s)+doesn't have(\\s)+.{0,10}",
     ".*(\\s)+ix|investigation of(\\s)+.{0,10}",
     ".*(\\s)+\\?",
     ".*(\\s)+look up(\\s)+.{0,10}",
     ".*(\\s)+risk of(\\s)+.{0,20}",
-    ".*(\\s)+suspicion(\\s)+.{0,40}"
+    ".*(\\s)+turn to(\\s)+.{0,5}",
+    ".*(\\s)+possibly(\\s)+.{0,20}",
+    ".*(\\s)+suspicion(\\s)+.{0,40}",
+    ".*(\\s)+telling people(\\s)+.{0,40}"
   ]},
   {"offset": 1, "regs": [
     "\\s+society(\\s|\\.|;)+", "\\s+team(\\s|\\.|;)+", "\\s+service(s){0,1}(\\s|\\.|;)+",
     "\\s+nurse(\\s|\\.|;)+", "\\s+doctor(\\s|\\.|;)+", "\\s+clinic(\\s|\\.|;)+", "\\s+association(\\s|\\.|;)+",
     "\\s+ward(\\s|\\.|;)+", "\\s+interpreter(\\s|\\.|;)+", "\\s+date(\\s|\\.|;)+", "\\s+corner(\\s|\\.|;)+",
-    "\\s+centre(\\s|\\.|;)+"
+    "\\s+centre(\\s|\\.|;)+", "\\s+specialist(\\s|\\.|;)+"
   ]}
 ]
