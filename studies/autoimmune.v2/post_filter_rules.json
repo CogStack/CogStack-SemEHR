@@ -23,15 +23,15 @@
     ".*(\\s)+look up(\\s)+.{0,10}",
     ".*(\\s)+risk(s){0,1} of(\\s)+.{0,20}",
     ".*(\\s)+turn to(\\s)+.{0,5}",
-    ".*(\\s)+possibl(y)|(e)(\\s)+.{0,20}",
+    ".*(\\s)+possibl(y|e)(\\s)+.{0,20}",
     ".*(\\s)+suspicion(\\s)+.{0,40}",
     ".*(\\s)+telling people(\\s)+.{0,40}",
     ".*(\\s)+such as(\\s)+.{0,40}",
     ".*(\\s)+would be(\\s)+.{0,5}",
-    ".*(\\s)+(may)|(might)|(could)|(would)|(will) have(\\s)+.{0,5}",
+    ".*(\\s)+(may|might|could|would|will) have(\\s)+.{0,5}",
     ".*(\\s)+potential(\\s)+.{0,5}",
     ".*(\\s)+in case(\\s)+.{0,15}",
-    ".*(\\s)+believes(\\s)+.{0,15}",
+    ".*(\\s)+believe(s|d)(\\s)+.{0,15}",
     ".*(\\s)+ideas of having(\\s)+.{0,15}",
     ".*(\\s)+concerned about having(\\s)+.{0,15}",
     ".*(\\s)+thought(\\s)+.{0,15}",
@@ -48,6 +48,6 @@
     "\\s+society", "\\s+care", "\\s+team", "\\s+service(s){0,1}",
     "\\s+nurse", "\\s+nurses", "\\s+doctor", "\\s+clinic", "\\s+association",
     "\\s+ward", "\\s+interpreter", "\\s+date", "\\s+corner",
-    "\\s+centre", "\\s+urologist", "\\s+counselling", "\\s+markers", "\\s+rescource", "\\s+charity", "\\s+assessment", "\\s+specialist", "\\s+medicine", "\\s+scare"
+    "\\s+centre", "\\s+urologist", "\\s+counselling", "\\s+counsellor", "\\s+markers", "\\s+rescource", "\\s+charity", "\\s+assessment", "\\s+specialist", "\\s+medicine", "\\s+scare"
   ]}
 ]
