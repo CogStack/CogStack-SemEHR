@@ -3,7 +3,7 @@
     ".*(\\s)+died of(\\s)+.{0,10}", ".*(\\s)+died from(\\s)+.{0,10}",
     ".*(\\s)+died(\\s)+.{0,30}",
     ".*(\\s)+death from(\\s)+.{0,10}", ".*(\\s)+deaths from(\\s)+.{0,10}", ".*(\\s)+death by(\\s)+.{0,10}", ".*(\\s)+death .{0,10} result of .{0,5}(\\s)+.{0,10}",
-    ".*(\\s)+(mother|father|brother|sister|partner|QQQQQ|mum|dad|daughter|son|friend|friends|cousin|niece)(\\s)+.{0,30}",
+    ".*(\\s)+(mother|father|brother(s){0,1}|sister(s){0,1}|partner|QQQQQ|mum|dad|daughter|son(s){0,1}|friend(s){0,1}|friends|cousin(s){0,1}|niece(s){0,1})(\\s)+.{0,30}",
     ".*(\\s)+(mother|father|brother|sister|partner|QQQQQ|mum|dad|daughter|son|friend|friends|cousin|niece)'s(\\s)+.{0,30}",
     ".*(\\s)+rule out(\\s)+.{0,10}",
     ".*(\\s)+would have(\\s)+.{0,10}",
@@ -34,6 +34,7 @@
     ".*(\\s)+thought(\\s)+.{0,15}",
     ".*(\\s)+worries about(\\s)+.{0,5}",
     ".*(\\s)+having(\\s)+.{0,5}",
+    ".*(\\s)+frightening(\\s)+.{0,5}",
     ".*(\\s)+checking(\\s)+.{0,5}",
     ".*(\\s)+going to have(\\s)+.{0,5}",
     ".*(\\s)+like(\\s)+.{0,5}",
@@ -43,6 +44,6 @@
     "\\s+society(\\s|\\.|;)+", "\\s+team(\\s|\\.|;)+", "\\s+service(s){0,1}(\\s|\\.|;)+",
     "\\s+nurse(\\s|\\.|;)+", "\\s+nurses(\\s|\\.|;)+", "\\s+doctor(\\s|\\.|;)+", "\\s+clinic(\\s|\\.|;)+", "\\s+association(\\s|\\.|;)+",
     "\\s+ward(\\s|\\.|;)+", "\\s+interpreter(\\s|\\.|;)+", "\\s+date(\\s|\\.|;)+", "\\s+corner(\\s|\\.|;)+",
-    "\\s+centre(\\s|\\.|;)+", "\\s+assessment(\\s|\\.|;)+", "\\s+specialist(\\s|\\.|;)+", "\\s+medicine(\\s|\\.|;)+", "\\s+scare(\\s|\\.|;)+"
+    "\\s+centre(\\s|\\.|;)+", "\\s+rescource(\\s|\\.|;)+", "\\s+charity(\\s|\\.|;)+", "\\s+assessment(\\s|\\.|;)+", "\\s+specialist(\\s|\\.|;)+", "\\s+medicine(\\s|\\.|;)+", "\\s+scare(\\s|\\.|;)+"
   ]}
 ]
