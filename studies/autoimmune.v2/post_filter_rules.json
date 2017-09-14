@@ -24,6 +24,7 @@
     ".*(\\s)+possible(\\s)+.{0,5}",
     ".*(\\s)+suspicion(\\s)+.{0,40}",
     ".*(\\s)+telling people(\\s)+.{0,40}",
+    ".*(\\s)+such as(\\s)+.{0,40}",
     ".*(\\s)+would be(\\s)+.{0,5}",
     ".*(\\s)+would be(\\s)+.{0,5}",
     ".*(\\s)+potential(\\s)+.{0,5}",
@@ -44,6 +45,6 @@
     "\\s+society(\\s|\\,|\\.|;)+", "\\s+team(\\s|\\,|\\.|;)+", "\\s+service(s){0,1}(\\s|\\,|\\.|;)+",
     "\\s+nurse(\\s|\\,|\\.|;)+", "\\s+nurses(\\s|\\,|\\.|;)+", "\\s+doctor(\\s|\\,|\\.|;)+", "\\s+clinic(\\s|\\,|\\.|;)+", "\\s+association(\\s|\\,|\\.|;)+",
     "\\s+ward(\\s|\\,|\\.|;)+", "\\s+interpreter(\\s|\\,|\\.|;)+", "\\s+date(\\s|\\,|\\.|;)+", "\\s+corner(\\s|\\,|\\.|;)+",
-    "\\s+centre(\\s|\\,|\\.|;)+", "\\s+markers(\\s|\\,|\\.|;)+", "\\s+rescource(\\s|\\,|\\.|;)+", "\\s+charity(\\s|\\,|\\.|;)+", "\\s+assessment(\\s|\\,|\\.|;)+", "\\s+specialist(\\s|\\,|\\.|;)+", "\\s+medicine(\\s|\\,|\\.|;)+", "\\s+scare(\\s|\\,|\\.|;)+"
+    "\\s+centre(\\s|\\,|\\.|;)+", "\\s+urologist(\\s|\\,|\\.|;)+", "\\s+counselling(\\s|\\,|\\.|;)+", "\\s+markers(\\s|\\,|\\.|;)+", "\\s+rescource(\\s|\\,|\\.|;)+", "\\s+charity(\\s|\\,|\\.|;)+", "\\s+assessment(\\s|\\,|\\.|;)+", "\\s+specialist(\\s|\\,|\\.|;)+", "\\s+medicine(\\s|\\,|\\.|;)+", "\\s+scare(\\s|\\,|\\.|;)+"
   ]}
 ]
