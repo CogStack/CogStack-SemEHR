@@ -25,7 +25,7 @@ class AnnRuleExecutor(object):
         matched = []
         for r in self._filter_rules:
             s_compare = s_end if r['offset'] > 0 else s_before
-            s_compare = s_compare.replace('\n', '')
+            s_compare = s_compare.replace('\n', ' ')
             reg_p = re.compile('|'.join(r['regs']), re.IGNORECASE)
             # print 'matching %s on %s' % (reg_p, s_compare)
             m = reg_p.match(s_compare)
