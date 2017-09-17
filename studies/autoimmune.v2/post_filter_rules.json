@@ -4,7 +4,7 @@
     ".*(\\s)+died(\\s)+.{0,30}",
     ".*(\\s)+death from(\\s)+.{0,10}", ".*(\\s)+deaths from(\\s)+.{0,10}", ".*(\\s)+death by(\\s)+.{0,10}", ".*(\\s)+death .{0,10} result of .{0,5}(\\s)+.{0,10}",
     ".*(\\s)+(mother|family member|father|brother(s){0,1}|mate(s){0,1}|sister(s){0,1}|partner|QQQQQ|mum|dad|daughter|son(s){0,1}|friend(s){0,1}|friends|cousin(s){0,1}|niece(s){0,1}|niece(s){0,1}).{0,30}",
-    ".*(\\s)+(relative(s){0,1}|granddaughter(s){0,1}).{0,30}",
+    ".*(\\s)+(boyfriend|girlfriend|relative(s){0,1}|granddaughter(s){0,1}).{0,30}",
     ".*(\\s)+(mother|father|brother|sister|partner|QQQQQ|mum|dad|daughter|son|friend|friends|cousin|niece)'s(\\s)+.{0,30}",
     ".*(\\s)+rule out(\\s)+.{0,10}",
     ".*(\\s)+would have(\\s)+.{0,10}",
@@ -12,7 +12,7 @@
   ]},
   {
     "offset": -1, "regs":[
-    ".*(\\s)+worried|feels|thinks|convinced|worries|worreis|concern|concerns|inkling(\\s)+.{0,50}",
+    ".*(\\s)+worried|threaten|clear(ed){0,1}|anxious|feels|thinks|convinced|worries|worreis|concern|concerns|inkling(\\s)+.{0,50}",
     ".*(\\s)+danger of having(\\s)+.{0,20}",
     ".*(\\s)+unsure whether(\\s)+.{0,40}",
     ".*(\\s)+non\\-",
@@ -47,7 +47,7 @@
   ]
   },
   {"offset": 1, "regs": [
-    "\\s+society", "\\s+care", "\\s+team", "\\s+service(s){0,1}",
+    "\\s+(society|organisation)", "\\s+care", "\\s+team", "\\s+service(s){0,1}",
     "\\s+help centre",
     "\\s+nurse", "\\s+nurses", "\\s+doctor", "\\s+clinic", "\\s+association",
     "\\s+ward", "\\s+interpreter", "\\s+date", "\\s+corner",
