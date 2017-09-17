@@ -27,7 +27,7 @@
     ".*(\\s)+risk(s){0,1} (of|for)(\\s)+.{0,20}",
     ".*(\\s)+turn to(\\s)+.{0,5}",
     ".*(\\s)+possibl(y|e)(\\s)+.{0,20}",
-    ".*(\\s)+(fear(ed){0,1}|sings of|investigate(d){0,1}|suspicion|suspicious|suspected|delusional)(\\s)+.{0,40}",
+    ".*(\\s)+(fear(ed){0,1}|sings of|investigate(d){0,1}|saying|possibility|suspicion|suspicious|suspected|delusional)(\\s)+.{0,40}",
     ".*(\\s)+telling people(\\s)+.{0,40}",
     ".*(\\s)+such as(\\s)+.{0,40}",
     ".*(\\s)+would be(\\s)+.{0,5}",
