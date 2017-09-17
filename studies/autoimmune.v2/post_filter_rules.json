@@ -1,7 +1,7 @@
 [
   {"offset": -1, "regs": [
     ".*(\\s)+died of(\\s)+.{0,10}", ".*(\\s)+died from(\\s)+.{0,10}", ".*(\\s)+dying(\\s)+.{0,10}",
-    ".*(\\s)+died(\\s)+.{0,30}",
+    ".*(\\s)+(died|passed away)(\\s)+.{0,30}",
     ".*(\\s)+die(\\s)+.{0,30}",
     ".*(\\s)+death from(\\s)+.{0,10}", ".*(\\s)+deaths from(\\s)+.{0,10}", ".*(\\s)+death by(\\s)+.{0,10}", ".*(\\s)+death .{0,10} result of .{0,5}(\\s)+.{0,10}",
     ".*(\\s)+(mother|family member|father|brother(s){0,1}|mate(s){0,1}|sister(s){0,1}|partner|QQQQQ|mum|dad|daughter|son(s){0,1}|friend(s){0,1}|friends|cousin(s){0,1}|niece(s){0,1}|niece(s){0,1}).{0,50}",
@@ -24,7 +24,7 @@
     ".*(\\s)+ix|investigation of(\\s)+.{0,10}",
     ".*(\\s)+\\?",
     ".*(\\s)+look up(\\s)+.{0,10}",
-    ".*(\\s)+risk(s){0,1} of(\\s)+.{0,20}",
+    ".*(\\s)+risk(s){0,1} (of|for)(\\s)+.{0,20}",
     ".*(\\s)+turn to(\\s)+.{0,5}",
     ".*(\\s)+possibl(y|e)(\\s)+.{0,20}",
     ".*(\\s)+(fear|suspicion|suspicious|suspected)(\\s)+.{0,40}",
@@ -52,6 +52,6 @@
     "\\s+help centre", "\\s+group", "\\s+health scare",
     "\\s+nurse", "\\s+nurses", "\\s+doctor", "\\s+clinic", "\\s+association",
     "\\s+ward", "\\s+interpreter", "\\s+date", "\\s+corner",
-    "\\s+centre", "\\s+urologist", "\\s+counselling", "\\s+counsellor", "\\s+markers", "\\s+rescource", "\\s+charity", "\\s+assessment", "\\s+specialist", "\\s+medicine", "\\s+scare"
+    "\\s+.{0,20}centre", "\\s+urologist", "\\s+counselling", "\\s+counsellor", "\\s+markers", "\\s+rescource", "\\s+charity", "\\s+assessment", "\\s+specialist", "\\s+medicine", "\\s+scare"
   ]}
 ]
