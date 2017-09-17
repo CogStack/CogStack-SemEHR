@@ -53,5 +53,8 @@
     "\\s+nurse", "\\s+nurses", "\\s+doctor", "\\s+clinic", "\\s+association",
     "\\s+ward", "\\s+interpreter", "\\s+date", "\\s+corner",
     "\\s+.{0,20}centre", "\\s+urologist", "\\s+counselling", "\\s+counsellor", "\\s+markers", "\\s+rescource", "\\s+charity", "\\s+assessment", "\\s+specialist", "\\s+medicine", "\\s+scare"
-  ]}
+  ]},
+  {"offset": 1, "regs": [
+    "\\s+.{0,20}(mother|family member|father|brother(s){0,1}|mate(s){0,1}|sister(s){0,1}|partner|QQQQQ|mum|dad|daughter|son(s){0,1}|friend(s){0,1}|friends|cousin(s){0,1}|niece(s){0,1}|niece(s){0,1})"
+    ]}
 ]
