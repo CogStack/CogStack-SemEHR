@@ -7,11 +7,12 @@
     ".*(\\s)+(relative(s){0,1}|granddaughter(s){0,1}).{0,30}",
     ".*(\\s)+(mother|father|brother|sister|partner|QQQQQ|mum|dad|daughter|son|friend|friends|cousin|niece)'s(\\s)+.{0,30}",
     ".*(\\s)+rule out(\\s)+.{0,10}",
-    ".*(\\s)+would have(\\s)+.{0,10}"
+    ".*(\\s)+would have(\\s)+.{0,10}",
+    ".*(\\s)+charity(\\s)+.{0,20}"
   ]},
   {
     "offset": -1, "regs":[
-    ".*(\\s)+worried|thinks|convinced|worries|worreis|concern|concerns|inkling(\\s)+.{0,40}",
+    ".*(\\s)+worried|thinks|convinced|worries|worreis|concern|concerns|inkling(\\s)+.{0,50}",
     ".*(\\s)+danger of having(\\s)+.{0,20}",
     ".*(\\s)+unsure whether(\\s)+.{0,40}",
     ".*(\\s)+non\\-",
@@ -47,6 +48,7 @@
   },
   {"offset": 1, "regs": [
     "\\s+society", "\\s+care", "\\s+team", "\\s+service(s){0,1}",
+    "\\s+help centre",
     "\\s+nurse", "\\s+nurses", "\\s+doctor", "\\s+clinic", "\\s+association",
     "\\s+ward", "\\s+interpreter", "\\s+date", "\\s+corner",
     "\\s+centre", "\\s+urologist", "\\s+counselling", "\\s+counsellor", "\\s+markers", "\\s+rescource", "\\s+charity", "\\s+assessment", "\\s+specialist", "\\s+medicine", "\\s+scare"
