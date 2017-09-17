@@ -49,7 +49,7 @@
   },
   {"offset": 1, "regs": [
     "\\s+(society|organisation)", "\\s+care", "\\s+team", "\\s+service(s){0,1}",
-    "\\s+help centre",
+    "\\s+help centre", "\\s+group", "\\s+health scare",
     "\\s+nurse", "\\s+nurses", "\\s+doctor", "\\s+clinic", "\\s+association",
     "\\s+ward", "\\s+interpreter", "\\s+date", "\\s+corner",
     "\\s+centre", "\\s+urologist", "\\s+counselling", "\\s+counsellor", "\\s+markers", "\\s+rescource", "\\s+charity", "\\s+assessment", "\\s+specialist", "\\s+medicine", "\\s+scare"
