@@ -1,9 +1,9 @@
-from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions
+from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions, helpers
 from datetime import timedelta, datetime
 import utils
 
-_es_host = 'localhost'
-_es_index = 'addiction_20k'
+_es_host = '10.200.102.23'
+_es_index = 'mimic'
 _doc_type = 'eprdoc'
 _concept_type = 'ctx_concept'
 _patient_type = 'patient'
@@ -40,7 +40,7 @@ class SemEHRES(object):
 
     def get_contexted_concepts(self, concept):
         results = self._es_instance.search(self._index, self._concept_type, {"query": {"match": {"_all": concept}},
-                                                                             "size": 100
+                                                                             "size": 2000
                                                                              })
         cc_to_ctx = {}
         for cc in results['hits']['hits']:
@@ -88,6 +88,46 @@ class SemEHRES(object):
             results.append(sp)
         return results, list(valid_docs)
 
+    def get_doc_detail(self, doc_id, doc_type=None):
+        doc_type = self._doc_type if doc_type is None else doc_type
+        try:
+            es_doc = self._es_instance.get(self._index, doc_id, doc_type=doc_type)
+            if es_doc is not None:
+                return es_doc['_source']
+            else:
+                return None
+        except Exception:
+            return None
+
+    def search(self, entity, q, offset=0, size=10, include_fields=None):
+        query = {"query": {"match": {"_all": q}},
+                 "from": offset,
+                 "size": size}
+        if include_fields is not None:
+            query['_source'] = {
+                "includes": include_fields
+            }
+        results = self._es_instance.search(self._index, entity, query)
+        return results['hits']['total'], results['hits']['hits']
+
+    def scroll(self, q, entity, size=100, include_fields=None, q_obj=None):
+        query = {"query": {"match": {"_all": q}},
+                 "size": size}
+        if q_obj is not None:
+            query = {
+                "query": q_obj,
+                "size": size
+            }
+        if include_fields is not None:
+            query['_source'] = {
+                "includes": include_fields
+            }
+        return helpers.scan(self._es_instance, query,
+                            size=size, scroll='10m', index=self._index, doc_type=entity)
+
+    def index_med_profile(self, doc_type, data, patient_id):
+        self._es_instance.index(index=self._index, doc_type=doc_type, body=data, id=str(patient_id), timeout='30s')
+
     @staticmethod
     def get_instance():
         global _es_instance
@@ -95,4 +135,11 @@ class SemEHRES(object):
             _es_instance = SemEHRES(_es_host, _es_index, _doc_type, _concept_type, _patient_type)
         return _es_instance
 
+
+    @staticmethod
+    def get_instance_by_setting(es_host, es_index, es_doc_type, es_concept_type, es_patient_type):
+        global _es_instance
+        if _es_instance is None:
+            _es_instance = SemEHRES(es_host, es_index, es_doc_type, es_concept_type, es_patient_type)
+        return _es_instance
 
