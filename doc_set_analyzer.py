@@ -3,6 +3,7 @@ import sqldbutils as dutil
 import json
 from os.path import join, isfile, split
 from study_analyzer import StudyAnalyzer, StudyConcept
+from datetime import datetime
 
 
 # get anns by doc set and concepts
@@ -43,13 +44,13 @@ def populate_episode_study_table(study_analyzer, episode_data, out_path):
         r = {'win1':[eps['brcid']], 'win2':[eps['brcid']], 'win3':[eps['brcid']]}
         for sc in study_concepts:
             if sc.name in eps:
-                r['win1'].append(eps[sc.name]['win1'])
-                r['win2'].append(eps[sc.name]['win2'])
-                r['win3'].append(eps[sc.name]['win3'])
+                r['win1'].append(str(eps[sc.name]['win1']))
+                r['win2'].append(str(eps[sc.name]['win2']))
+                r['win3'].append(str(eps[sc.name]['win3']))
             else:
-                r['win1'].append(0)
-                r['win2'].append(0)
-                r['win3'].append(0)
+                r['win1'].append('0')
+                r['win2'].append('0')
+                r['win3'].append('0')
         rows.append(r)
 
     for w in ['win1', 'win2', 'win3']:
@@ -70,9 +71,9 @@ def load_episode_data(file_path):
     for l in lines:
         arr = l.split('\t')
         eps.append({'brcid': arr[0],
-                    'win1': {'s': arr[1], 'e': arr[2]},
-                    'win2': {'s': arr[3], 'e': arr[4]},
-                    'win3': {'s': arr[5], 'e': arr[6]}
+                    'win1': {'s': datetime.strptime(arr[1], '%d/%m/%Y %H:%M'), 'e': datetime.strptime(arr[2], '%d/%m/%Y %H:%M')},
+                    'win2': {'s': datetime.strptime(arr[3], '%d/%m/%Y %H:%M'), 'e': datetime.strptime(arr[4], '%d/%m/%Y %H:%M')},
+                    'win3': {'s': datetime.strptime(arr[5], '%d/%m/%Y %H:%M'), 'e': datetime.strptime(arr[6], '%d/%m/%Y %H:%M')}
                     })
     return eps
 
@@ -128,5 +129,5 @@ def study(folder, episode_file):
 
 
 if __name__ == "__main__":
-    study('./studies/clozapine')
+    study('./studies/clozapine', 'studies/clozapine/episodes.txt')
 
