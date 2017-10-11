@@ -4,6 +4,7 @@ import json
 from os.path import join, isfile, split
 from study_analyzer import StudyAnalyzer, StudyConcept
 from datetime import datetime
+import joblib as jl
 
 
 my_host = ''
@@ -26,6 +27,14 @@ doc_concept_sql = """
   {extra_constrains}
 """
 
+# load all brcid, docid, date in one go
+patient_doc_date_sql = """
+  select d.brcid, d.cn_doc_id, d.date from gate_attachment d, kconnect.dbo.cohorts c
+  where d.brcid=c.brcid and c.patient_group in ({patient_groups})
+  union all
+  select d.brcid, d.cn_doc_id, d.date from gate_remaning_src_table d, kconnect.dbo.cohorts c
+  where d.brcid=c.brcid and c.patient_group in ({patient_groups})
+"""
 
 def populate_episode_study_table(study_analyzer, episode_data, out_path):
     study_concepts = study_analyzer.study_concepts
@@ -139,6 +148,13 @@ def study(folder, episode_file):
     print 'done'
 
 
+def dump_patient_doc_date_data(patient_groups, out_file):
+    data_sql = patient_doc_date_sql.format(**{'patient_group': patient_groups})
+    d = []
+    dutil.query_data(data_sql, d)
+    jl.dump(d, out_file)
+
 if __name__ == "__main__":
-    study('./studies/clozapine', 'studies/clozapine/episodes.txt')
+    # study('./studies/clozapine', 'studies/clozapine/episodes.txt')
+    dump_patient_doc_date_data('\'clozapine_4k\'', 'resource/clozapine_4k_doc_map.pickle')
 
