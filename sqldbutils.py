@@ -1,5 +1,7 @@
 import utils as imutil
 import pyodbc
+import MySQLdb
+
 
 #SQL db setting
 dsn = 'sqlserverdatasource'
@@ -15,14 +17,27 @@ def get_db_connection():
     return {'cnxn': cnxn, 'cursor': cursor}
 
 
+def get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock='/var/lib/mysql/mysql.sock'):
+    db = MySQLdb.connect(host=my_host,  # your host, usually localhost
+                         user=my_user,  # your username
+                         passwd=my_pwd,  # your password
+                         db=my_db,
+                         unix_socket=my_sock)  # name of the data base
+    cursor = db.cursor()
+    return {'cnxn': db, 'cursor': cursor}
+
 def release_db_connection(cnn_obj):
     cnn_obj['cnxn'].close()
     #cnn_obj['cursor'].close()
     #cnn_obj['cnxn'].disconnect()
 
 
-def query_data(query, container):
-    conn_dic = get_db_connection()
+def query_data(query, container, dbconn=None):
+    if dbconn is None:
+        conn_dic = get_db_connection()
+    else:
+        conn_dic = dbconn
+
     conn_dic['cursor'].execute(query)
     rows = conn_dic['cursor'].fetchall()
     columns = [column[0] for column in conn_dic['cursor'].description]
