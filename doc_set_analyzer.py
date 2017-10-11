@@ -36,6 +36,11 @@ patient_doc_date_sql = """
   where d.brcid=c.brcid and c.patient_group in ({patient_groups})
 """
 
+
+update_doc_date_sql = """
+  update working_docs set date='{date}' where cn_doc_id='{doc_id}'
+"""
+
 def populate_episode_study_table(study_analyzer, episode_data, out_path):
     study_concepts = study_analyzer.study_concepts
     for sc in study_concepts:
@@ -149,12 +154,39 @@ def study(folder, episode_file):
 
 
 def dump_patient_doc_date_data(patient_groups, out_file):
-    data_sql = patient_doc_date_sql.format(**{'patient_group': patient_groups})
+    data_sql = patient_doc_date_sql.format(**{'patient_groups': patient_groups})
     d = []
     dutil.query_data(data_sql, d)
     jl.dump(d, out_file)
 
+
+def update_doc_date(cnn_obj, data):
+    sqls = []
+    for r in data:
+        sqls.append(doc_concept_sql.format(**{'date': r['date'],
+                                              'doc_id': r['cn_doc_id']}))
+    if len(sqls) > 0:
+        cursor = cnn_obj['cursor']
+        for sql in sqls:
+            cursor.execute(sql)
+        cnn_obj['cnxn'].commit()
+
+
+def get_mysql_conn():
+    return dutil.get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock)
+
+
+def update_doc_dates(ser_file):
+    data = jl.load(ser_file)
+    step = 100
+    batch = []
+    for i in xrange(0, len(data), step):
+        batch.append(data[i:min(len(data), i + step)])
+    utils.multi_thread_tasking(batch, 20, update_doc_date,
+                               thread_init_func=get_mysql_conn,
+                               thread_end_func=dutil.release_db_connection)
+
 if __name__ == "__main__":
     # study('./studies/clozapine', 'studies/clozapine/episodes.txt')
-    dump_patient_doc_date_data('\'clozapine_4k\'', 'resource/clozapine_4k_doc_map.pickle')
-
+    # dump_patient_doc_date_data('\'clozapine_4k\'', 'resource/clozapine_4k_doc_map.pickle')
+    update_doc_dates('resource/clozapine_4k_doc_map.pickle')
