@@ -6,6 +6,15 @@ from study_analyzer import StudyAnalyzer, StudyConcept
 from datetime import datetime
 
 
+my_host = ''
+my_user = ''
+my_pwd = ''
+my_db = ''
+my_sock = ''
+
+db_connection = 'mysql'
+
+
 # get anns by doc set and concepts
 doc_concept_sql = """
   select d.brcid, d.DateModified
@@ -29,7 +38,9 @@ def populate_episode_study_table(study_analyzer, episode_data, out_path):
             data_sql = doc_concept_sql.format(**{'concepts': concept_list,
                                                  'extra_constrains': ''})
             print data_sql
-            dutil.query_data(data_sql, patient_date_tuples)
+            dutil.query_data(data_sql, patient_date_tuples,
+                             dbconn=dutil.get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock)
+                             if db_connection == 'mysql' else None)
             # filter patient_date tuples using episode constraints
             for eps in episode_data:
                 for row in patient_date_tuples:
