@@ -7,8 +7,9 @@ from datetime import datetime
 import joblib as jl
 
 
-my_host = ''
-my_user = ''
+
+my_host = 'localhost'
+my_user = 'kconnect'
 my_pwd = ''
 my_db = ''
 my_sock = ''
@@ -38,7 +39,7 @@ patient_doc_date_sql = """
 
 
 update_doc_date_sql = """
-  update working_docs set date='{date}' where cn_doc_id='{doc_id}'
+  update working_docs set datemodified='{date}' where cn_doc_id='{doc_id}'
 """
 
 def populate_episode_study_table(study_analyzer, episode_data, out_path):
@@ -82,29 +83,29 @@ def populate_episode_study_table(study_analyzer, episode_data, out_path):
         s = '\t'.join(headers) + '\n'
         for r in rows:
             s += '\t'.join(r[w]) + '\n'
-        utils.save_string(s, out_path + '/eps' + w + '.tsv')
+        utils.save_string(s, out_path + '/weeks_eps' + w + '.tsv')
 
 
 def count_eps_win(eps, concept_name, row, win):
-    if eps[win]['s'] <= row['DateModified'] <= eps[win]['e']:
-        eps[concept_name][win] += 1
+    # if eps[win]['s'] <= row['DateModified'] <= eps[win]['e']:
+    eps[concept_name][win] += 1
 
 
-def load_episode_data(file_path):
+def load_episode_data(file_path, date_format='%d/%m/%Y %H:%M'):
     lines = utils.read_text_file(file_path)
     eps = []
     for l in lines:
         arr = l.split('\t')
         eps.append({'brcid': arr[0],
-                    'win1': {'s': datetime.strptime(arr[1], '%d/%m/%Y %H:%M'), 'e': datetime.strptime(arr[2], '%d/%m/%Y %H:%M')},
-                    'win2': {'s': datetime.strptime(arr[3], '%d/%m/%Y %H:%M'), 'e': datetime.strptime(arr[4], '%d/%m/%Y %H:%M')},
-                    'win3': {'s': datetime.strptime(arr[5], '%d/%m/%Y %H:%M'), 'e': datetime.strptime(arr[6], '%d/%m/%Y %H:%M')}
+                    'win1': {'s': datetime.strptime(arr[1], date_format), 'e': datetime.strptime(arr[2], date_format)},
+                    'win2': {'s': datetime.strptime(arr[3], date_format), 'e': datetime.strptime(arr[4], date_format)},
+                    'win3': {'s': datetime.strptime(arr[5], date_format), 'e': datetime.strptime(arr[6], date_format)}
                     })
     return eps
 
 
-def study(folder, episode_file):
-    episodes = load_episode_data(episode_file)
+def study(folder, episode_file, date_format='%d/%m/%Y %H:%M'):
+    episodes = load_episode_data(episode_file, date_format=date_format)
     p, fn = split(folder)
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
@@ -163,8 +164,9 @@ def dump_patient_doc_date_data(patient_groups, out_file):
 def update_doc_date(cnn_obj, data):
     sqls = []
     for r in data:
-        sqls.append(doc_concept_sql.format(**{'date': r['date'],
-                                              'doc_id': r['cn_doc_id']}))
+        if r['date'] is not None:
+            sqls.append(update_doc_date_sql.format(**{'date': r['date'],
+                                                  'doc_id': r['cn_doc_id']}))
     if len(sqls) > 0:
         cursor = cnn_obj['cursor']
         for sql in sqls:
@@ -188,5 +190,6 @@ def update_doc_dates(ser_file):
 
 if __name__ == "__main__":
     # study('./studies/clozapine', 'studies/clozapine/episodes.txt')
+    study('./studies/clozapine', 'studies/clozapine/clozapine_episodes_weeks.tsv', '%Y-%m-%d %H:%M:%S')
     # dump_patient_doc_date_data('\'clozapine_4k\'', 'resource/clozapine_4k_doc_map.pickle')
-    update_doc_dates('resource/clozapine_4k_doc_map.pickle')
+    # update_doc_dates('resources/clozapine_4k_doc_map.pickle')
