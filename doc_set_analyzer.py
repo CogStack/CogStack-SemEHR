@@ -27,6 +27,18 @@ doc_concept_sql = """
   {extra_constrains}
 """
 
+# get anns by doc set and concepts
+doc_concept_sql_cohort = """
+  select d.brcid, d.DateModified
+  from sqlcris_user.kconnect.kconnect_annotations a, gatedb_cris.dbo.gate d,  sqlcris_user.kconnect.cohorts c
+  where
+  a.inst_uri in ({concepts})
+  and a.CN_Doc_ID = d.CN_Doc_ID
+  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
+  and c.patient_group='{cohort}'
+  {extra_constrains}
+"""
+
 # load all brcid, docid, date in one go
 patient_doc_date_sql = """
   select d.brcid, d.cn_doc_id, d.date from gate_attachment d, kconnect.dbo.cohorts c
@@ -41,7 +53,8 @@ update_doc_date_sql = """
   update working_docs set date='{date}' where cn_doc_id='{doc_id}'
 """
 
-def populate_episode_study_table(study_analyzer, episode_data, out_path):
+
+def populate_episode_study_table(study_analyzer, episode_data, out_path, cohort):
     study_concepts = study_analyzer.study_concepts
     for sc in study_concepts:
         sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
@@ -49,8 +62,9 @@ def populate_episode_study_table(study_analyzer, episode_data, out_path):
         concept_list = ', '.join(['\'%s\'' % c for c in sc.concept_closure])
         patient_date_tuples = []
         if len(sc.concept_closure) > 0:
-            data_sql = doc_concept_sql.format(**{'concepts': concept_list,
-                                                 'extra_constrains': ''})
+            data_sql = doc_concept_sql_cohort.format(**{'concepts': concept_list,
+                                                        'cohort': cohort,
+                                                        'extra_constrains': ''})
             print data_sql
             dutil.query_data(data_sql, patient_date_tuples,
                              dbconn=dutil.get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock)
