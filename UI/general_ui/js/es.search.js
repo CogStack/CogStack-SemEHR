@@ -9,16 +9,17 @@ if (typeof semehr == "undefined"){
     if(typeof semehr.search == "undefined") {
 
         semehr.search = {
-            __es_need_login: false,
+            __es_need_login: true,
             _es_client: null,
-            __es_server_url: "http://10.200.102.23:9200/",
-            __es_index: "mimic", //epr_documents_bioyodie
+            __es_server_url: "[IP ADDRESS]",
+            __es_index: "epr_adr", //epr_documents_bioyodie
             __es_type: "patient", //patient type
             __es_concept_type: "ctx_concept",
-            __es_fulltext_index: "mimic",
-            __es_fulltext_type: "eprdoc",
-            _full_text_attr: 'fulltext',
-            _fdid: 'eprid',
+            __es_fulltext_index: "epr_documents",
+            __es_fulltext_type: "docs",
+            _full_text_attr: 'body_analysed',
+            _user_id: "not_logged",
+            _fdid: '_id',
             __discharge_summary_type: "Discharge summary",
 
             initESClient: function(){
@@ -71,7 +72,7 @@ if (typeof semehr == "undefined"){
                             {
                                 host: semehr.search.__es_server_url,
                                 auth: result[0] + ':' + result[1],
-                                protocol: 'http',
+                                protocol: 'https',
                                 port: 9200
                             }
                         ]
@@ -89,6 +90,7 @@ if (typeof semehr == "undefined"){
                             });
                             console.error('elasticsearch cluster is down!');
                         } else {
+                            semehr.search._user_id = result[0];
                             swal({
                                 title: 'Welcome back, ' + result[0] + "!",
                                 confirmButtonText: 'ok',
