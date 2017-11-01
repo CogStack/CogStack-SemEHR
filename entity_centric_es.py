@@ -86,7 +86,7 @@ class EntityCentricES(object):
             self._es_instance.indices.delete(self.index_name)
         self._es_instance.indices.create(self.index_name)
         for t in mapping:
-            self._es_instance.indices.put_mapping(doc_type=t, body=mapping[t])
+            self._es_instance.indices.put_mapping(index=self.index_name, doc_type=t, body=mapping[t])
 
     def index_ctx_concept(self, ann, index_instance=False):
         data = {
