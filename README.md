@@ -2,7 +2,7 @@
 Surfacing Semantic Data from Clinical Notes in Electronic Health Records for Tailored Care, Trial Recruitment and Clinical Research
 
 ## updates
-- (14 Sept 2017) SemEHR has been accepted to present at [UK Publich Health Science Conference 2017](http://www.ukpublichealthscience.org/) and to be published by [The Lancet](http://www.thelancet.com/).
+- (14 Sept 2017) An abstract describing SemEHR toolkit has been accepted to present at [UK Publich Health Science Conference 2017](http://www.ukpublichealthscience.org/) and to be published by [The Lancet](http://www.thelancet.com/).
 - (24 Apr 2017) An SemEHR instance has been deployed on [MIMICIII data](https://mimic.physionet.org/) on 3 VMs of KCL's Rosalind HPC cluster to facilitate researches on this open ICU EHRs.
 - (19 Apr 2017) The instance of SemEHR on [SLaM's CRIS data](http://www.slam.nhs.uk/research/cris) is supportingt the discovery of associations between liver diseases and addictions. 
 - (21 Mar 2017) An SemEHR instance has been deployed at [King's College Hospital](https://www.kch.nhs.uk/) to support patient recruitments for rare diseases in [Genomics England's 100,000 Genome Project](https://www.genomicsengland.co.uk/the-100000-genomes-project/).
