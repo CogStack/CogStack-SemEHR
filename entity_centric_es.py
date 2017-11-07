@@ -283,6 +283,19 @@ class EntityCentricES(object):
         }
         self._es_instance.update(index=self.index_name, doc_type=self.doc_doc_type, id=doc_id, body=data)
 
+    def copy_doc(self, src_index, src_doc_type, src_doc_id, dest_index, dest_doc_type):
+        """
+        copy a document from one index to another.
+        :param src_index: source doc index name
+        :param src_doc_type: source doc type
+        :param src_doc_id: source doc id
+        :param dest_index: destination index name
+        :param dest_doc_type: destination doc type
+        :return:
+        """
+        src_doc = self._es_instance.get(src_index, src_doc_id, doc_type=src_doc_type)
+        self._es_instance.index(index=dest_index, doc_type=dest_doc_type, body=src_doc, id=src_doc_id, timeout='30s')
+
     @staticmethod
     def get_ctx_concept_id(ann):
         s = "%s_%s_%s_%s" % (ann['features']['inst'],
@@ -499,6 +512,30 @@ def test():
                               "Nilotinib Benefit Explain the Dopamine Metabolite "
                               "Increase in Parkinsonian Study Subjects?"
                           })
+
+
+def do_copy_doc(doc_id, es, src_index, src_doc_type, dest_index, dest_doc_type):
+    es.copy_doc(src_index, src_doc_type, doc_id, dest_index, dest_doc_type)
+    print '%s copied' % doc_id
+
+
+def copy_docs(index_setting_file, src_index, src_doc_type, dest_index, dest_doc_type, doc_list_file, thread_num=30):
+    """
+    copy a list of docs (doc ids read from doc_list_file) from one index to another
+    :param index_setting_file:
+    :param src_index:
+    :param src_doc_type:
+    :param dest_index:
+    :param dest_doc_type:
+    :param doc_list_file:
+    :param thread_num:
+    :return:
+    """
+    es = EntityCentricES.get_instance(index_setting_file)
+    docs = utils.read_text_file(doc_list_file)
+    utils.multi_thread_tasking(docs, thread_num, do_copy_doc,
+                               args=[es, src_index, src_doc_type, dest_index, dest_doc_type])
+    print 'all done'
 
 
 if __name__ == "__main__":
