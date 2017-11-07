@@ -183,8 +183,13 @@ def sum_complement_data(patient_id, es, wrapper, results):
         profile = parse_discharge_summary(doc['fulltext'], doc['anns'], corpus_mapping)
         p_results = {}
         for sec in profile:
+            type_to_freq = {}
             if sec['section'] in wrapper['complement_sections']:
-                p_results[sec['section']] = len(sec['anns'])
+                p_results[sec['section']] = {'total': len(sec['anns'])}
+                for ann in sec['anns']:
+                    type_to_freq[ann['features']['STY']] = 1 if ann['features']['STY'] not in type_to_freq \
+                        else type_to_freq[ann['features']['STY']] + 1
+                p_results[sec['section']]['t2f'] = type_to_freq
         results.append(p_results)
 
 
@@ -216,11 +221,19 @@ def calculate_complement_data(es, random_patients):
     for pid in random_patients:
         sum_complement_data(pid, es, ms_wrapper, results)
 
-    for r in results:
-        for s in ms_wrapper['complement_sections']:
-            print 0 if s not in r else r[s]
-            print '\t'
-        print '\n'
+    for s in ms_wrapper['complement_sections']:
+        total = 0
+        t2freq = {}
+        for r in results:
+            if s not in r:
+                continue
+            total += r[s]['total']
+            for t in r[s]['t2f']:
+                t2freq[t] = r[s]['t2f'][t] if t not in t2freq else t2freq[t] + r[s]['t2f'][t]
+        print '%s: %s' % (s, total)
+        for t in t2freq:
+            print '%s: %s' % (t, t2freq[t])
+        print '\n\n'
 
 
 def mimic_struct_extract_exp(es):
@@ -282,21 +295,7 @@ def populate_query_using_concepts(field, concepts):
     return qo
 
 
-if __name__ == "__main__":
-    # random_select_mimic_patients()
-    es_setting = {
-        'es_host': '10.200.102.23',
-        'es_index': 'mimic',
-        'es_doc_type': 'eprdoc',
-        'es_concept_type': 'ctx_concept',
-        'es_patient_type': 'patient'
-    }
-    es = SemEHRES.get_instance_by_setting(es_setting['es_host'],
-                                          es_setting['es_index'],
-                                          es_setting['es_doc_type'],
-                                          es_setting['es_concept_type'],
-                                          es_setting['es_patient_type'])
-
+def mimic_af_analysis(es):
     pids = utils.read_text_file('../resources/af_pids.txt')
     # print 'querying hypertension...'
     # hyper_phrase_results = query_patients(es, {"match": {"History_of_Past_Illness.text": "hypertension"}})
@@ -317,14 +316,74 @@ if __name__ == "__main__":
     # print 'querying angina...'
     # angina_phrase_results = query_patients(es, {"match": {"History_of_Past_Illness.text": "angina"}})
 
-    hyper_phrase_results = query_patients(es, populate_query_using_concepts("History_of_Past_Illness.anns.features.inst",
-                                                                             ["C0020538", "C3694763", "C0155607", "C0020545", "C2363973", "C0262395", "C0152171", "C0596515", "C0020539", "C0155620", "C0155621", "C0155622", "C0920394", "C0920393", "C0032914", "C0920747", "C0411176", "C1171328", "C0544619", "C0544618", "C0020542", "C0020540", "C0683382", "C0341934", "C0264936", "C1998407", "C1849552", "C1171349", "C0597854", "C0859775", "C0859765", "C0341950", "C0238780", "C0598428", "C0155598", "C0155596", "C1171326", "C0155594", "C0155595", "C0596088", "C0155591", "C0848548", "C0348860", "C0348586", "C0264650", "C0156664", "C0155606", "C0221155", "C0155604", "C0155605", "C0155593", "C0155609", "C0156669", "C0597048", "C0745133", "C0151620", "C0348587", "C0264641", "C1171351", "C0494574", "C0494575", "C0494576", "C0597853", "C0155584", "C0155587", "C0155586", "C0155589", "C0269658", "C0348879", "C0264655", "C0155617", "C0155616", "C0155611", "C0155610", "C0024588", "C0262534", "C0155619", "C0235222", "C0349368", "C0155583", "C0013537", "C0597290", "C1171363"]))
+    hyper_phrase_results = query_patients(es,
+                                          populate_query_using_concepts("History_of_Past_Illness.anns.features.inst",
+                                                                        ["C0020538", "C3694763", "C0155607", "C0020545",
+                                                                         "C2363973", "C0262395", "C0152171", "C0596515",
+                                                                         "C0020539", "C0155620", "C0155621", "C0155622",
+                                                                         "C0920394", "C0920393", "C0032914", "C0920747",
+                                                                         "C0411176", "C1171328", "C0544619", "C0544618",
+                                                                         "C0020542", "C0020540", "C0683382", "C0341934",
+                                                                         "C0264936", "C1998407", "C1849552", "C1171349",
+                                                                         "C0597854", "C0859775", "C0859765", "C0341950",
+                                                                         "C0238780", "C0598428", "C0155598", "C0155596",
+                                                                         "C1171326", "C0155594", "C0155595", "C0596088",
+                                                                         "C0155591", "C0848548", "C0348860", "C0348586",
+                                                                         "C0264650", "C0156664", "C0155606", "C0221155",
+                                                                         "C0155604", "C0155605", "C0155593", "C0155609",
+                                                                         "C0156669", "C0597048", "C0745133", "C0151620",
+                                                                         "C0348587", "C0264641", "C1171351", "C0494574",
+                                                                         "C0494575", "C0494576", "C0597853", "C0155584",
+                                                                         "C0155587", "C0155586", "C0155589", "C0269658",
+                                                                         "C0348879", "C0264655", "C0155617", "C0155616",
+                                                                         "C0155611", "C0155610", "C0024588", "C0262534",
+                                                                         "C0155619", "C0235222", "C0349368", "C0155583",
+                                                                         "C0013537", "C0597290", "C1171363"]))
     af_phrase_results = query_patients(es, populate_query_using_concepts("History_of_Past_Illness.anns.features.inst",
-                                                                             ["C0004238", "C2041124", "C0344434", "C0856731", "C0235480", "C1963067", "C3468561", "C0549284"]))
+                                                                         ["C0004238", "C2041124", "C0344434",
+                                                                          "C0856731", "C0235480", "C1963067",
+                                                                          "C3468561", "C0549284"]))
     cv_phrase_results = query_patients(es, populate_query_using_concepts("History_of_Past_Illness.anns.features.inst",
-                                                                             ["C0027051", "C0877719", "C1112646", "C1112645", "C0340308", "C0340305", "C0340304", "C1142289", "C0494578", "C1112770", "C2362760", "C0155628", "C0155629", "C0494579", "C0155626", "C0155627", "C0155644", "C0155660", "C0155661", "C0155662", "C0155645", "C0155664", "C0155665", "C0155668", "C0155642", "C0348591", "C0302375", "C0302376", "C0262565", "C0949079", "C1142565", "C0948864", "C0546119", "C0865592", "C0746727", "C0865596", "C0494580", "C0542269", "C2349195", "C0278960", "C0264706", "C0264707", "C0264704", "C0264705", "C0264703", "C0155638", "C0155637", "C0155636", "C0155634", "C0155633", "C0155632", "C0155631", "C0155630", "C0746710", "C0262567", "C0865697", "C0865699", "C0865698", "C0494577", "C1299620", "C1112769", "C1112662", "C1112663", "C0948865", "C1142433", "C0948866", "C0348864", "C0856742", "C0281915", "C0155646", "C0155647", "C0877768", "C0262563", "C0262564", "C0155643", "C0155640", "C0155641", "C0262568", "C0155648", "C0155649", "C0264674", "C0340319", "C1386160", "C0340312", "C0865603", "C0155659", "C0155658", "C0865593", "C0155650", "C0155653", "C0155652", "C0155655", "C0155654", "C0155657", "C0340293", "C0861151", "C1142184", "C1142185"]))
-    angina_phrase_results = query_patients(es, populate_query_using_concepts("History_of_Past_Illness.anns.features.inst",
-                                                                             ["C0002962", "C0858277", "C0235467", "C0002963", "C2024883", "C0152172", "C0948698", "C3805197", "C0859932", "C0541777", "C0577698", "C0859924", "C0340288", "C0206064"]))
+                                                                         ["C0027051", "C0877719", "C1112646",
+                                                                          "C1112645", "C0340308", "C0340305",
+                                                                          "C0340304", "C1142289", "C0494578",
+                                                                          "C1112770", "C2362760", "C0155628",
+                                                                          "C0155629", "C0494579", "C0155626",
+                                                                          "C0155627", "C0155644", "C0155660",
+                                                                          "C0155661", "C0155662", "C0155645",
+                                                                          "C0155664", "C0155665", "C0155668",
+                                                                          "C0155642", "C0348591", "C0302375",
+                                                                          "C0302376", "C0262565", "C0949079",
+                                                                          "C1142565", "C0948864", "C0546119",
+                                                                          "C0865592", "C0746727", "C0865596",
+                                                                          "C0494580", "C0542269", "C2349195",
+                                                                          "C0278960", "C0264706", "C0264707",
+                                                                          "C0264704", "C0264705", "C0264703",
+                                                                          "C0155638", "C0155637", "C0155636",
+                                                                          "C0155634", "C0155633", "C0155632",
+                                                                          "C0155631", "C0155630", "C0746710",
+                                                                          "C0262567", "C0865697", "C0865699",
+                                                                          "C0865698", "C0494577", "C1299620",
+                                                                          "C1112769", "C1112662", "C1112663",
+                                                                          "C0948865", "C1142433", "C0948866",
+                                                                          "C0348864", "C0856742", "C0281915",
+                                                                          "C0155646", "C0155647", "C0877768",
+                                                                          "C0262563", "C0262564", "C0155643",
+                                                                          "C0155640", "C0155641", "C0262568",
+                                                                          "C0155648", "C0155649", "C0264674",
+                                                                          "C0340319", "C1386160", "C0340312",
+                                                                          "C0865603", "C0155659", "C0155658",
+                                                                          "C0865593", "C0155650", "C0155653",
+                                                                          "C0155652", "C0155655", "C0155654",
+                                                                          "C0155657", "C0340293", "C0861151",
+                                                                          "C1142184", "C1142185"]))
+    angina_phrase_results = query_patients(es,
+                                           populate_query_using_concepts("History_of_Past_Illness.anns.features.inst",
+                                                                         ["C0002962", "C0858277", "C0235467",
+                                                                          "C0002963", "C2024883", "C0152172",
+                                                                          "C0948698", "C3805197", "C0859932",
+                                                                          "C0541777", "C0577698", "C0859924",
+                                                                          "C0340288", "C0206064"]))
     print 'query ended'
     s = ''
     for p in pids:
@@ -337,3 +396,21 @@ if __name__ == "__main__":
     # print s
     # utils.save_string(s, '../resources/af_phrase_results.txt')
     utils.save_string(s, '../resources/af_semantic_results.txt')
+
+
+if __name__ == "__main__":
+    # random_select_mimic_patients()
+    es_setting = {
+        'es_host': '10.200.102.23',
+        'es_index': 'mimic',
+        'es_doc_type': 'eprdoc',
+        'es_concept_type': 'ctx_concept',
+        'es_patient_type': 'patient'
+    }
+    es = SemEHRES.get_instance_by_setting(es_setting['es_host'],
+                                          es_setting['es_index'],
+                                          es_setting['es_doc_type'],
+                                          es_setting['es_concept_type'],
+                                          es_setting['es_patient_type'])
+
+    mimic_struct_extract_exp(es)
