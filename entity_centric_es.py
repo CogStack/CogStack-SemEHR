@@ -296,6 +296,26 @@ class EntityCentricES(object):
         src_doc = self._es_instance.get(src_index, src_doc_id, doc_type=src_doc_type)
         self._es_instance.index(index=dest_index, doc_type=dest_doc_type, body=src_doc, id=src_doc_id, timeout='30s')
 
+    def copy_doc_by_entity(self, src_index, src_doc_type, src_entity_id,
+                           entity_id_field_name, dest_index, dest_doc_type):
+        """
+        copy a patient's docs from one index to another.
+        :param src_index: source doc index name
+        :param src_doc_type: source doc type
+        :param src_entity_id: entity id
+        :param entity_id_field_name: the field name of entity id in the source index
+        :param dest_index: destination index name
+        :param dest_doc_type: destination doc type
+        :return:
+        """
+        docs = self._es_instance.search(index=src_index,
+                                        doc_type=src_doc_type,
+                                        body={'query': {'term': {entity_id_field_name: src_entity_id}}, 'size': 10000})
+        for d in docs:
+            self._es_instance.index(index=dest_index, doc_type=dest_doc_type, body=d, id=d['_id'], timeout='30s')
+        return len(docs)
+
+
     @staticmethod
     def get_ctx_concept_id(ann):
         s = "%s_%s_%s_%s" % (ann['features']['inst'],
@@ -316,7 +336,10 @@ class EntityCentricES(object):
         if 'customise_settings' in setting:
             es.customise_settings = setting['customise_settings']
         if setting['reset']:
-            es.init_index(setting['mappings'])
+            print 'NB: to avoid unnecessary index deletion, reset has bee disabled!! \n' \
+                  'please delete the index manual and set the reset setting to false to continue.'
+            exit(0)
+            # es.init_index(setting['mappings'])
         return es
 
 
@@ -341,17 +364,17 @@ def do_index_pubmed_docs(doc_obj, es, full_text_path):
 
 
 def index_pubmed():
-    es = EntityCentricES.get_instance('./pubmed_test/es_setting.json')
-    doc_details = utils.load_json_data('./pubmed_test/pmc_docs.json')
+    es = EntityCentricES.get_instance('./index_settings/es_setting.json')
+    doc_details = utils.load_json_data('./index_settings/pmc_docs.json')
     pmcid_to_journal = {}
     for d in doc_details:
         if 'pmcid' in d and 'journalTitle' in d:
             pmcid_to_journal[d['pmcid']] = d['journalTitle']
     # load anns
-    # utils.multi_thread_large_file_tasking('./pubmed_test/test_anns.json', 10, do_index_pubmed,
-    #                                       args=[es, pmcid_to_journal, './pubmed_test/fulltext'])
+    # utils.multi_thread_large_file_tasking('./index_settings/test_anns.json', 10, do_index_pubmed,
+    #                                       args=[es, pmcid_to_journal, './index_settings/fulltext'])
     utils.multi_thread_tasking(doc_details, 10, do_index_pubmed_docs,
-                               args=[es, './pubmed_test/fulltext'])
+                               args=[es, './index_settings/fulltext'])
     print 'done'
 
 
@@ -457,7 +480,7 @@ def index_cris_cohort():
     for d in docs:
         doc_dict[d['CN_Doc_ID']] = d
 
-    es = EntityCentricES.get_instance('./pubmed_test/es_cris_setting.json')
+    es = EntityCentricES.get_instance('./index_settings/es_cris_setting.json')
     lines = utils.read_text_file(f_patient_doc, encoding='utf-8-sig')
     doc_to_patient = {}
     for l in lines:
@@ -487,7 +510,7 @@ def index_cris_patients():
         if arr[0] not in patients:
             patients.append(arr[0])
     print 'total patients %s %s' % (len(patients), patients[0])
-    es = EntityCentricES.get_instance('./pubmed_test/es_cris_setting.json')
+    es = EntityCentricES.get_instance('./index_settings/es_cris_setting.json')
     utils.multi_thread_tasking(patients, 10, do_index_patient, args=[es])
     print 'done'
 
@@ -500,8 +523,8 @@ def mimic_load_text(text_file):
 
 
 def test():
-    es = EntityCentricES.get_instance('./pubmed_test/es_setting.json')
-    anns = utils.load_json_data('./pubmed_test/test_anns.json')['annotations'][0]
+    es = EntityCentricES.get_instance('./index_settings/es_setting.json')
+    anns = utils.load_json_data('./index_settings/test_anns.json')['annotations'][0]
     # # print get_ctx_concept_id()
     # # index_ctx_concept(ann, index='pubmed')
     es.index_entity_data(hashlib.md5('J Parkinsons Dis').hexdigest().upper(),
@@ -514,27 +537,30 @@ def test():
                           })
 
 
-def do_copy_doc(doc_id, es, src_index, src_doc_type, dest_index, dest_doc_type):
-    es.copy_doc(src_index, src_doc_type, doc_id, dest_index, dest_doc_type)
-    print '%s copied' % doc_id
+def do_copy_doc(entity_id, es, src_index, src_doc_type, entity_id_field_name, dest_index, dest_doc_type):
+    # es.copy_doc(src_index, src_doc_type, doc_id, dest_index, dest_doc_type)
+    num_docs = es.copy_doc_by_entity(src_index, src_doc_type, entity_id, entity_id_field_name, dest_index, dest_doc_type)
+    print '%s docs copied for %s' % (num_docs, entity_id)
 
 
-def copy_docs(index_setting_file, src_index, src_doc_type, dest_index, dest_doc_type, doc_list_file, thread_num=30):
+def copy_docs(index_setting_file, src_index, src_doc_type, entity_id_field_name,
+              dest_index, dest_doc_type, patient_list_file, thread_num=30):
     """
     copy a list of docs (doc ids read from doc_list_file) from one index to another
     :param index_setting_file:
     :param src_index:
     :param src_doc_type:
+    :param entity_id_field_name:
     :param dest_index:
     :param dest_doc_type:
-    :param doc_list_file:
+    :param patient_list_file:
     :param thread_num:
     :return:
     """
     es = EntityCentricES.get_instance(index_setting_file)
-    docs = utils.read_text_file(doc_list_file)
-    utils.multi_thread_tasking(docs, thread_num, do_copy_doc,
-                               args=[es, src_index, src_doc_type, dest_index, dest_doc_type])
+    patients = utils.read_text_file(patient_list_file)
+    utils.multi_thread_tasking(patients, thread_num, do_copy_doc,
+                               args=[es, src_index, src_doc_type, entity_id_field_name, dest_index, dest_doc_type])
     print 'all done'
 
 
