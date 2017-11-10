@@ -4,7 +4,7 @@ import utils
 import json
 from os.path import join, isfile
 from os import listdir
-from cohortanalysis import load_all_docs
+#from cohortanalysis import load_all_docs
 from datetime import datetime
 import sys
 import requests
@@ -294,7 +294,7 @@ class EntityCentricES(object):
         :return:
         """
         src_doc = self._es_instance.get(src_index, src_doc_id, doc_type=src_doc_type)
-        self._es_instance.index(index=dest_index, doc_type=dest_doc_type, body=src_doc, id=src_doc_id, timeout='30s')
+        self._es_instance.index(index=dest_index, doc_type=dest_doc_type, body=src_doc['_source'], id=src_doc_id, timeout='30s')
 
     def copy_doc_by_entity(self, src_index, src_doc_type, src_entity_id,
                            entity_id_field_name, dest_index, dest_doc_type):
@@ -308,12 +308,16 @@ class EntityCentricES(object):
         :param dest_doc_type: destination doc type
         :return:
         """
-        docs = self._es_instance.search(index=src_index,
+        results = self._es_instance.search(index=src_index,
                                         doc_type=src_doc_type,
                                         body={'query': {'term': {entity_id_field_name: src_entity_id}}, 'size': 10000})
-        for d in docs:
-            self._es_instance.index(index=dest_index, doc_type=dest_doc_type, body=d, id=d['_id'], timeout='30s')
-        return len(docs)
+        # print docs
+        if results['hits']['total'] == 0:
+            return 0
+
+        for d in results['hits']['hits']:
+            self._es_instance.index(index=dest_index, doc_type=dest_doc_type, body=d['_source'], id=d['_id'], timeout='30s')
+        return results['hits']['total']
 
 
     @staticmethod
