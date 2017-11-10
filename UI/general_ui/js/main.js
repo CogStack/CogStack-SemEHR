@@ -539,17 +539,17 @@
 
         $('#chkCohort').click(function() {
             if ($(this).prop('checked')){
-                $("#cohortDiv").css('visibility', 'visible');
+                $("#cohortDiv").show();
             }else{
-                $("#cohortDiv").css('visibility', 'hidden');
+                $("#cohortDiv").hide();
             }
         });
 
         $('#chkValidDoc').click(function() {
             if ($(this).prop('checked')){
-                $("#validatedDocDiv").css('visibility', 'visible');
+                $("#validatedDocDiv").show();
             }else{
-                $("#validatedDocDiv").css('visibility', 'hidden');
+                $("#validatedDocDiv").hide();
             }
         });
     })

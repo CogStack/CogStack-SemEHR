@@ -38,8 +38,8 @@
          <label for="chkValidDoc">Filter by docs</label><input type="checkbox" id="chkValidDoc"/>
         <br/>
 
-        <div id="cohortDiv"><textarea id="cohortText" placeholder="past comma separated patient IDs (e.g., 123,345)"></textarea></div>
-        <div id="validatedDocDiv"><textarea id="validatedDocText" placeholder="past comma separated doc IDs (e.g., 123,345)"></textarea></div>
+        <span id="cohortDiv"><textarea id="cohortText" placeholder="past comma separated patient IDs (e.g., 123,345)"></textarea><br/></span>
+        <span id="validatedDocDiv"><textarea id="validatedDocText" placeholder="past comma separated doc IDs (e.g., 123,345)"></textarea><br/></span>
         <div id="conceptMapDiv"></div>
         </div>
     </div>
@@ -56,7 +56,7 @@
             <div class="sumCol">Other Experiencers</div>
         </div>        
     </div>
-    <div style="display:block;height:600px;overflow:auto;width:100%;display:none" id="dataRowDiv">
+    <div style="display:block;overflow:hidden;width:100%;display:none" id="dataRowDiv">
         <div id="entitySumm">
             <div class="sumRow headerRow" style="visibility: hidden;">
                 <div class="sumCol">Patient ID</div>
