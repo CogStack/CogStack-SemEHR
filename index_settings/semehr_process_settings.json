@@ -1,0 +1,45 @@
+{
+  "env": {
+    "java_home": "/var/lib/java",
+    "gcp_home": "",
+    "gate_home": "",
+    "yodie_path": "./",
+    "ukb_home": "./fulltext"
+  },
+  "yodie": {
+    "job_id": "",
+    "gcp_run_path": "../",
+    "input_doc_file_path": "",
+    "thread_num": "",
+    "memory": "",
+    "config_xml_path": "./index_settings/yodie-batch.xml",
+    "output_file_path": "./resources/tmp"
+  },
+  "semehr": {
+    "es_doc_url": "",
+    "full_text_doc_id": "",
+    "full_text_doc_date": "",
+    "full_text_index": "",
+    "full_text_doc_type": "",
+    "full_text_patient_field": "",
+    "full_text_text_field": "",
+    "es_host": "",
+    "index": "",
+    "concept_doc_type": "ctx_concept",
+    "entity_doc_type": "patient"
+  },
+  "doc_copy":{
+    "thread_num": "10",
+    "es_host": "",
+    "src_index": "",
+    "src_doc_type": "",
+    "dest_index": "",
+    "dest_doc_type": ""
+  },
+  "job":{
+    "copy_docs": "yes",
+    "yodie": "yes",
+    "semehr-concept": "yes",
+    "semehr-patients": "yes"
+  }
+}
