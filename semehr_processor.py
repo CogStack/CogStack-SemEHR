@@ -7,7 +7,7 @@ import utils
 from os.path import isfile, join
 from os import listdir
 import os
-#import sqldbutils
+import sqldbutils
 import xml.etree.ElementTree as ET
 from subprocess import Popen, STDOUT
 from entity_centric_es import EntityCentricES, do_index_100k_anns, do_index_100k_patients, JSONSerializerPython2
