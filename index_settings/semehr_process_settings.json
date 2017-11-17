@@ -1,19 +1,18 @@
 {
   "env": {
-    "java_home": "/var/lib/java",
-    "gcp_home": "",
-    "gate_home": "",
-    "yodie_path": "./",
-    "ukb_home": "./fulltext"
+    "java_home": "java-1.8.0-openjdk-amd64",
+    "gcp_home": "bio-yodie/gcp-2.5-18658",
+    "gate_home": "bio-yodie/gate-8.1-build5169-ALL",
+    "yodie_path": "bio-yodie",
+    "ukb_home": "bio-yodie/ukb"
   },
   "yodie": {
-    "job_id": "",
-    "gcp_run_path": "../",
+    "gcp_run_path": "",
     "input_doc_file_path": "",
-    "thread_num": "",
-    "memory": "",
-    "config_xml_path": "./index_settings/yodie-batch.xml",
-    "output_file_path": "./resources/tmp"
+    "thread_num": "20",
+    "memory": "30g",
+    "config_xml_path": "",
+    "output_file_path": ""
   },
   "semehr": {
     "es_doc_url": "",
@@ -36,10 +35,16 @@
     "dest_index": "",
     "dest_doc_type": ""
   },
+  "new_docs":{
+    "sql_query": "",
+    "dbconn_setting_file": ""
+ },
   "job":{
-    "copy_docs": "yes",
+    "copy_docs": "no",
     "yodie": "yes",
     "semehr-concept": "yes",
-    "semehr-patients": "yes"
+    "semehr-patients": "yes",
+    "job_id": "imparts",
+    "job_status_file_path": ""
   }
 }
