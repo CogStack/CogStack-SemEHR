@@ -13,11 +13,6 @@ from subprocess import Popen, STDOUT
 from entity_centric_es import EntityCentricES, do_index_100k_anns, do_index_100k_patients, JSONSerializerPython2
 from elasticsearch import Elasticsearch
 
-job_sql_template = """
- select XXX docid, YYY patientid from ZZZ
- where updatetime > '{start_time_point}' and updatetime <= '{end_time_point}'
-"""
-
 
 class ProcessSetting(object):
     def __init__(self, setting_file):
@@ -88,7 +83,7 @@ class JobStatus(object):
         return self.get_ser_data()
 
 
-def get_docs_for_processing(job_status):
+def get_docs_for_processing(job_status, job_sql_template, cnn_conf_file):
     """
     retrieve docs to process from a database table/view
     :param job_status:
@@ -97,7 +92,8 @@ def get_docs_for_processing(job_status):
     job_data = job_status.job_start()
     print 'working on %s' % job_data
     container = []
-    sqldbutils.query_data(job_sql_template.format(**job_data), container)
+    sqldbutils.query_data(job_sql_template.format(**job_data), container,
+                          dbconn=sqldbutils.get_db_connection_by_setting(cnn_conf_file))
     return container
 
 
@@ -112,6 +108,7 @@ def do_copy_doc(src_doc_id, es, src_index, src_doc_type, dest_index, dest_doc_ty
     :param dest_doc_type:
     :return:
     """
+    print 'copy %s ' % src_doc_id
     es.copy_doc(src_index, src_doc_type, str(src_doc_id), dest_index, dest_doc_type)
 
 
@@ -127,7 +124,6 @@ def working_on_docs(index_setting_file, job_file, src_index, src_doc_type, dest_
     except:
         job_status.set_status(JobStatus.STATUS_FAILURE)
     job_status.save()
-
 
 
 def copy_docs_by_patients(index_setting_file, src_index, src_doc_type, entity_id_field_name,
@@ -175,32 +171,38 @@ def produce_yodie_config(settings):
     :return:
     """
     batch = ET.Element("batch")
-    task_id = settings.get_attr(['yodie', 'job_id'])
-    batch.set('id','semehr-%s' % task_id)
+    task_id = settings.get_attr(['job', 'job_id'])
+    batch.set('id', 'semehr-%s' % task_id)
     batch.set('xmlns', "http://gate.ac.uk/ns/cloud/batch/1.0")
 
     application = ET.SubElement(batch, "application")
-    application.set('file', '%s/main-bio/main-bio.xgapp' % settings.get_attr(['env', 'yodie_path']))
+    application.set('file', '%s/bio-yodie-1-2-1/main-bio/main-bio.xgapp' % settings.get_attr(['env', 'yodie_path']))
 
     report = ET.SubElement(batch, "report")
-    report.set('file', '%s.xml' % task_id)
+    report_file = '%s/%s.xml' % (settings.get_attr(['env', 'yodie_path']), task_id)
+    report.set('file', report_file)
+    if os.path.isfile(report_file):
+        os.unlink(report_file)
 
     input = ET.SubElement(batch, "input")
     input.set('encoding', 'UTF-8')
     input.set('class', 'kcl.iop.brc.core.kconnect.crisfeeder.ESDocInputHandler')
-    input.set('es_doc_url', '%s' % settings.get_attr(['semehr', 'es_doc_url']))
+    input.set('es_doc_url', '%s/%s/%s' % (
+    settings.get_attr(['semehr', 'es_doc_url']), settings.get_attr(['semehr', 'full_text_index']),
+    settings.get_attr(['semehr', 'full_text_doc_type'])))
     input.set('main_text_field', '%s' % settings.get_attr(['semehr', 'full_text_text_field']))
     input.set('doc_guid_field', '%s' % settings.get_attr(['semehr', 'full_text_doc_id']))
     input.set('doc_created_date_field', '%s' % settings.get_attr(['semehr', 'full_text_doc_date']))
 
     output = ET.SubElement(batch, "output")
     output.set('class', 'kcl.iop.brc.core.kconnect.outputhandler.YodieOutputHandler')
-    output.set('output_folder', '%s/anns' % settings.get_attr(['yodie', 'output_file_path']))
+    output.set('output_folder', '%s' % settings.get_attr(['yodie', 'output_file_path']))
 
     documents = ET.SubElement(batch, "documents")
     documentEnumerator = ET.SubElement(documents, "documentEnumerator")
     documentEnumerator.set('class', 'kcl.iop.brc.core.kconnect.crisfeeder.PlainTextEnumerator')
-    documentEnumerator.set('doc_id_file', '%s' % settings.get_attr(['yodie', 'input_doc_file_path']))
+    documentEnumerator.set('doc_id_file', '%s/%s_docids.txt' % (
+    settings.get_attr(['yodie', 'input_doc_file_path']), settings.get_attr(['job', 'job_id'])))
 
     tree = ET.ElementTree(batch)
     tree.write("%s" % settings.get_attr(['yodie', 'config_xml_path']), xml_declaration=True)
@@ -237,12 +239,13 @@ def do_semehr_index(settings, patients, doc_to_patient):
     f_yodie_anns = settings.get_attr(['yodie', 'output_file_path'])
     ann_files = [f for f in listdir(f_yodie_anns) if isfile(join(f_yodie_anns, f))]
 
-    if settings.get_attr(['semehr-concept', 'yodie']) == 'yes':
+    if settings.get_attr(['job', 'semehr-concept']) == 'yes':
+        print 'working on files : %s' % ann_files
         # index concepts
         for ann in ann_files:
             utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 10, do_index_100k_anns,
                                                   args=[es, doc_to_patient])
-    if settings.get_attr(['semehr-patients', 'yodie']) == 'yes':
+    if settings.get_attr(['job', 'semehr-patients']) == 'yes':
         # index patients
         es_doc_url = settings.get_attr(['semehr', 'es_doc_url'])
         es_full_text = Elasticsearch([es_doc_url], serializer=JSONSerializerPython2())
@@ -259,28 +262,33 @@ def do_semehr_index(settings, patients, doc_to_patient):
                                          ft_fulltext_field])
 
 
-def process_semehr(config_file, job_file):
+def process_semehr(config_file):
     """
     a pipeline to process all SemEHR related processes:
     0. ES doc copy from one index to another;
     1. bio-yodie NLP pipeline annotation on docs;
     2. entity centric SemEHR ES indexing
     :param config_file:
-    :param job_file:
     :return:
     """
     # read the configuration
     ps = ProcessSetting(config_file)
 
     # initialise the jobstatus class instance
+    job_file = join(ps.get_attr(['job', 'job_status_file_path']),
+                    'semehr_job_status_%s.json' % ps.get_attr(['job', 'job_id']))
+    print 'using job status file %s' % job_file
     job_status = JobStatus(job_file)
     job_status.job_start()
-    data_rows = get_docs_for_processing(job_status)
+    sql_template = ps.get_attr(['new_docs', 'sql_query'])
+    print 'retrieving docs by using the template [%s]' % sql_template
+    data_rows = get_docs_for_processing(job_status, sql_template, ps.get_attr(['new_docs', 'dbconn_setting_file']))
+    print 'total docs num is %s' % len(data_rows)
 
     try:
         # 0. copy docs
-        if ps.get_attr(['doc', 'doc_copy']) == 'yes':
-            docs = [r['docid'] for r in data_rows]
+        if ps.get_attr(['job', 'copy_docs']) == 'yes':
+            docs = [str(r['docid']) for r in data_rows]
             utils.multi_thread_tasking(docs, ps.get_attr(['doc_copy', 'thread_num']),
                                        do_copy_doc,
                                        args=[EntityCentricES(ps.get_attr(['doc_copy', 'es_host'])),
@@ -289,7 +297,13 @@ def process_semehr(config_file, job_file):
                                              ps.get_attr(['doc_copy', 'dest_index']),
                                              ps.get_attr(['doc_copy', 'dest_doc_type'])])
 
-        if ps.get_attr(['doc', 'yodie']) == 'yes':
+        if ps.get_attr(['job', 'yodie']) == 'yes':
+            docid_path = '%s/%s_docids.txt' % (
+            ps.get_attr(['yodie', 'input_doc_file_path']), ps.get_attr(['job', 'job_id']))
+            print 'working on yodie with %s documents, saved to %s...' % (str(len(data_rows)), docid_path)
+            # save doc ids to text file for input to bioyodie
+            print 'saving doc ids to [%s]' % docid_path
+            utils.save_string('\n'.join([str(r['docid']) for r in data_rows]), docid_path)
             # 1. do bio-yodie pipeline
             # 1.1 prepare the configuration file
             produce_yodie_config(ps)
@@ -301,13 +315,13 @@ def process_semehr(config_file, job_file):
             # 1.3 run bio-yodie
             os.chdir(ps.get_attr(['yodie', 'gcp_run_path']))
             cmd = ' '.join(['gcp-direct.sh',
-                                "-t %s" % ps.get_attr(['yodie', 'thread_num']),
-                                "-b %s" % ps.get_attr(['yodie', 'config_xml_path']),
-                                '-Dat.ofai.gate.modularpipelines.configFile="%s/bio-yodie-1-2-1/main-bio/main-bio.config.yaml" '
-                                % ps.get_attr(['env', 'yodie_path']),
-                                ])
+                            "-t %s" % ps.get_attr(['yodie', 'thread_num']),
+                            "-Xmx%s" % ps.get_attr(['yodie', 'memory']),
+                            "-b %s" % ps.get_attr(['yodie', 'config_xml_path']),
+                            '-Dat.ofai.gate.modularpipelines.configFile="%s/bio-yodie-1-2-1/main-bio/main-bio.config.yaml" '
+                            % ps.get_attr(['env', 'yodie_path']),
+                            ])
             print cmd
-            cmd = 'sleep 10'
             p = Popen(cmd, shell=True, stderr=STDOUT)
             p.wait()
 
@@ -320,12 +334,14 @@ def process_semehr(config_file, job_file):
         patients = []
         doc_to_patient = {}
         for r in data_rows:
-            patients.append(r['patientid'])
-            doc_to_patient[r['docid']] = r['patientid']
+            patients.append(str(r['patientid']))
+            doc_to_patient[str(r['docid'])] = str(r['patientid'])
+        patients = list(set(patients))
         do_semehr_index(ps, patients, doc_to_patient)
         job_status.set_status(True)
         job_status.save()
     except Exception as e:
+        print 'Failed to do SemEHR process %s' % str(e)
         job_status.set_status(False)
         job_status.save()
 
@@ -334,20 +350,9 @@ if __name__ == "__main__":
     reload(sys)
     sys.setdefaultencoding('utf-8')
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-    # index_setting_file = 'PATH/es_imparts_setting.json'
-    # src_index = 'INDEX'
-    # src_doc_type = 'docs'
-    # entity_id_field_name = 'client_idcode'
-    # dest_index = 'INDEX'
-    # dest_doc_type = 'docs'
-    # doc_list_file = 'PATH/patient_ids'
-    #
-    # # ees.copy_docs(index_setting_file, src_index, src_doc_type, entity_id_field_name,
-    # #               dest_index, dest_doc_type, doc_list_file)
-    # job_file = 'PATH/job_status.json'
-    # working_on_docs(index_setting_file, job_file, src_index, src_doc_type, dest_index, dest_doc_type)
-
-    process_semehr('./index_settings/semehr_process_settings.json', './semehr_job_status.json')
+    if len(sys.argv) != 2:
+        print 'the syntax is [python semehr_processor.py PROCESS_SETTINGS_FILE_PATH]'
+    else:
+        process_semehr(sys.argv[1])
 
 
