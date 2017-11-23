@@ -17,6 +17,17 @@ def get_db_connection():
     return {'cnxn': cnxn, 'cursor': cursor}
 
 
+def get_db_connection_by_setting(setting_file):
+    settings = imutil.load_json_data(setting_file)
+    con_string = 'DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (settings['dsn'],
+                                                        settings['user'],
+                                                        settings['password'],
+                                                        settings['database'])
+    cnxn = pyodbc.connect(con_string)
+    cursor = cnxn.cursor()
+    return {'cnxn': cnxn, 'cursor': cursor}
+
+
 def get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock='/var/lib/mysql/mysql.sock'):
     db = MySQLdb.connect(host=my_host,  # your host, usually localhost
                          user=my_user,  # your username

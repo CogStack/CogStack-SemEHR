@@ -1,0 +1,50 @@
+{
+  "env": {
+    "java_home": "java-1.8.0-openjdk-amd64",
+    "gcp_home": "bio-yodie/gcp-2.5-18658",
+    "gate_home": "bio-yodie/gate-8.1-build5169-ALL",
+    "yodie_path": "bio-yodie",
+    "ukb_home": "bio-yodie/ukb"
+  },
+  "yodie": {
+    "gcp_run_path": "",
+    "input_doc_file_path": "",
+    "thread_num": "20",
+    "memory": "30g",
+    "config_xml_path": "",
+    "output_file_path": ""
+  },
+  "semehr": {
+    "es_doc_url": "",
+    "full_text_doc_id": "",
+    "full_text_doc_date": "",
+    "full_text_index": "",
+    "full_text_doc_type": "",
+    "full_text_patient_field": "",
+    "full_text_text_field": "",
+    "es_host": "",
+    "index": "",
+    "concept_doc_type": "ctx_concept",
+    "entity_doc_type": "patient"
+  },
+  "doc_copy":{
+    "thread_num": "10",
+    "es_host": "",
+    "src_index": "",
+    "src_doc_type": "",
+    "dest_index": "",
+    "dest_doc_type": ""
+  },
+  "new_docs":{
+    "sql_query": "",
+    "dbconn_setting_file": ""
+ },
+  "job":{
+    "copy_docs": "no",
+    "yodie": "yes",
+    "semehr-concept": "yes",
+    "semehr-patients": "yes",
+    "job_id": "imparts",
+    "job_status_file_path": ""
+  }
+}

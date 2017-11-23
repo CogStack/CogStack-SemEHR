@@ -42,7 +42,6 @@ doc_concept_sql_cohort = """
 """
 
 
-
 # load all brcid, docid, date in one go
 patient_doc_date_sql = """
   select d.brcid, d.cn_doc_id, d.date from gate_attachment d, kconnect.dbo.cohorts c

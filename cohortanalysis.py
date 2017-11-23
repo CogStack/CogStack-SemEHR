@@ -8,6 +8,14 @@ import random
 from ann_post_rules import AnnRuleExecutor
 
 
+db_conn_type = 'mysql'
+my_host = ''
+my_user = ''
+my_pwd = ''
+my_db = ''
+my_sock = ''
+
+
 # query concept sql
 autoimmune_concepts_sql = """
 select distinct concept_name from [SQLCRIS_User].[Kconnect].[ulms_concept_mapping]
@@ -98,6 +106,20 @@ fulltext_date_by_doc_id = """
 term_doc_anns_sql = """
   select a.CN_Doc_ID, c.brcid, d.TextContent, a.start_offset, a.end_offset, d.src_table, d.src_col, a.inst_uri
   from [SQLCRIS_User].[Kconnect].[cohorts] c, [SQLCRIS_User].Kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d
+  where
+  a.inst_uri in ({concepts})
+  and a.CN_Doc_ID = d.CN_Doc_ID
+  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
+  and c.brcid = d.BrcId
+  and c.patient_group='{cohort_id}'
+  {extra_constrains}
+  order by CN_Doc_ID
+"""
+
+# query term docs for applying post processing rules
+term_doc_anns_sql_mysql = """
+  select a.CN_Doc_ID, c.brcid, d.TextContent, a.start_offset, a.end_offset, d.src_table, d.src_col, a.inst_uri
+  from [cohorts] c, Kconnect.kconnect_annotations a, working_docs d
   where
   a.inst_uri in ({concepts})
   and a.CN_Doc_ID = d.CN_Doc_ID
@@ -244,16 +266,19 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
         concept_list = ', '.join(['\'%s\'' % c for c in sc.concept_closure])
         doc_anns = []
         if len(sc.concept_closure) > 0:
-            data_sql = term_doc_anns_sql.format(**{'concepts': concept_list,
-                                                   'cohort_id': cohort_name,
-                                                   'extra_constrains':
-                                                       ' \n '.join(
-                                                           [generate_skip_term_constrain(study_analyzer)]
-                                                           + [] if (study_analyzer.study_options is None or
-                                                                    study_analyzer.study_options['extra_constrains'] is None)
-                                                           else study_analyzer.study_options['extra_constrains'])})
+            sql_temp = term_doc_anns_sql_mysql if db_conn_type == 'mysql' else term_doc_anns_sql
+            data_sql = sql_temp.format(**{'concepts': concept_list,
+                                          'cohort_id': cohort_name,
+                                          'extra_constrains':
+                                              ' \n '.join(
+                                                  [generate_skip_term_constrain(study_analyzer)]
+                                                  + [] if (study_analyzer.study_options is None or
+                                                           study_analyzer.study_options['extra_constrains'] is None)
+                                                  else study_analyzer.study_options['extra_constrains'])})
             print data_sql
-            dutil.query_data(data_sql, doc_anns)
+            dutil.query_data(data_sql, doc_anns,
+                             dbconn=dutil.get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock)
+                             if db_conn_type == 'mysql' else None)
         if len(doc_anns) > 0:
             p_to_dfreq = {}
             counted_docs = set()

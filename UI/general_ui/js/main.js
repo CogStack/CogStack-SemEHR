@@ -1,6 +1,6 @@
 (function($){
     var _invitationId = null;
-
+    var _log_call_url = "./log_touch.html" // a local url to be called so that apache saves the log
     var _pageNum = 0;
     var _pageSize = 1;
     var _entityPageSize = 20;
@@ -197,9 +197,9 @@
         $('#sumTermDiv').html(entities.length + " of " + total + " matched patients");
 
         _context_concepts = {
-            'mentions': {}, 
+            'mentions': {},
             'freqs':{},
-            'typed': {}, 
+            'typed': {},
             'entityMentions': {},
             'typedFreqs': {}
         };
@@ -229,7 +229,7 @@
             $('.btnExport').click(function(){
                 export_tsv();
             });
-            
+
             $('.btnOtherView').click(function () {
                 swal({title:'analysing concepts...', showConfirmButton: false});
                 _cohort.getTopKOtherMentions(20, function(concepts, concept2label){
@@ -305,7 +305,7 @@
             if (entityMention.getTypedFreq('negM') > 0){
                 $(row).find('.negM').html(entityMention.getTypedFreq('negM'));
             }
-            
+
             if (entityMention.getTypedFreq('otherM') > 0){
                 $(row).find('.otherM').html(entityMention.getTypedFreq('otherM'));
             }
@@ -514,6 +514,11 @@
             if (q.length == 0){
                 swal({text:"please input your query", showConfirmButton: true});
             }else{
+                $.ajax({
+                    url: _log_call_url,
+                    data: {q: q, u: semehr.search._user_id},
+                    success: function(s){console.log(s)}
+                });
                 smartQuery(q);
             }
         });
@@ -534,17 +539,17 @@
 
         $('#chkCohort').click(function() {
             if ($(this).prop('checked')){
-                $("#cohortDiv").css('visibility', 'visible');
+                $("#cohortDiv").show();
             }else{
-                $("#cohortDiv").css('visibility', 'hidden');
+                $("#cohortDiv").hide();
             }
         });
 
         $('#chkValidDoc').click(function() {
             if ($(this).prop('checked')){
-                $("#validatedDocDiv").css('visibility', 'visible');
+                $("#validatedDocDiv").show();
             }else{
-                $("#validatedDocDiv").css('visibility', 'hidden');
+                $("#validatedDocDiv").hide();
             }
         });
     })
