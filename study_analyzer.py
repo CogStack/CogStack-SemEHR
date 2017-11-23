@@ -68,6 +68,10 @@ class StudyConcept(object):
             self.gen_concept_closure()
         return self._term_to_concept
 
+    @term_to_concept.setter
+    def term_to_concept(self, value):
+        self._term_to_concept = value
+
 
 class StudyAnalyzer(object):
 
@@ -187,6 +191,20 @@ def study(folder, cohort_name):
                 print sc.concept_closure
             sa.study_concepts = scs
             sa.serialise(join(folder, 'study_analyzer.pickle'))
+        elif isfile(join(folder, 'manual_mapped_concepts.json')):
+            mapped_scs = utils.load_json_data(join(folder, 'manual_mapped_concepts.json'))
+            scs = []
+            for t in mapped_scs:
+                sc = StudyConcept(t, [t])
+                sc.concept_closure = set(mapped_scs[t]['concepts'])
+                tc = {}
+                tc[t] = mapped_scs[t]['tc']
+                sc.term_to_concept = tc
+                scs.append(sc)
+                print sc.term_to_concept, sc.concept_closure
+            sa.study_concepts = scs
+            print scs
+            exit(0)
         else:
             concepts = utils.load_json_data(join(folder, 'study_concepts.json'))
             if len(concepts) > 0:
@@ -231,7 +249,9 @@ def study(folder, cohort_name):
 
 if __name__ == "__main__":
     # study('./studies/slam_physical_health/', 'CC_physical_health')
-    study('./studies/autoimmune.v2/', 'auto_immune')
+    # study('./studies/autoimmune.v2/', 'auto_immune')
     # study('./studies/autoimmune', 'auto_immune')
     # study('./studies/HCVpos', 'HCVpos_cohort')
     # study('./studies/liver', 'auto_immune')
+    # study('./studies/hepc_unknown_200', 'hepc_unknown')
+    study('./studies/karen', 'karen_2017')
