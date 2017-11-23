@@ -209,3 +209,4 @@ if __name__ == "__main__":
     study('./studies/clozapine', 'studies/clozapine/control_episodes_weeks.tsv', 'unknown_clozapine_sep2017', '%Y-%m-%d %H:%M:%S')
     # dump_patient_doc_date_data('\'clozapine_4k\'', 'resource/clozapine_4k_doc_map.pickle')
     # update_doc_dates('resources/clozapine_4k_doc_map.pickle')
+
