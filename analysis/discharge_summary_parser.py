@@ -25,27 +25,34 @@ def mapping_FHIR_sections():
     pass
 
 
-def do_query_analysis(d, container):
-    container.append([s['section'] for s in parse_summary_structure(d['_source']['fulltext'])])
+def do_query_analysis(d, container, full_text_field, reg_exp):
+    container.append([s['section'] for s in parse_summary_structure(d['_source'][full_text_field], reg_exp=reg_exp)])
 
 
-def analyse_discharge_summaries(es, q):
+def analyse_discharge_summaries(es, q, doc_type='eprdoc',
+                                full_text_field='fulltext',
+                                reg_exp=r'^([^\n\:]+)\:$',
+                                output_file='../resources/wrappers/section_freqs.json'):
     """
     iterate all discharge summaries and create the section dictionary for
     the corpus (EHR system)
     :param es:
     :param q:
+    :param doc_type:
+    :param full_text_field
+    :param reg_exp
+    :param output_file
     :return:
     """
-    scroll_obj = es.scroll(q, 'eprdoc', include_fields=['fulltext'], size=500)
+    scroll_obj = es.scroll(q, doc_type, include_fields=[full_text_field], size=500)
     container = []
-    utils.multi_thread_tasking_it(scroll_obj, 10, do_query_analysis, args=[container])
+    utils.multi_thread_tasking_it(scroll_obj, 10, do_query_analysis, args=[container, full_text_field, reg_exp])
     print 'search finished. merging sections...'
     sec_freq = {}
     for ss in container:
         for s in ss:
             sec_freq[s] = 1 if s not in sec_freq else 1 + sec_freq[s]
-    utils.save_json_array(sec_freq, '../resources/wrappers/mimic_section_freqs.json')
+    utils.save_json_array(sec_freq, output_file)
     print json.dumps(sec_freq)
     print 'done'
 
