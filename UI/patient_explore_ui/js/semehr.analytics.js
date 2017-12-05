@@ -230,7 +230,8 @@ if (typeof semehr == "undefined"){
                 styList.push({'s': k, 'n': Object.keys(STY2Anns[k]).length});
             }
             styList.sort(function(s1, s2){
-                return s2.n - s1.n;
+                // return s2.n - s1.n;
+                return s1.s >= s2.s ? 1 : -1;
             });
             console.log(STY2Anns);
             return [styList, STY2Anns];

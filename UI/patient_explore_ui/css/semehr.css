@@ -14,10 +14,10 @@
 .clsDoc{border-bottom: dotted 1px burlywood}
 em{font-size:150%;color:red;background-color: cornsilk}
 #searchDiv{text-align: center;display: table;width: 100%;}
-#entityInput, #searchInput{height: 40px;font-size: 110%;width: 400px;color:#678;padding: 5px;margin:5px;}
+#entityInput, #searchInput, #searchEntityInput{height: 40px;font-size: 110%;width: 400px;color:#678;padding: 5px;margin:5px;}
 #searchDiv div{display: table-row;}
 #entityInput{width: 160px}
-#btnSearch{height: 40px;font-size: 120%; color: dimgrey}
+#btnSearch, #btnEntitySearch{height: 40px;font-size: 120%; color: dimgrey}
 #pageCtrl{width: 100%;text-align: center;margin: 10px;display:none;margin-top:20px}
 .clsActive{font-size:120%;text-decoration: underline;color: #2980b9;cursor:pointer}
 .clsPageInfo {margin-left:30px;margin-right:30px;font-size: 100%;font-style:italic}
@@ -58,9 +58,9 @@ nav span{
 .sumCol span.wrong{color:#a66}
 .sumCol span.correct{color:#3a3}
 
-#conceptMapDiv div{width:300px;margin-right:6px;background-color: aliceblue;text-align: left;
+#patientConceptMapDiv div, #conceptMapDiv div{width:300px;margin-right:6px;background-color: aliceblue;text-align: left;
     float:left;line-height: 30px; overflow: auto;margin:2px;vertical-align: middle; white-space: nowrap;}
-#conceptMapDiv label{font-size:100%;margin-left: 2px;color:#333}
+#patientConceptMapDiv label, #conceptMapDiv label{font-size:100%;margin-left: 2px;color:#333}
 
 
 .bar {
@@ -244,12 +244,12 @@ nav span{
     }
 }
 
-#cohortDiv, #validatedDocDiv, #styListSpan{
+#validatedDocDiv, #styListSpan, #styGeneralListSpan{
     /*visibility: hidden;*/
     display:none;
     text-align: center;
 }
-#cohortText, #validatedDocText{height: 40px;font-size: 60%;width: 400px;color:#678;padding: 5px;margin:5px;}
+#cohortText, #validatedDocText{height: 40px;font-size: 100%;width: 400px;color:#678;padding: 5px;margin:5px;}
 
 .dsSecTitle {
     line-height: 38px;
@@ -373,11 +373,64 @@ h1.sumHeading{
 .sumMTMatched{
     border: solid 1px #dd5555;
 }
-#btnMoreSTY{
+#btnGeneralMoreSTY, #btnMoreSTY{
     display:none;
     cursor:pointer;
     text-decoration:underline;
     color:green;
     font-size:12px;
     padding:6px;
+}
+#entityPaginationDiv{
+    display: none;
+    padding-bottom: 30px;
+    text-align: center;
+}
+
+.tabContainer{
+    display: block !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-color: rgb(204, 204, 204) !important;
+    border-image: initial !important;
+}
+
+.tabHeaders{
+    display: block !important;
+    width: 100%;
+    overflow: hidden;
+    color: #000!important;
+    background-color: #f1f1f1!important;
+    border-bottom: 1px solid #ccc!important;
+}
+
+.tabTitle{
+    padding: 8px 16px;
+    float: left;
+    width: auto;
+    border: none;
+    outline: none;
+    display: block;
+
+    vertical-align: middle;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    background-color: inherit;
+    text-align: center;
+    cursor: pointer;
+}
+
+.tabTitle:hover{
+    color:#000!important;
+    background-color:#cecece!important
+}
+
+.tabSelected{
+    color: #fff!important;
+    background-color: #616161!important;
+}
+
+#tabEntity{
+    display:none;
 }

@@ -103,17 +103,23 @@ if (typeof semehr == "undefined"){
                 })
             },
 
-            queryPatient: function(queryBody, successCB, errorCB){
+            queryPatient: function(queryBody, successCB, errorCB, from, size){
+                if (!from) from = 0;
+                if (!size) size = 10;
                 var queryObj = {
                     index: semehr.search.__es_index,
                     type: semehr.search.__es_type,
-                    body: queryBody
+                    body: queryBody,
+                    from: from,
+                    size: size
                 };
                 if (typeof queryBody == "string"){
                     queryObj = {
                         index: semehr.search.__es_index,
                         type: semehr.search.__es_type,
-                        q: queryBody
+                        q: queryBody,
+                        from: from,
+                        size: size
                     };
                 }
                 semehr.search._es_client.search(queryObj).then(function (resp) {
@@ -171,12 +177,15 @@ if (typeof semehr == "undefined"){
                 });
             },
 
-            searchConcept: function(search, successCB, errorCB){
+            searchConcept: function(search, successCB, errorCB, from, size){
+                if (!from) from = 0;
+                if (!size) size = 20;
                 semehr.search._es_client.search({
                     index: semehr.search.__es_index,
                     type: semehr.search.__es_concept_type,
                     q: search,
-                    size: 20
+                    from: from,
+                    size: size
                 }).then(function (resp) {
                     var hits = resp.hits.hits;
                     if (hits.length > 0){
@@ -184,9 +193,9 @@ if (typeof semehr == "undefined"){
                         for(var i=0;i<hits.length;i++){
                             ccs.push(semehr.search.getContextedConcept(hits[i]));
                         }
-                        successCB(ccs);
+                        successCB(ccs, resp.hits.total);
                     }else {
-                        successCB([]);
+                        successCB([], 0);
                     }
                 }, function (err) {
                     errorCB(err);
