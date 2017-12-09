@@ -78,7 +78,24 @@ if (typeof semehr == "undefined"){
             this.p2mentions = {};
             this.mergedOtherMentions = null;
             this.pid2patient = {};
+            this.uml2hpo = {};
+            this.hpo2uml = {};
+            this.hpoInit();
         };
+
+        semehr.Cohort.prototype.hpoInit = function(){
+            for(var k in hpo_umls){
+                var umlsConcepts = [];
+                for(var i=0;i<hpo_umls[k].length;i++){
+                    var pos = hpo_umls[k][i].indexOf("UMLS:");
+                    var umlsConcept = pos >=0 ? hpo_umls[k][i].substring(pos + "UMLS:".length) : hpo_umls[k][i];
+                    umlsConcepts.push(umlsConcept);
+                    this.uml2hpo[umlsConcept] = k;
+                }
+                this.hpo2uml[k] = umlsConcepts;
+            }
+            console.log(this.uml2hpo);
+        }
 
         semehr.Cohort.prototype.setPatients = function (patients) {
             this.patients = patients;
@@ -203,6 +220,20 @@ if (typeof semehr == "undefined"){
             }
         }
 
+        semehr.Cohort.prototype.putKeyValInDic = function(STY2Anns, sty, cui, uid, annId2Anns){
+            if (sty in STY2Anns){
+                var annDic = STY2Anns[sty];
+                if (cui in annDic){
+                    annDic[cui] += annId2Anns[uid].appearances.length;
+                }else{
+                    annDic[cui] = annId2Anns[uid].appearances.length;
+                }
+            }else{
+                STY2Anns[sty] = {};
+                STY2Anns[sty][cui] = annId2Anns[uid].appearances.length;
+            }
+        }
+
         semehr.Cohort.prototype.getSemanticTypedAnns = function(){
             var STY2Anns = {};
             for(var i=0;i<this.patients.length;i++){
@@ -210,7 +241,7 @@ if (typeof semehr == "undefined"){
                 for (var uid in p.annId2Anns){
                     var sty = p.annId2Anns[uid].STY;
                     var cui = p.annId2Anns[uid].concept;
-                    if (sty in STY2Anns){
+                    /*if (sty in STY2Anns){
                         var annDic = STY2Anns[sty];
                         if (cui in annDic){
                             annDic[cui] += p.annId2Anns[uid].appearances.length;
@@ -220,6 +251,12 @@ if (typeof semehr == "undefined"){
                     }else{
                         STY2Anns[sty] = {};
                         STY2Anns[sty][cui] = p.annId2Anns[uid].appearances.length;
+                    }*/
+                    this.putKeyValInDic(STY2Anns, sty, cui, uid, p.annId2Anns);
+
+                    //deal with umls to hpo mappings
+                    if (cui in this.uml2hpo){
+                        this.putKeyValInDic(STY2Anns, 'HPO', cui, uid, p.annId2Anns);
                     }
                 }
             }
@@ -227,7 +264,11 @@ if (typeof semehr == "undefined"){
             // rank STYs
             var styList = [];
             for(var k in STY2Anns){
-                styList.push({'s': k, 'n': Object.keys(STY2Anns[k]).length});
+                var styObj = {'s': k, 'n': Object.keys(STY2Anns[k]).length, 'ontoMap': null};
+                if (k == 'HPO'){
+                    styObj['ontoMap'] = this.uml2hpo;
+                }
+                styList.push(styObj);
             }
             styList.sort(function(s1, s2){
                 // return s2.n - s1.n;

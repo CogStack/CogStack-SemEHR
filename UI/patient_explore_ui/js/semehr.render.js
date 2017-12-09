@@ -66,7 +66,7 @@ if (typeof semehr == "undefined"){
                     var attrS = '';
                     var attr = attrs[i];
                     var val = d[attr];
-                    if (attr == "fulltext"){
+                    if (attr == semehr.search._full_text_attr){
                         val = "<span class='full'>" + semehr.Render.highlightText(doc["mentions"], d[attr], false) + "</span>";
                     }
                     attrS += "<div class='clsField'>" + attr + "</div>";

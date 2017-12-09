@@ -25,6 +25,7 @@
     var _curGeneralConceptSearch = null;
 
     var _sty2anns = null;
+    var _sty2ontoMap = null;
 
     function userLogin(){
         swal.setDefaults({
@@ -107,18 +108,18 @@
         //$('#conceptMapDiv').html('');
     }
 
-    function cohortSearch(queryObj, cohorts, patientResults, currentOffset){
+    function cohortSearch(queryObj, cohorts, patientResults, currentOffset, totalPatientCount){
         var queryPatientSize = 2;
         if (currentOffset >= cohorts.length){
             swal.resetDefaults();
             swal({title:"analysing...", showConfirmButton: false});
             console.log(patientResults);
             if (patientResults.length > 0) {
-                if (!(doPatientFilter() && $('.mappedCls:checked').length > 0)){
+                if (!$('#patientConceptContainer .mappedCls:checked').length > 0){
                     cohortConcepts(patientResults);
                 }
-                summaris_cohort(patientResults, patientResults.length);
-                _entityCurrentTotal = patientResults.length;
+                summaris_cohort(patientResults, totalPatientCount);
+                _entityCurrentTotal = totalPatientCount;
                 _entityCurrentPage = 0;
                 renderEntityPageInfo();
             }else{
@@ -137,7 +138,7 @@
             });
             var query_str = queryObj["query"];
             if (termMaps != null && termMaps.length > 0){
-                query_str = termMaps.join(" ");
+                query_str = "(" + termMaps.join(" ") + ")";
                 queryObj['terms'] = termMaps;
             }
 
@@ -160,7 +161,7 @@
                 swal.resetDefaults();
                 swal({title:"next batch search [" + currentOffset + "]...",
                     showConfirmButton: false});
-                cohortSearch(queryObj, cohorts, patientResults, currentOffset);
+                cohortSearch(queryObj, cohorts, patientResults, currentOffset, result.total);
             }, function(err){
                 swal(err.message);
                 console.trace(err.message);
@@ -175,19 +176,23 @@
         var styList = rets[0];
         var sty2anns = rets[1];
         $('#listSTY').find('option').remove();
+        _sty2ontoMap = {};
         for(var i=0;i<styList.length;i++){
             var opt = document.createElement('option');
             opt.value = styList[i].s;
             opt.text =  styList[i].s + " (" +  styList[i].n + ")";
+            _sty2ontoMap[styList[i].s] = styList[i].ontoMap;
             $('#listSTY').append(opt);
         }
         $('#styListSpan').show();
-		$('#listSTY').val('Disease or Syndrome');
+		$('#listSTY').val('HPO');
         _sty2anns = sty2anns;
 		renderTypedConcepts();
     }
 
 	function renderTypedConcepts(){
+        $('#btnMoreSTY').hide();
+        $('#btnMoreSTY').unbind('click');
 	    var sty2anns = _sty2anns;
 	    $('#patientConceptMapDiv').html('');
 		var sty2annsFreq = sty2anns[$('#listSTY').val()];
@@ -199,11 +204,14 @@
             return a2.freq - a1.freq;
         });
 
-        console.log(anns);
+        var ontoMap = _sty2ontoMap[$('#listSTY').val()];
+
+        //console.log(anns);
 
         var s = "";
         for(var i=0;i<Math.min(20, anns.length);i++){
-            s += "<div><input type='checkbox' class='mappedCls' id='chk_" + anns[i].cui + "' value='" + anns[i].cui + "'/><label for='chk_" + anns[i].cui + "' id='lbl" + anns[i].cui + "'>" + anns[i].cui + "(" + anns[i].freq + ")</label></div>";
+            var label = ontoMap ? ontoMap[anns[i].cui] : anns[i].cui;
+            s += "<div><input type='checkbox' class='mappedCls' id='chk_" + anns[i].cui + "' value='" + anns[i].cui + "'/><label for='chk_" + anns[i].cui + "' id='lbl" + anns[i].cui + "'>" + label + "(" + anns[i].freq + ")</label></div>";
         }
         $('#patientConceptMapDiv').html(s);
         for(var i=0;i<Math.min(20, anns.length);i++ ){
@@ -221,13 +229,16 @@
 
         if (anns.length > 20){
             $('#btnMoreSTY').show();
+            $('#btnMoreSTY').unbind('click');
             $('#btnMoreSTY').click(function(){
                 if (_curTypeConceptIndex >= anns.length){
                     $('#btnMoreSTY').hide();
                 }else{
+                    var ontoMap = _sty2ontoMap[$('#listSTY').val()];
                     var s = "";
                     for(var i=_curTypeConceptIndex;i<Math.min(_curTypeConceptIndex + 20, anns.length);i++){
-                        s += "<div><input type='checkbox' class='mappedCls' id='chk_" + anns[i].cui + "' value='" + anns[i].cui + "'/><label for='chk_" + anns[i].cui + "' id='lbl" + anns[i].cui + "'>" + anns[i].cui + "(" + anns[i].freq + ")</label></div>";
+                        var label = ontoMap ? ontoMap[anns[i].cui] : anns[i].cui;
+                        s += "<div><input type='checkbox' class='mappedCls' id='chk_" + anns[i].cui + "' value='" + anns[i].cui + "'/><label for='chk_" + anns[i].cui + "' id='lbl" + anns[i].cui + "'>" + label + "(" + anns[i].freq + ")</label></div>";
                     }
                     $('#patientConceptMapDiv').append(s);
                     for(var i=_curTypeConceptIndex;i<Math.min(_curTypeConceptIndex + 20, anns.length);i++ ){
@@ -244,6 +255,9 @@
                         scrollTop: $("#chk_" + anns[_curTypeConceptIndex].cui).offset().top
                     }, 1000);
                     _curTypeConceptIndex += 20;
+                    if (_curTypeConceptIndex >= anns.length){
+                        $('#btnMoreSTY').hide();
+                    }
                 }
             });
         }
@@ -708,13 +722,17 @@
             var q = $('#searchEntityInput').val().trim();
             if (q.length == 0){
                 swal({text:"please input your query", showConfirmButton: true});
-            }else{
+            }if ($.trim($('#cohortText').val()).length == 0){
+                swal({text:"please add patient id(s)", showConfirmButton: true});
+            }
+            else{
                 $.ajax({
                     url: _log_call_url,
                     data: {q: q, u: semehr.search._user_id},
                     success: function(s){console.log(s)}
                 });
-                cohortSearch({"terms": null, "query": q}, $('#cohortText').val().split(","), [], 0);
+                var patientIds = $('#cohortText').val().split(",");
+                cohortSearch({"terms": null, "query": q}, patientIds, [], 0, patientIds.length);
             }
         });
 

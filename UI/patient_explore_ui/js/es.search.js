@@ -232,7 +232,12 @@ if (typeof semehr == "undefined"){
             getPatient: function(hit){
                 var annFields = hit["_source"]["anns"];
                 var p = new semehr.Patient(hit["_id"]);
+                var duplicate_ann_detector = {}; //do duplication check for multiple apperance of same annotations
                 for(var i=0;i<annFields.length;i++){
+                    var app = annFields[i]["appearances"][0];
+                    var uniqueAnnStr = annFields[i]["CUI"] + " " + app.eprid + " " + app.offset_start + " " + app.offset_end;
+                    if (uniqueAnnStr in duplicate_ann_detector)
+                        continue;
                     var ann = new semehr.Annotation(
                         annFields[i]["contexted_concept"],
                         annFields[i]["CUI"],
@@ -243,6 +248,7 @@ if (typeof semehr == "undefined"){
                         ann.addAppearance(app["eprid"], app["offset_start"], app["offset_end"], app["date"]);
                     }
                     p.addAnnotation(ann);
+                    duplicate_ann_detector[uniqueAnnStr] = 1;
                 }
                 return p;
             },
