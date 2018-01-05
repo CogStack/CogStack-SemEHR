@@ -186,17 +186,39 @@ def produce_yodie_config(settings):
 
     input = ET.SubElement(batch, "input")
     input.set('encoding', 'UTF-8')
-    input.set('class', 'kcl.iop.brc.core.kconnect.crisfeeder.ESDocInputHandler')
-    input.set('es_doc_url', '%s/%s/%s' % (
-    settings.get_attr(['semehr', 'es_doc_url']), settings.get_attr(['semehr', 'full_text_index']),
-    settings.get_attr(['semehr', 'full_text_doc_type'])))
-    input.set('main_text_field', '%s' % settings.get_attr(['semehr', 'full_text_text_field']))
-    input.set('doc_guid_field', '%s' % settings.get_attr(['semehr', 'full_text_doc_id']))
-    input.set('doc_created_date_field', '%s' % settings.get_attr(['semehr', 'full_text_doc_date']))
+    if settings.get_attr(['yodie', 'input_source']) == "sql":
+        input.set('class', 'kcl.iop.brc.core.kconnect.crisfeeder.CRISDocInputHandler')
+        input.set('dbSettingImportant', 'true')
+        input_db = utils.load_json_data(settings.get_attr(['yodie', 'input_dbconn_setting_file']))
+        input.set('db_url', input_db['db_url'])
+        input.set('db_driver', input_db['db_driver'])
+        input.set('user', input_db['user'])
+        input.set('password', input_db['password'])
+        input.set('get_doc_sql_prefix', input_db['get_doc_sql_prefix'])
+    else:
+        input.set('class', 'kcl.iop.brc.core.kconnect.crisfeeder.ESDocInputHandler')
+        input.set('es_doc_url', '%s/%s/%s' % (
+            settings.get_attr(['semehr', 'es_doc_url']), settings.get_attr(['semehr', 'full_text_index']),
+            settings.get_attr(['semehr', 'full_text_doc_type'])))
+        input.set('main_text_field', '%s' % settings.get_attr(['semehr', 'full_text_text_field']))
+        input.set('doc_guid_field', '%s' % settings.get_attr(['semehr', 'full_text_doc_id']))
+        input.set('doc_created_date_field', '%s' % settings.get_attr(['semehr', 'full_text_doc_date']))
 
     output = ET.SubElement(batch, "output")
-    output.set('class', 'kcl.iop.brc.core.kconnect.outputhandler.YodieOutputHandler')
-    output.set('output_folder', '%s' % settings.get_attr(['yodie', 'output_file_path']))
+    if settings.get_attr(['yodie', 'output_destination']) == "sql":
+        output.set('dbSettingImportant', 'true')
+        output.set('class', 'kcl.iop.brc.core.kconnect.outputhandler.SQLOutputHandler')
+        output_db = utils.load_json_data(settings.get_attr(['yodie', 'output_dbconn_setting_file']))
+        output.set('db_url', output_db['db_url'])
+        output.set('db_driver', output_db['db_driver'])
+        output.set('user', output_db['user'])
+        output.set('password', output_db['password'])
+        output.set('output_table', '%s' % settings.get_attr(['yodie', 'output_table']))
+        if settings.get_attr(['yodie', 'output_concept_filter_file']) is not None:
+            output.set('concept_filter', '%s' % settings.get_attr(['yodie', 'output_concept_filter_file']))
+    else:
+        output.set('class', 'kcl.iop.brc.core.kconnect.outputhandler.YodieOutputHandler')
+        output.set('output_folder', '%s' % settings.get_attr(['yodie', 'output_file_path']))
 
     documents = ET.SubElement(batch, "documents")
     documentEnumerator = ET.SubElement(documents, "documentEnumerator")
@@ -285,7 +307,8 @@ def process_semehr(config_file):
     data_rows = get_docs_for_processing(job_status, sql_template, ps.get_attr(['new_docs', 'dbconn_setting_file']))
     print 'total docs num is %s' % len(data_rows)
 
-    try:
+    # try:
+    if True:
         # 0. copy docs
         if ps.get_attr(['job', 'copy_docs']) == 'yes':
             docs = [str(r['docid']) for r in data_rows]
@@ -299,7 +322,7 @@ def process_semehr(config_file):
 
         if ps.get_attr(['job', 'yodie']) == 'yes':
             docid_path = '%s/%s_docids.txt' % (
-            ps.get_attr(['yodie', 'input_doc_file_path']), ps.get_attr(['job', 'job_id']))
+                ps.get_attr(['yodie', 'input_doc_file_path']), ps.get_attr(['job', 'job_id']))
             print 'working on yodie with %s documents, saved to %s...' % (str(len(data_rows)), docid_path)
             # save doc ids to text file for input to bioyodie
             print 'saving doc ids to [%s]' % docid_path
@@ -314,13 +337,30 @@ def process_semehr(config_file):
             clear_folder(ps.get_attr(['yodie', 'output_file_path']))
             # 1.3 run bio-yodie
             os.chdir(ps.get_attr(['yodie', 'gcp_run_path']))
-            cmd = ' '.join(['gcp-direct.sh',
-                            "-t %s" % ps.get_attr(['yodie', 'thread_num']),
-                            "-Xmx%s" % ps.get_attr(['yodie', 'memory']),
-                            "-b %s" % ps.get_attr(['yodie', 'config_xml_path']),
-                            '-Dat.ofai.gate.modularpipelines.configFile="%s/bio-yodie-1-2-1/main-bio/main-bio.config.yaml" '
-                            % ps.get_attr(['env', 'yodie_path']),
-                            ])
+            if ps.get_attr(['yodie', 'os']) == 'win':
+                cmd = ' '.join(['java',
+                                "-Dgate.home=%s" % ps.get_attr(['env', 'gate_home']),
+                                "-Dgcp.home=%s" % ps.get_attr(['env', 'gcp_home']),
+                                "-Djava.protocol.handler.pkgs=gate.cloud.util.protocols",
+                                "-cp .;{SCRIPTDIR}/conf;{SCRIPTDIR}/gcp.jar;{SCRIPTDIR}/lib/*;"
+                                "{GATE_HOME}/bin/gate.jar;{GATE_HOME}/lib/*".format(
+                                    **{"SCRIPTDIR":ps.get_attr(['env', 'gcp_home']),
+                                       "GATE_HOME":ps.get_attr(['env', 'gate_home'])}),
+                                '-Dat.ofai.gate.modularpipelines.configFile="%s/bio-yodie-1-2-1/main-bio/main-bio.config.yaml" '
+                                % ps.get_attr(['env', 'yodie_path']),
+                                "-Xmx%s" % ps.get_attr(['yodie', 'memory']),
+                                "gate.cloud.batch.BatchRunner",
+                                "-t %s" % ps.get_attr(['yodie', 'thread_num']),
+                                "-b %s" % ps.get_attr(['yodie', 'config_xml_path'])
+                                ])
+            else:
+                cmd = ' '.join(['gcp-direct.sh',
+                                "-t %s" % ps.get_attr(['yodie', 'thread_num']),
+                                "-Xmx%s" % ps.get_attr(['yodie', 'memory']),
+                                "-b %s" % ps.get_attr(['yodie', 'config_xml_path']),
+                                '-Dat.ofai.gate.modularpipelines.configFile="%s/bio-yodie-1-2-1/main-bio/main-bio.config.yaml" '
+                                % ps.get_attr(['env', 'yodie_path']),
+                                ])
             print cmd
             p = Popen(cmd, shell=True, stderr=STDOUT)
             p.wait()
@@ -340,10 +380,10 @@ def process_semehr(config_file):
         do_semehr_index(ps, patients, doc_to_patient)
         job_status.set_status(True)
         job_status.save()
-    except Exception as e:
-        print 'Failed to do SemEHR process %s' % str(e)
-        job_status.set_status(False)
-        job_status.save()
+    # except Exception as e:
+    #     print 'Failed to do SemEHR process %s' % str(e)
+    #     job_status.set_status(False)
+    #     job_status.save()
 
 
 if __name__ == "__main__":
