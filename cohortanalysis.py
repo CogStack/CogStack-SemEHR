@@ -16,122 +16,7 @@ my_db = ''
 my_sock = ''
 
 
-# query concept sql
-autoimmune_concepts_sql = """
-select distinct concept_name from [SQLCRIS_User].[Kconnect].[ulms_concept_mapping]
-"""
-
-# query patient sql
-patients_sql = """
-select brcid from
-[SQLCRIS_User].[Kconnect].[cohorts]
-where patient_group='{}'
-"""
-
-# query concept freqs over patient
-concept_doc_freq_sql = """
-  select c.brcid, COUNT(distinct a.CN_Doc_ID) num
-  from [SQLCRIS_User].[Kconnect].[cohorts] c, [SQLCRIS_User].Kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d
-  where
-  a.inst_uri='{0}'
-  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
-  and a.CN_Doc_ID = d.CN_Doc_ID
-  and c.brcid = d.BrcId
-  and c.patient_group='{1}'
-  group by c.brcid
-"""
-
-# query term (potentially represented by a list of concepts) freqs over patient
-term_doc_freq_sql = """
-  select c.brcid, COUNT(distinct a.CN_Doc_ID) num
-  from [SQLCRIS_User].[Kconnect].[cohorts] c, [SQLCRIS_User].Kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d
-  where
-  a.inst_uri in ({concepts})
-  and a.CN_Doc_ID = d.CN_Doc_ID
-  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
-  and c.brcid = d.BrcId
-  and c.patient_group='{cohort_id}'
-  {extra_constrains}
-  group by c.brcid
-"""
-
-# query doc ids by term (potentially represented by a list of concepts)
-docs_by_term_sql = """
-  select distinct a.CN_Doc_ID
-  from [SQLCRIS_User].[Kconnect].[cohorts] c, [SQLCRIS_User].Kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d
-  where
-  a.inst_uri in ({concepts})
-  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
-  and a.CN_Doc_ID = d.CN_Doc_ID
-  and c.brcid = d.BrcId
-  and c.patient_group='{cohort_id}'
-  {extra_constrains}
-"""
-
-# query doc ids by cohort - including every doc of this cohort no matter whether the concepts present or not
-docs_by_cohort_sql = """
-  select distinct d.CN_Doc_ID
-  from [SQLCRIS_User].[Kconnect].[cohorts] c, GateDB_Cris.dbo.gate d
-  where
-  c.brcid = d.BrcId
-  and c.patient_group='{cohort_id}'
-  {extra_constrains}
-"""
-
-# query docs & annotations by doc ids and concepts
-docs_by_ids_sql = """
-  select d.CN_Doc_ID, d.src_table, d.src_col, d.TextContent, a.start_offset, a.end_offset, a.string_orig, a.inst_uri
-  from GateDB_Cris.dbo.gate d left join [SQLCRIS_User].Kconnect.kconnect_annotations a on
-  a.CN_Doc_ID = d.CN_Doc_ID
-  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
-  and a.inst_uri in ({concepts})
-  where
-  d.CN_Doc_ID in ({docs})
-  {extra_constrains}
-"""
-
-# skip term constrain template
-skip_term_sql = """
-and a.string_orig not in ({0})
-"""
-
-# get full text of a doc
-fulltext_date_by_doc_id = """
- select TextContent, Date, src_table, src_col, BrcId from sqlcris_user.KConnect.vw_hepcpos_docs
- where CN_Doc_ID='{doc_id}'
-"""
-
-
-# query term docs for applying post processing rules
-term_doc_anns_sql = """
-  select a.CN_Doc_ID, c.brcid, d.TextContent, a.start_offset, a.end_offset, d.src_table, d.src_col, a.inst_uri
-  from [SQLCRIS_User].[Kconnect].[cohorts] c, [SQLCRIS_User].Kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d
-  where
-  a.inst_uri in ({concepts})
-  and a.CN_Doc_ID = d.CN_Doc_ID
-  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
-  and c.brcid = d.BrcId
-  and c.patient_group='{cohort_id}'
-  {extra_constrains}
-  order by CN_Doc_ID
-"""
-
-# query term docs for applying post processing rules
-term_doc_anns_sql_mysql = """
-  select a.CN_Doc_ID, c.brcid, d.TextContent, a.start_offset, a.end_offset, d.src_table, d.src_col, a.inst_uri
-  from [cohorts] c, Kconnect.kconnect_annotations a, working_docs d
-  where
-  a.inst_uri in ({concepts})
-  and a.CN_Doc_ID = d.CN_Doc_ID
-  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
-  and c.brcid = d.BrcId
-  and c.patient_group='{cohort_id}'
-  {extra_constrains}
-  order by CN_Doc_ID
-"""
-
-
-def get_doc_detail_by_id(doc_id):
+def get_doc_detail_by_id(doc_id, fulltext_date_by_doc_id):
     sql = fulltext_date_by_doc_id.format(**{'doc_id': doc_id})
     docs = []
     dutil.query_data(sql, docs)
@@ -156,7 +41,8 @@ def dump_doc_as_files(folder):
     utils.multi_thread_tasking(load_all_docs(), 10, do_save_file, args=[folder])
 
 
-def populate_patient_concept_table(cohort_name, concepts, out_file):
+def populate_patient_concept_table(cohort_name, concepts, out_file,
+                                   patients_sql, concept_doc_freq_sql):
     patients = []
     dutil.query_data(patients_sql.format(cohort_name), patients)
     id2p = {}
@@ -187,14 +73,16 @@ def populate_patient_concept_table(cohort_name, concepts, out_file):
     print 'done'
 
 
-def generate_skip_term_constrain(study_analyzer):
+def generate_skip_term_constrain(study_analyzer,
+                                 skip_term_sql):
     if len(study_analyzer.skip_terms) > 0:
         return skip_term_sql.format(', '.join(['\'%s\'' % t for t in study_analyzer.skip_terms]))
     else:
         return ''
 
 
-def populate_patient_study_table(cohort_name, study_analyzer, out_file):
+def populate_patient_study_table(cohort_name, study_analyzer, out_file,
+                                 patients_sql, term_doc_freq_sql):
     """
     populate result table for a given study analyzer instance
     :param cohort_name:
@@ -239,7 +127,9 @@ def populate_patient_study_table(cohort_name, study_analyzer, out_file):
 
 
 def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_file, rule_executor,
-                                            sample_size, sample_out_file, ruled_ann_out_file):
+                                            sample_size, sample_out_file, ruled_ann_out_file,
+                                            patients_sql, term_doc_anns_sql, skip_term_sql,
+                                            db_conn_file):
     """
     populate patient study result with post processing to remove unwanted mentions
     :param cohort_name:
@@ -251,7 +141,7 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     :return:
     """
     patients = []
-    dutil.query_data(patients_sql.format(cohort_name), patients)
+    dutil.query_data(patients_sql.format(cohort_name), patients, dbconn=dutil.get_db_connection_by_setting(db_conn_file))
     id2p = {}
     for p in patients:
         id2p[p['brcid']] = p
@@ -266,19 +156,18 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
         concept_list = ', '.join(['\'%s\'' % c for c in sc.concept_closure])
         doc_anns = []
         if len(sc.concept_closure) > 0:
-            sql_temp = term_doc_anns_sql_mysql if db_conn_type == 'mysql' else term_doc_anns_sql
+            sql_temp = term_doc_anns_sql
             data_sql = sql_temp.format(**{'concepts': concept_list,
                                           'cohort_id': cohort_name,
                                           'extra_constrains':
                                               ' \n '.join(
-                                                  [generate_skip_term_constrain(study_analyzer)]
+                                                  [generate_skip_term_constrain(study_analyzer, skip_term_sql)]
                                                   + [] if (study_analyzer.study_options is None or
                                                            study_analyzer.study_options['extra_constrains'] is None)
                                                   else study_analyzer.study_options['extra_constrains'])})
             print data_sql
             dutil.query_data(data_sql, doc_anns,
-                             dbconn=dutil.get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock)
-                             if db_conn_type == 'mysql' else None)
+                             dbconn=dutil.get_db_connection_by_setting(db_conn_file))
         if len(doc_anns) > 0:
             p_to_dfreq = {}
             counted_docs = set()
@@ -308,7 +197,7 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                     id2p[p][sc_key] = str(p_to_dfreq[p])
 
                 # save sample docs
-                if sample_size >= positive_doc_anns:
+                if sample_size >= len(positive_doc_anns):
                     term_to_docs[sc_key] = positive_doc_anns
                 else:
                     sampled = []
@@ -328,7 +217,9 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     print 'done'
 
 
-def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_size=5):
+def random_extract_annotated_docs(cohort_name, study_analyzer, out_file,
+                                  docs_by_term_sql, docs_by_cohort_sql, docs_by_ids_sql,
+                                  sample_size=5):
 
     term_to_docs = {}
     study_concepts = study_analyzer.study_concepts
