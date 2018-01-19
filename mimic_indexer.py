@@ -33,7 +33,7 @@ def do_index_mimic(line, es, patients):
 
 
 def index_mimic_notes():
-    es = EntityCentricES.get_instance('./pubmed_test/es_mimic_setting.json')
+    es = EntityCentricES.get_instance('./index_settings/es_mimic_setting.json')
     ann_files = [f for f in listdir(_f_yodie_anns) if isfile(join(_f_yodie_anns, f))]
     patients = []
     for ann in ann_files:
@@ -63,7 +63,7 @@ def do_doc_update(dt, es_inst, container):
 
 
 def update_mimic_doc_types(doc_types):
-    es = EntityCentricES.get_instance('./pubmed_test/es_mimic_setting.json')
+    es = EntityCentricES.get_instance('./index_settings/es_mimic_setting.json')
     container = []
     utils.multi_thread_tasking(doc_types, 20, do_doc_update, args=[es, container])
 
@@ -76,7 +76,7 @@ def do_doc_update_date(dt, es_inst, container):
 
 
 def update_mimic_doc_dates(doc_dates):
-    es = EntityCentricES.get_instance('./pubmed_test/es_mimic_setting.json')
+    es = EntityCentricES.get_instance('./index_settings/es_mimic_setting.json')
     container = []
     utils.multi_thread_tasking(doc_dates, 20, do_doc_update_date, args=[es, container])
 
