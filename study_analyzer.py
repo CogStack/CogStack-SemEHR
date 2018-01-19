@@ -5,6 +5,7 @@ from os.path import isfile, join, split
 import joblib as jl
 import cohortanalysis as cohort
 from ann_post_rules import AnnRuleExecutor
+import xml.etree.ElementTree as ET
 
 
 class StudyConcept(object):
@@ -168,12 +169,24 @@ class StudyAnalyzer(object):
     def gen_sample_docs(self, cohort_name, out_file):
         cohort.random_extract_annotated_docs(cohort_name, self, out_file, 10)
 
-    def gen_study_table_with_rules(self, cohort_name, out_file, sample_out_file, ruler, ruled_out_file):
+    def gen_study_table_with_rules(self, cohort_name, out_file, sample_out_file, ruler, ruled_out_file,
+                                   sql_config, db_conn_file):
+        sql_setting = get_sql_template(sql_config)
         cohort.populate_patient_study_table_post_ruled(cohort_name, self, out_file, ruler, 20,
-                                                       sample_out_file, ruled_out_file)
+                                                       sample_out_file, ruled_out_file,
+                                                       sql_setting['patients_sql'], sql_setting['term_doc_anns_sql'],
+                                                       sql_setting['skip_term_sql'],
+                                                       db_conn_file)
 
 
-def study(folder, cohort_name):
+def get_sql_template(config_file):
+    root = ET.parse(config_file).getroot()
+    return {'term_doc_anns_sql': root.find('term_doc_anns_sql').text,
+            'patients_sql': root.find('patients_sql').text,
+            'skip_term_sql': root.find('skip_term_sql').text}
+
+
+def study(folder, cohort_name, sql_config_file, db_conn_file):
     p, fn = split(folder)
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
@@ -223,9 +236,11 @@ def study(folder, cohort_name):
     if isfile(join(folder, 'study_options.json')):
         sa.study_options = utils.load_json_data(join(folder, 'study_options.json'))
     merged_mappings = {}
+    study_concept_list = []
     for c in sa.study_concepts:
         for t in c.term_to_concept:
             all_concepts = list(c.concept_closure)
+            study_concept_list += all_concepts
             if len(all_concepts) > 1:
                 idx = 0
                 for cid in all_concepts:
@@ -233,9 +248,12 @@ def study(folder, cohort_name):
                     idx += 1
             else:
                 merged_mappings['(%s) %s' % (c.name, t)] = c.term_to_concept[t]
-        print c.name, c.term_to_concept, c.concept_closure
-        print json.dumps(list(c.concept_closure))
+        # print c.name, c.term_to_concept, c.concept_closure
+        # print json.dumps(list(c.concept_closure))
+    print 'print merged mappings...'
     print json.dumps(merged_mappings)
+    print len(study_concept_list)
+    utils.save_string('\n'.join(study_concept_list), join(folder, 'all_concepts.txt'))
     print 'generating result table...'
     # sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
     # sa.gen_sample_docs(cohort_name, join(folder, 'sample_docs.json'))
@@ -244,14 +262,19 @@ def study(folder, cohort_name):
     for r in rules:
         ruler.add_filter_rule(r['offset'], r['regs'])
     sa.gen_study_table_with_rules(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'), ruler,
-                                  join(folder, 'ruled_anns.json'))
+                                  join(folder, 'ruled_anns.json'), sql_config_file, db_conn_file)
     print 'done'
 
 if __name__ == "__main__":
     # study('./studies/slam_physical_health/', 'CC_physical_health')
-    # study('./studies/autoimmune.v2/', 'auto_immune')
-    # study('./studies/autoimmune', 'auto_immune')
+    study('./studies/autoimmune.v2/', 'auto_immune',
+          './index_settings/query_config_cam.xml',
+          './index_settings/cam_dbconn.json'
+          )
+    # study('./studies/autoimmune', 'auto_immune',
+    #       './index_settings/query_config_cam.xml',
+    #       './index_settings/cam_dbconn.json')
     # study('./studies/HCVpos', 'HCVpos_cohort')
     # study('./studies/liver', 'auto_immune')
     # study('./studies/hepc_unknown_200', 'hepc_unknown')
-    study('./studies/karen', 'karen_2017')
+    # study('./studies/karen', 'karen_2017')
