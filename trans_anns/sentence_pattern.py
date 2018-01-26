@@ -37,7 +37,7 @@ class CorpusAnalyzer(object):
         arr = sorted(arr, cmp=lambda x, y: y[1] - x[1])
         print 'total num patterns %s' % len(arr)
         for pt in arr[:10]:
-            print '(Freq: %s) %s\n[%s]\n\n' % (pt[1], pt[0], self._pattern_to_inst[pt[0]][0].sentence)
+            print '(Freq: %s) %s\n[%s]\n\n' % (pt[1], pt[0], self._pattern_to_inst[pt[0]][0]['sentence'])
 
     def serialise(self, save_file_path):
         jl.dump(self, save_file_path)
