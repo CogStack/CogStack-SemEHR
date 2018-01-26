@@ -90,8 +90,8 @@ def save_json_array(lst, file_path):
         json.dump(lst, wf, encoding='utf-8')
 
 
-def save_string(str, file_path):
-    with codecs.open(file_path, 'w', encoding='utf-8') as wf:
+def save_string(str, file_path, encoding='utf-8'):
+    with codecs.open(file_path, 'w', encoding=encoding) as wf:
         wf.write(str)
 
 
@@ -155,9 +155,9 @@ def read_text_file(file_path, encoding='utf-8'):
     return [l.strip() for l in lines]
 
 
-def read_text_file_as_string(file_path):
+def read_text_file_as_string(file_path, encoding='utf-8'):
     s = None
-    with codecs.open(file_path) as rf:
+    with codecs.open(file_path, encoding=encoding) as rf:
         s = rf.read()
     return s
 
