@@ -19,7 +19,11 @@ def get_db_connection():
 
 def get_db_connection_by_setting(setting_file):
     settings = imutil.load_json_data(setting_file)
-    if 'dsn' in settings:
+    if 'trusted_connection' in settings:
+        con_string = 'driver=%s;server=%s;trusted_connection=yes;DATABASE=%s;' % (settings['driver'],
+                                                                         settings['server'],
+                                                                         settings['database'])
+    elif 'dsn' in settings:
         con_string = 'DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (settings['dsn'],
                                                             settings['user'],
                                                             settings['password'],
