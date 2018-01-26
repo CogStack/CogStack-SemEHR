@@ -1,5 +1,6 @@
 import joblib as jl
 
+
 class SentencePatternInst(object):
     def __init__(self):
         pass
@@ -28,7 +29,8 @@ class CorpusAnalyzer(object):
         else:
             p_insts = []
             self._pattern_to_inst[p] = p_insts
-        p_insts.append(pattern_inst)
+        # p_insts.append(pattern_inst)
+        p_insts.append({'sentence': pattern_inst.sentence, 'annotations': pattern_inst.annotations})
 
     def show(self):
         arr = [(p, len(self._pattern_to_inst[p])) for p in self._pattern_to_inst]
@@ -41,7 +43,7 @@ class CorpusAnalyzer(object):
         jl.dump(self, save_file_path)
 
     @staticmethod
-    def load_seralisation(self, load_file_path):
+    def load_seralisation(load_file_path):
         return jl.load(load_file_path)
 
 
@@ -55,6 +57,10 @@ class POSSentencePatternInst(SentencePatternInst):
     def process(self):
         self.pos_tag_parsing()
         self.generalise()
+
+    @property
+    def annotations(self):
+        return self._anns
 
     def pos_tag_parsing(self):
         self._raw_pattern = []
