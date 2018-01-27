@@ -3,8 +3,10 @@ import en_core_web_sm as enmodel
 import sqldbutils as dutil
 import utils
 from os.path import join, exists, isfile
+from os import listdir
 import sys
 import sentence_pattern as sp
+import joblib as jl
 
 
 def load_mode(model_name):
@@ -139,7 +141,50 @@ def process_labelled_docs(labelled_file, corpus_model_file):
         corpus_analyzer.show()
     else:
         corpus_analyzer = sp.CorpusAnalyzer.load_seralisation(corpus_model_file)
-        corpus_analyzer.show()
+        # corpus_analyzer.show()
+        # pt_insts = corpus_analyzer.pattern_to_insts
+        test_gen_patterns(
+            # 'KCL->ADJ',
+            'KCL->NOUN', # .62
+            # 'PRON->VERB->KCL->NOUN', #.90
+            corpus_analyzer)
+
+
+def test_gen_patterns(child_ptn, corpus_analyzer):
+    correct_ptns = []
+    incorrect_ptns = []
+    for ptn in corpus_analyzer.pattern_to_insts:
+        if ptn.find(child_ptn) >= 0:
+            for inst in corpus_analyzer.pattern_to_insts[ptn]:
+                correct_ptns.append(inst['sentence']) \
+                    if inst['annotations'][0]['signed_label'] == 'posM' \
+                    else incorrect_ptns.append(inst['sentence'])
+    print '**correct:'
+    print correct_ptns
+    print '**incorrect:'
+    print incorrect_ptns
+    print 'total %s, confidence %s' % (len(correct_ptns) + len(incorrect_ptns),
+                                       len(correct_ptns)/ (1.0 *(len(correct_ptns) + len(incorrect_ptns))))
+
+
+def nlp_process_doc(doc_file, container):
+    container.append(nlp(utils.read_text_file_as_string(doc_file)))
+
+
+def test_serialisation(nlp, docs_path, models_path):
+    docs = []
+    utils.multi_thread_process_files(docs_path, 'txt', 10, nlp_process_doc, args=[docs])
+    jl.dump(docs, models_path)
+
+
+def test_load(models_path):
+    docs = jl.load(models_path)
+    if len(docs) > 0:
+        doc = docs[0]
+        for sent in doc.sents:
+            print sent.text
+            for token in sent:
+                print (token.text, token.pos_)
 
 
 if __name__ == "__main__":
@@ -147,7 +192,7 @@ if __name__ == "__main__":
     # sentence_parsing(u'Routine blood investigation and virology for Hep C done')
     reload(sys)
     sys.setdefaultencoding('cp1252')
-    working_folder = "C:/Users/HWu/Documents/actionable_trans"
+    working_folder = ""
     # 1. download texts from EHR
     # download_docs([],
     #               'select cn_doc_id, textcontent from SQLCRIS_User.Kconnect.working_docs where cn_doc_id in ({ids})',
@@ -155,5 +200,12 @@ if __name__ == "__main__":
     #               join(working_folder, 'docs') )
     # 2. process doc
     nlp = load_mode('en')
-    process_labelled_docs(join(working_folder, 'labelled.txt'),
-                          join(working_folder, 'cris_hepc_model.pickle'))
+    # process_labelled_docs(join(working_folder, 'labelled.txt'),
+    #                       join(working_folder, 'cris_hepc_model.pickle'))
+    model_file = ''
+    text_files_path = ''
+    # test_serialisation(nlp,
+    #                    text_files_path,
+    #                    model_file
+    #                    )
+    test_load(model_file)
