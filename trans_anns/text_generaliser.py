@@ -27,18 +27,15 @@ def doc_processing(nlp, doc_text, anns):
     pos = 0
     matched_sent_anns = []
     for sent in doc.sents:
-        s = pos
-        e = pos + len(sent.text)
         idx = 0
         m_anns = []
         for ann in anns:
-            if ann['s'] >= s and ann['e'] <= e:
+            if ann['s'] >= sent.start_char and ann['e'] <= sent.end_char:
                 m_anns.append(ann)
             idx += 1
         if len(m_anns) > 0:
             matched_sent_anns.append({'sent': sent, 'sent_offset': pos, 'anns': m_anns})
             anns = [ann for ann in anns if ann not in m_anns]
-        pos = e
         # print '%s-%s, %s: [%s]' % (s, e, doc_text.index(sent.text), sent.text)
     # print matched_sent_anns
     ptn_inst = []
@@ -110,6 +107,7 @@ def do_process_labelled_doc(doc_anns, container):
 
 
 def process_labelled_docs(labelled_file, corpus_model_file):
+    corpus_analyzer = None
     if not isfile(corpus_model_file):
         # load labelled data
         ann_lines = utils.read_text_file(labelled_file)
@@ -138,16 +136,21 @@ def process_labelled_docs(labelled_file, corpus_model_file):
         for pi in ptn_insts:
             corpus_analyzer.add_pattern(pi)
         corpus_analyzer.serialise(corpus_model_file)
-        corpus_analyzer.show()
     else:
         corpus_analyzer = sp.CorpusAnalyzer.load_seralisation(corpus_model_file)
         # corpus_analyzer.show()
         # pt_insts = corpus_analyzer.pattern_to_insts
-        test_gen_patterns(
-            # 'KCL->ADJ',
-            'KCL->NOUN', # .62
-            # 'PRON->VERB->KCL->NOUN', #.90
-            corpus_analyzer)
+
+    # show results
+    # corpus_analyzer.show()
+    # for p in corpus_analyzer.get_simple_patterns(lenghth=3):
+    #     test_gen_patterns(
+    #         # 'KCL->ADJ',
+    #         # 'KCL->NOUN', # .71
+    #         # 'PRON->VERB->KCL->NOUN', #.90
+    #         p,
+    #         corpus_analyzer)
+    corpus_analyzer.test_pattern('VERB->KCL->NOUN')
 
 
 def test_gen_patterns(child_ptn, corpus_analyzer):
@@ -156,15 +159,17 @@ def test_gen_patterns(child_ptn, corpus_analyzer):
     for ptn in corpus_analyzer.pattern_to_insts:
         if ptn.find(child_ptn) >= 0:
             for inst in corpus_analyzer.pattern_to_insts[ptn]:
-                correct_ptns.append(inst['sentence']) \
-                    if inst['annotations'][0]['signed_label'] == 'posM' \
-                    else incorrect_ptns.append(inst['sentence'])
-    print '**correct:'
-    print correct_ptns
-    print '**incorrect:'
-    print incorrect_ptns
-    print 'total %s, confidence %s' % (len(correct_ptns) + len(incorrect_ptns),
-                                       len(correct_ptns)/ (1.0 *(len(correct_ptns) + len(incorrect_ptns))))
+                if inst.annotations[0]['gt_label'] != '-':
+                    correct_ptns.append(inst.sentence) \
+                        if inst.annotations[0]['gt_label'] == inst.annotations[0]['signed_label'] \
+                        else incorrect_ptns.append(inst.sentence)
+    print '----------'
+    print '%s total %s, confidence %s' % \
+          (child_ptn, len(correct_ptns) + len(incorrect_ptns),
+           len(correct_ptns) / (1.0 * (len(correct_ptns) + len(incorrect_ptns))))
+    print '**correct: %s' % correct_ptns
+    print '**incorrect: %s' % incorrect_ptns
+    print '----------\n\n'
 
 
 def nlp_process_doc(doc_file, container):
@@ -200,12 +205,12 @@ if __name__ == "__main__":
     #               join(working_folder, 'docs') )
     # 2. process doc
     nlp = load_mode('en')
-    # process_labelled_docs(join(working_folder, 'labelled.txt'),
-    #                       join(working_folder, 'cris_hepc_model.pickle'))
-    model_file = ''
-    text_files_path = ''
+    process_labelled_docs(join(working_folder, 'labelled.txt'),
+                          join(working_folder, 'cris_hepc_model_test.pickle'))
+    # model_file = ''
+    # text_files_path = ''
     # test_serialisation(nlp,
     #                    text_files_path,
     #                    model_file
     #                    )
-    test_load(model_file)
+    # test_load(model_file)
