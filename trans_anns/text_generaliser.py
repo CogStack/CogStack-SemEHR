@@ -7,6 +7,7 @@ from os import listdir
 import sys
 import sentence_pattern as sp
 import joblib as jl
+import json
 
 
 def load_mode(model_name):
@@ -68,13 +69,11 @@ def generalise_sent_pos(s):
     return {"sent": s['sent'].text, 'pattern': rets}
 
 
-def word2vec_testing():
+def word2vec_testing(text1, text2):
     nlp = spacy.load('en_core_web_lg')
-    tokens = nlp(u'think concern have')
-    for token1 in tokens:
-        for token2 in tokens:
-            print('%s vs %s:' % (token1.text, token2.text),
-                  token1.similarity(token2))
+    doc1 = nlp(text1)
+    doc2 = nlp(text2)
+    print '%s vs %s \nsimilarity: %s' % (text1, text2, doc1.similarity(doc2))
 
 
 def download_docs(doc_ids, query, db_conn_setting, out_put_folder):
@@ -106,7 +105,7 @@ def do_process_labelled_doc(doc_anns, container):
                                 anns)
 
 
-def process_labelled_docs(labelled_file, corpus_model_file):
+def process_labelled_docs(labelled_file, corpus_model_file, mini_comp_file):
     corpus_analyzer = None
     if not isfile(corpus_model_file):
         # load labelled data
@@ -141,16 +140,34 @@ def process_labelled_docs(labelled_file, corpus_model_file):
         # corpus_analyzer.show()
         # pt_insts = corpus_analyzer.pattern_to_insts
 
-    # show results
-    # corpus_analyzer.show()
-    # for p in corpus_analyzer.get_simple_patterns(lenghth=3):
-    #     test_gen_patterns(
-    #         # 'KCL->ADJ',
-    #         # 'KCL->NOUN', # .71
-    #         # 'PRON->VERB->KCL->NOUN', #.90
-    #         p,
-    #         corpus_analyzer)
-    corpus_analyzer.test_pattern('VERB->KCL->NOUN')
+    if isfile(mini_comp_file):
+        corpus_analyzer.load_mini_comp_dict(mini_comp_file)
+    else:
+        corpus_analyzer.produce_save_comp_dict(mini_comp_file)
+    # corpus_analyzer.show_mini_comp_patterns()
+    # do_mini_comp_analysis(corpus_analyzer)
+    do_sentence_scope_analysis(corpus_analyzer, 'ADJ->KCL->NOUN', [0,2], 'his =#= status')
+
+
+def do_sentence_scope_analysis(corpus_analyzer, mimi_comp, var_idxs, var_text):
+    corpus_analyzer.analyse_sentence_scope(mimi_comp, var_idxs, var_text)
+
+
+def do_mini_comp_analysis(corpus_analyzer):
+    # get frequent minimal components and analysing its variant forms
+    # to figure out easy/difficult situations
+    freq_mcs = corpus_analyzer.get_mini_comp_pattern_by_freq(freq=3)
+    freq_mcs_results = []
+    for mc in freq_mcs:
+        if mc[0] is None:
+            continue
+        p_arr = mc[0].split('->')
+        idxs = []
+        for i in range(0, len(p_arr)):
+            if p_arr[i] != 'KCL':
+                idxs.append(i)
+        freq_mcs_results.append(corpus_analyzer.analyse_mini_comp_pattern(mc[0], idxs))
+    print 'frequent mini component results: \n%s' % json.dumps(freq_mcs_results)
 
 
 def test_gen_patterns(child_ptn, corpus_analyzer):
@@ -193,7 +210,7 @@ def test_load(models_path):
 
 
 if __name__ == "__main__":
-    # word2vec_testing()
+    # word2vec_testing(u'therapy', u'treatment')
     # sentence_parsing(u'Routine blood investigation and virology for Hep C done')
     reload(sys)
     sys.setdefaultencoding('cp1252')
@@ -206,7 +223,8 @@ if __name__ == "__main__":
     # 2. process doc
     nlp = load_mode('en')
     process_labelled_docs(join(working_folder, 'labelled.txt'),
-                          join(working_folder, 'cris_hepc_model_test.pickle'))
+                          join(working_folder, 'cris_hepc_model_test.pickle'),
+                          join(working_folder, 'cris_hepc_mini_comp_dict.pickle'))
     # model_file = ''
     # text_files_path = ''
     # test_serialisation(nlp,
