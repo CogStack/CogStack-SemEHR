@@ -8,6 +8,8 @@ import sys
 import sentence_pattern as sp
 import joblib as jl
 import json
+import numpy as np
+from sklearn import cluster
 
 
 def load_mode(model_name):
@@ -146,7 +148,7 @@ def process_labelled_docs(labelled_file, corpus_model_file, mini_comp_file):
         corpus_analyzer.produce_save_comp_dict(mini_comp_file)
     # corpus_analyzer.show_mini_comp_patterns()
     # do_mini_comp_analysis(corpus_analyzer)
-    do_sentence_scope_analysis(corpus_analyzer, 'ADJ->KCL->NOUN', [0,2], 'his =#= status')
+    do_sentence_scope_analysis(corpus_analyzer, 'KCL', [], '')
 
 
 def do_sentence_scope_analysis(corpus_analyzer, mimi_comp, var_idxs, var_text):
@@ -156,7 +158,7 @@ def do_sentence_scope_analysis(corpus_analyzer, mimi_comp, var_idxs, var_text):
 def do_mini_comp_analysis(corpus_analyzer):
     # get frequent minimal components and analysing its variant forms
     # to figure out easy/difficult situations
-    freq_mcs = corpus_analyzer.get_mini_comp_pattern_by_freq(freq=3)
+    freq_mcs = corpus_analyzer.get_mini_comp_pattern_by_freq(freq=7)
     freq_mcs_results = []
     for mc in freq_mcs:
         if mc[0] is None:
@@ -209,8 +211,59 @@ def test_load(models_path):
                 print (token.text, token.pos_)
 
 
+def word2vect_clustering(nlp, docs, cluster_prefix='cls', eps=3.0, min_samples=2):
+    """
+    word2doc dbscan clustering to merge short texts, e.g., concrete verb phrases
+    :param nlp:
+    :param docs:
+    :param cluster_prefix:
+    :param eps:
+    :param min_samples:
+    :return:
+    """
+    X = None
+    for d in docs:
+        if X is None:
+            X = np.array([nlp(unicode(d)).vector.tolist()])
+        else:
+            X = np.concatenate((X, np.array([nlp(d).vector.tolist()])), axis=0)
+
+    labels = cluster.DBSCAN(eps=eps, min_samples=min_samples).fit_predict(X)
+    print labels
+    cls2docs = {}
+    for idx in xrange(len(labels)):
+        if labels[idx] == -1:
+            cls2docs[docs[idx]] = [docs[idx]]
+        else:
+            cls = cluster_prefix + str(labels[idx])
+            arr = []
+            if cls in cls2docs:
+                arr = cls2docs[cls]
+            else:
+                cls2docs[cls] = arr
+            arr.append(docs[idx])
+    print cls2docs
+    return cls2docs
+
+
 if __name__ == "__main__":
-    # word2vec_testing(u'therapy', u'treatment')
+    # word2vec_testing(u'for Tested', u'for Diagnosed')
+    # word2vect_clustering(
+    #     spacy.load('en_core_web_lg'),
+    #     [
+    #         u'for is',
+    #         u'from suffers',
+    #         u'for was',
+    #         u'for start',
+    #         u'with infected',
+    #         u'about spoken',
+    #         u'about informed',
+    #         u'about talking',
+    #         u'for Tested',
+    #         u'for treated',
+    #         u'for diagnosed',
+    #         u'for Diagnosed',
+    #     ])
     # sentence_parsing(u'Routine blood investigation and virology for Hep C done')
     reload(sys)
     sys.setdefaultencoding('cp1252')
