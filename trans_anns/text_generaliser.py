@@ -18,7 +18,7 @@ def load_mode(model_name):
     return None
 
 
-def doc_processing(nlp, doc_text, anns):
+def doc_processing(nlp, doc_text, anns, doc_id):
     """
     pick up relevant sentences with labelled annotations and send them for sentence level processing
     :param nlp:
@@ -46,6 +46,7 @@ def doc_processing(nlp, doc_text, anns):
         ptn = sp.POSSentencePatternInst(s['sent'], s['anns'])
         ptn.process()
         ptn_inst.append(ptn)
+        ptn_inst.doc_id = doc_id
         # print '>>%s: >>%s\n' % (ret['sent'], ret['pattern'])
     return ptn_inst
 
@@ -104,7 +105,8 @@ def do_process_labelled_doc(doc_anns, container):
                                          encoding='utf-8')    # print doc
     container += doc_processing(nlp,
                                 doc,
-                                anns)
+                                anns,
+                                doc_id)
 
 
 def process_labelled_docs(labelled_file, corpus_model_file, mini_comp_file):
@@ -146,19 +148,31 @@ def process_labelled_docs(labelled_file, corpus_model_file, mini_comp_file):
         corpus_analyzer.load_mini_comp_dict(mini_comp_file)
     else:
         corpus_analyzer.produce_save_comp_dict(mini_comp_file)
-    # corpus_analyzer.show_mini_comp_patterns()
-    # do_mini_comp_analysis(corpus_analyzer)
-    do_sentence_scope_analysis(corpus_analyzer, 'KCL', [], '')
+    corpus_analyzer.show_mini_comp_patterns()
+    # generate_corpus_model(corpus_analyzer)
+    return corpus_analyzer
+
+
+def generate_corpus_model(corpus_analyzer):
+    mini_results = do_mini_comp_analysis(corpus_analyzer)
+    for mr in mini_results:
+        mr['hard_ones'] = {}
+        for hard in mr['hard']:
+            # hard is like: ["her", 0.5714285714285714, 7]
+            mr['hard_ones'][hard[0]] = \
+                do_sentence_scope_analysis(corpus_analyzer, mr['mini_comp_pattern'], mr['variation_pos'], hard[0])
+    print '*********corpus results********'
+    print json.dumps(mini_results)
 
 
 def do_sentence_scope_analysis(corpus_analyzer, mimi_comp, var_idxs, var_text):
-    corpus_analyzer.analyse_sentence_scope(mimi_comp, var_idxs, var_text)
+    return corpus_analyzer.analyse_sentence_scope(mimi_comp, var_idxs, var_text)
 
 
 def do_mini_comp_analysis(corpus_analyzer):
     # get frequent minimal components and analysing its variant forms
     # to figure out easy/difficult situations
-    freq_mcs = corpus_analyzer.get_mini_comp_pattern_by_freq(freq=7)
+    freq_mcs = corpus_analyzer.get_mini_comp_pattern_by_freq(freq=2)
     freq_mcs_results = []
     for mc in freq_mcs:
         if mc[0] is None:
@@ -170,6 +184,7 @@ def do_mini_comp_analysis(corpus_analyzer):
                 idxs.append(i)
         freq_mcs_results.append(corpus_analyzer.analyse_mini_comp_pattern(mc[0], idxs))
     print 'frequent mini component results: \n%s' % json.dumps(freq_mcs_results)
+    return freq_mcs_results
 
 
 def test_gen_patterns(child_ptn, corpus_analyzer):
@@ -246,6 +261,47 @@ def word2vect_clustering(nlp, docs, cluster_prefix='cls', eps=3.0, min_samples=2
     return cls2docs
 
 
+def predict_exp(corpus_trans_file, ann_file):
+    # initialise pattern instances from documents
+    # load labelled data
+    ann_lines = utils.read_text_file(ann_file)
+    prev_doc = None
+    anns = []
+    doc_anns = []
+    ptn_insts = []
+    doc_to_pt = {}
+    for ls in ann_lines:
+        l = ls.split('\t')
+        doc_id = l[1]
+        doc_to_pt[doc_id] = l[0]
+        if prev_doc != doc_id:
+            if prev_doc is not None:
+                if exists(join(working_folder, 'docs', '%s.txt' % prev_doc)):
+                    doc_anns.append((prev_doc, anns))
+            anns = []
+            prev_doc = doc_id
+        anns.append({'s': int(l[2]), 'e': int(l[3]), 'signed_label': l[4], 'gt_label': l[5]})
+    if prev_doc is not None:
+        if exists(join(working_folder, 'docs', '%s.txt' % prev_doc)):
+            doc_anns.append((prev_doc, anns))
+    # mutithreading do processing labelled docs
+    print 'processing docs...'
+    utils.multi_thread_tasking(doc_anns, 30, do_process_labelled_doc, args=[ptn_insts])
+
+    cp = sp.CorpusPredictor.load_corpus_model(corpus_trans_file)
+    ret = []
+    for inst in ptn_insts:
+        acc = cp.predcit(inst)
+        print 'predicting [%s]... %s' % (inst.sentence, acc)
+        ann = inst.annotations[0]
+        ret.append((doc_to_pt[inst.doc_id], inst.doc_id, ann['s'], ann[1], ann['signed_label'], ann['gt_label'], acc))
+    s = []
+    for r in ret:
+        s.append('\t'.join(r))
+    print '\n'.join(s)
+    return ret
+
+
 if __name__ == "__main__":
     # word2vec_testing(u'for Tested', u'for Diagnosed')
     # word2vect_clustering(
@@ -275,13 +331,8 @@ if __name__ == "__main__":
     #               join(working_folder, 'docs') )
     # 2. process doc
     nlp = load_mode('en')
-    process_labelled_docs(join(working_folder, 'labelled.txt'),
-                          join(working_folder, 'cris_hepc_model_test.pickle'),
-                          join(working_folder, 'cris_hepc_mini_comp_dict.pickle'))
-    # model_file = ''
-    # text_files_path = ''
-    # test_serialisation(nlp,
-    #                    text_files_path,
-    #                    model_file
-    #                    )
-    # test_load(model_file)
+    corpus_analyzer = process_labelled_docs(join(working_folder, 'labelled.txt'),
+                                            join(working_folder, 'cris_hepc_model_test.pickle'),
+                                            join(working_folder, 'cris_hepc_mini_comp_dict.pickle'))
+    # predict annotation accuracy
+    predict_exp(join(working_folder, 'cris_corpus_trans.json'), join(working_folder, 'VALIDATION_FOLDER'))
