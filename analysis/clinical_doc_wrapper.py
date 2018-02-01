@@ -18,29 +18,17 @@ re_exps = {
         'data_type': 'letter end text'
     },
     'doctor': {
-        'pattern': r'^ {0,}Dr +([A-Za-z]+\s+(.*))$',
+        'pattern': r'^ {0,}(Dr|Prof|Professor|Miss|Ms|Mr|Mrs) +([A-Za-z]+\s+(.*))$',
         'flags': ['multiline', 'ignorecase'],
-        'data_labels': ['name'],
+        'data_labels': ['title', 'name'],
         'data_type': 'doctor'
     },
     'phone': [{
-        'pattern': r'^telephone\:{0,1}\s+((\d{2,}( |\-){0,1}){1,})$',
+        'pattern': r'^ {0,}(telephone|phone|tel no|Fax No|Appointments|Facsimile|fax)\.{0,1}\s{0,1}\:{0,1}\s+((\d{2,}( |\-){0,1}){1,}).*$',
         'flags': ['multiline', 'ignorecase'],
-        'data_labels': ['number'],
+        'data_labels':  ['label', 'number'],
         'data_type': 'phone'
-        },
-        {
-            'pattern': r'^phone\:{0,1}\s+((\d{2,}( |\-){0,1}){1,})$',
-            'flags': ['multiline', 'ignorecase'],
-            'data_labels': ['number'],
-            'data_type': 'phone'
-        },
-        {
-            'pattern': r'^tel no\:{0,1}\s+((\d{2,}( |\-){0,1}){1,})$',
-            'flags': ['multiline', 'ignorecase'],
-            'data_labels': ['number'],
-            'data_type': 'phone'
-        },
+        }
     ]
 }
 
@@ -97,21 +85,28 @@ def do_doc_anonymisation(doc, writing_es, writing_index_name, writing_doc_type,
         failed_docs.append(doc['_id'])
     else:
         data = doc['_source']
-        data[full_text_field] = re.sub(r'.', 'z', text[:rets[1]]) \
-                                + text[rets[1]:rets[2]] \
-                                + re.sub(r'.', 'z', text[rets[2]:])
+        sen_data = rets[0]
+        anonymised_text = text
+        for d in sen_data:
+            if 'name' in d['attrs']:
+                print 'removing %s ' % d['attrs']['name']
+                anonymised_text = anonymised_text.replace(d['attrs']['name'], 'x' * len(d['attrs']['name']))
+            if 'number' in d['attrs']:
+                print 'removing %s ' % d['attrs']['number']
+                anonymised_text = anonymised_text.replace(d['attrs']['number'], 'x' * len(d['attrs']['number']))
+        data[full_text_field] = anonymised_text
         writing_es.index(index=writing_index_name, doc_type=writing_doc_type,
                          body=data, id=doc['_id'], timeout='30s')
-        container += rets
+        container += sen_data
 
 
 def init_es_inst():
     es_setting = {
-        'es_host': 'http://10.200.102.23:9200',
-        'es_index': 'mimic',
-        'es_doc_type': 'eprdoc',
-        'es_concept_type': 'ctx_concept',
-        'es_patient_type': 'patient'
+        'es_host': '',
+        'es_index': '',
+        'es_doc_type': '',
+        'es_concept_type': '',
+        'es_patient_type': ''
     }
     es = SemEHRES.get_instance_by_setting(es_setting['es_host'],
                                           es_setting['es_index'],
@@ -145,8 +140,7 @@ if __name__ == "__main__":
     es = init_es_inst()
     writing_es_host = ""
     writing_index_name = ""
-    writing_doc_type = "docs"
+    writing_doc_type = ""
     doc_type = ""
     full_text_field = ""
-    parse_es_docs(es, writing_es_host, writing_index_name, writing_doc_type, doc_type, full_text_field)
-
+    parse_es_docs(es, 'document_description:"dermatology letter"', writing_es_host, writing_index_name, writing_doc_type, doc_type, full_text_field)
