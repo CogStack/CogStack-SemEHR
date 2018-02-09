@@ -1,5 +1,6 @@
 # SemEHR
 Surfacing Semantic Data from Clinical Notes in Electronic Health Records for Tailored Care, Trial Recruitment and Clinical Research
+- [Documentation on API calls to SemEHR](https://github.com/CogStack/SemEHR/wiki/API-calls-to-SemEHR-index).
 
 ## updates
 - (22 Dec 2017)  An application paper describing SemEHR has been accepted by [JAMIA](https://academic.oup.com/jamia), titled “SemEHR: A General-purpose Semantic Search System to Surface Semantic Data from Clinical Notes for Tailored Care, Trial Recruitment and Clinical Research”.
