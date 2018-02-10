@@ -90,7 +90,10 @@ if (typeof semehr == "undefined"){
                     var pos = hpo_umls[k][i].indexOf("UMLS:");
                     var umlsConcept = pos >=0 ? hpo_umls[k][i].substring(pos + "UMLS:".length) : hpo_umls[k][i];
                     umlsConcepts.push(umlsConcept);
-                    this.uml2hpo[umlsConcept] = k;
+                    if (umlsConcept in this.uml2hpo)
+                        this.uml2hpo[umlsConcept] = this.uml2hpo[umlsConcept].concat([k]);
+                    else
+                        this.uml2hpo[umlsConcept] = [k];
                 }
                 this.hpo2uml[k] = umlsConcepts;
             }

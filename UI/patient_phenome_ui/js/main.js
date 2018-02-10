@@ -254,24 +254,40 @@
 	function append_typed_concepts(anns, ontoMap, filterStr){
 	    var s = "";
         for(var i=0;i<anns.length;i++){
-            var label = ontoMap ? ontoMap[anns[i].cui] : anns[i].cui;
-            if (!filterStr || filterStr.indexOf(label) < 0)
-                s += "<div cui='" + anns[i].cui + "' class='clsHPRow'><div class='clsHPCell clsFreq'>" + label + "</div><div class='clsHPCell clsLabel' id='lbl" + anns[i].cui + "'></div><div class='clsHPCell clsFreq'>" + anns[i].freq + "</div></div>";
+            var labelObj = ontoMap ? ontoMap[anns[i].cui] : anns[i].cui;
+            var labels = [];
+            if (!Array.isArray(labelObj)){
+                labels = [labelObj];
+            }else{
+                labels = labelObj;
+            }
+            $.each(labels, function(index, label){
+                if (!filterStr || filterStr.indexOf(label) < 0)
+                    s += "<div cui='" + anns[i].cui + "' class='clsHPRow'><div class='clsHPCell clsFreq'>" + label + "</div><div class='clsHPCell clsLabel lbl" + anns[i].cui + "'></div><div class='clsHPCell clsFreq'>" + anns[i].freq + "</div></div>";
+            });
         }
         $('#patientConceptMapDiv').append(s);
 
         for(var i=0;i<anns.length;i++ ){
-            var label = ontoMap ? ontoMap[anns[i].cui] : anns[i].cui;
-            if (!filterStr || filterStr.indexOf(label) < 0){
-                if ($('#lbl' + anns[i]['concept']).attr('labelRead') != 'yes'){
-                    semehr.search.searchConcept(anns[i].cui, function(ctxConcepts){
-                        var c = ctxConcepts[0];
-                        $('#lbl' + c['concept']).attr('labelRead', 'yes');
-                        $('#lbl' + c['concept']).html(c['label']);
-                    }, function(){
-                    });
-                }
+            var labelObj = ontoMap ? ontoMap[anns[i].cui] : anns[i].cui;
+            var labels = [];
+            if (!Array.isArray(labelObj)){
+                labels = [labelObj]
+            }else{
+                labels = labelObj
             }
+            $.each(labels, function(index, label){
+                if (!filterStr || filterStr.indexOf(label) < 0){
+                    if ($('#lbl' + anns[i]['concept']).attr('labelRead') != 'yes'){
+                        semehr.search.searchConcept(anns[i].cui, function(ctxConcepts){
+                            var c = ctxConcepts[0];
+                            $('.lbl' + c['concept']).attr('labelRead', 'yes');
+                            $('.lbl' + c['concept']).html(c['label']);
+                        }, function(){
+                        });
+                    }
+                }
+            });
         }
 
         $('.clsHPRow').unbind('click');
@@ -742,7 +758,9 @@
         if (ontoMap){
             for(var k in sty2annsFreq){
                 if (ontoMap[k]){
-                    patientHPO[ontoMap[k]] = {'freq': sty2annsFreq[k], 'cui': k};
+                    $.each(ontoMap[k], function(index, hpo){
+                        patientHPO[hpo] = {'freq': sty2annsFreq[k], 'cui': k};
+                    });
                 }
                 anns.push({'cui':k, 'freq': sty2annsFreq[k]});
             }
