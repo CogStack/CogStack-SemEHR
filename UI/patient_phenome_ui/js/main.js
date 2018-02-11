@@ -303,21 +303,21 @@
                 summaris_cohort(_patientResults, _entityCurrentTotal);
                 _entityCurrentPage = 0;
                 renderEntityPageInfo();
-                $(this).addClass('searched');
+            }
+            $(this).addClass('searched');
 
-                $('#sumTermDiv').html(' HPO: ' + $(this).find('.clsLabel').html());
-                $('#feedbackLabel').html('feedback for ' + _queriedPatientId + ' on ' + $(this).find('.clsLabel').html());
-                $('html, body').animate({
-                    scrollTop: $("#sumTermDiv").offset().top
-                }, 500);
+            $('#sumTermDiv').html(' HPO: ' + $(this).find('.clsLabel').html());
+            $('#feedbackLabel').html('feedback for ' + _queriedPatientId + ' on ' + $(this).find('.clsLabel').html());
+            $('html, body').animate({
+                scrollTop: $("#sumTermDiv").offset().top
+            }, 500);
 
-                // put feedback in
-                $('#feedBackText').val(_defaultFeedbackTemplate);
-                if (_feedback){
-                    var feedbackKey = getFeedbackKey();
-                    if (feedbackKey in _feedback){
-                        $('#feedBackText').val(_feedback[feedbackKey]);
-                    }
+            // put feedback in
+            $('#feedBackText').val(_defaultFeedbackTemplate);
+            if (_feedback){
+                var feedbackKey = getFeedbackKey();
+                if (feedbackKey in _feedback){
+                    $('#feedBackText').val(_feedback[feedbackKey]);
                 }
             }
         });
@@ -761,6 +761,8 @@
     }
 
     function renderDiseasePHO(){
+        if (_sty2anns == null)
+            return;
         $('#diseasePhenotypeDiv').html('');
         //get patient hpo dict
         var patientHPO = {};
@@ -810,7 +812,7 @@
 
 	function retrieveFeedback(){
 	    qbb.inf.getEvalResult(_invitationId, function(res){
-	        console.log('retrieved:' + res);
+//	        console.log('retrieved:' + res);
             _feedback = $.parseJSON(res);
 	    });
 	}
