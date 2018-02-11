@@ -303,6 +303,8 @@
                 summaris_cohort(_patientResults, _entityCurrentTotal);
                 _entityCurrentPage = 0;
                 renderEntityPageInfo();
+            }else{
+                resetSearchResult();
             }
             $(this).addClass('searched');
 
