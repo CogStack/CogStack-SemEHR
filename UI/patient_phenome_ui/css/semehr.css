@@ -481,3 +481,27 @@ h1.sumHeading{
     background-color: #cf8899;
     border: 1px dashed #333;
 }
+#feedbackDiv{
+    margin-top: 20px;
+}
+#feedbackDiv textarea{
+    font-size:120%;
+    width:60%;
+    margin-left:20%;
+    color:#555;
+    padding:12px;
+    margin-top:10px;
+}
+#feedbackDiv label{
+    font-size:130%;
+    color:#888;
+    margin-left:20%;
+    margin-bottom:26px;
+}
+#feedbackDiv button{
+    font-size:120%;
+    margin-left:20%;
+    height:30px;
+    color:#777;
+    width:100px;
+}

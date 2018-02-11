@@ -1,5 +1,5 @@
 (function($){
-    var _invitationId = null;
+    var _invitationId = '100k';
     var _log_call_url = "./log_touch.html" // a local url to be called so that apache saves the log
     var _pageNum = 0;
     var _pageSize = 1;
@@ -27,7 +27,11 @@
     var _sty2anns = null;
     var _sty2ontoMap = null;
 
+    var _feedback = null;
+    var _defaultFeedbackTemplate = "Phenotype result: \nComment:\n";
+
     var _patientResults = null;
+    var _queriedPatientId = '';
     function userLogin(){
         swal.setDefaults({
             confirmButtonText: 'Next &rarr;',
@@ -302,9 +306,19 @@
                 $(this).addClass('searched');
 
                 $('#sumTermDiv').html(' HPO: ' + $(this).find('.clsLabel').html());
+                $('#feedbackLabel').html('feedback for ' + _queriedPatientId + ' on ' + $(this).find('.clsLabel').html());
                 $('html, body').animate({
                     scrollTop: $("#sumTermDiv").offset().top
                 }, 500);
+
+                // put feedback in
+                $('#feedBackText').val(_defaultFeedbackTemplate);
+                if (_feedback){
+                    var feedbackKey = getFeedbackKey();
+                    if (feedbackKey in _feedback){
+                        $('#feedBackText').val(_feedback[feedbackKey]);
+                    }
+                }
             }
         });
 	}
@@ -627,7 +641,7 @@
         }else{
             $('.clsEntityPrev').removeClass('clsActive');
         }
-        $('#entityPaginationDiv').show();
+//        $('#entityPaginationDiv').show();
     }
 
     function render_results(doc2mentions){
@@ -776,7 +790,7 @@
         }
         $('#patientConceptMapDiv').html('');
         append_typed_concepts(anns, ontoMap, strHPOs);
-
+        retrieveFeedback();
     }
 
     function render_typed_concepts(disObj, patientHPO){
@@ -792,6 +806,18 @@
         $('#diseasePhenotypeDiv').html(s);
 
         return strHPOs;
+	}
+
+	function retrieveFeedback(){
+	    qbb.inf.getEvalResult(_invitationId, function(res){
+	        console.log('retrieved:' + res);
+            _feedback = $.parseJSON(res);
+	    });
+	}
+
+	function getFeedbackKey(){
+	    var hpoId = $($('.searched').find('.clsFreq').get(0)).html();
+        return _queriedPatientId + "_" + hpoId;
 	}
 
     $(document).ready(function(){
@@ -818,15 +844,17 @@
             if (q.length == 0){
                 swal({text:"please input your query", showConfirmButton: true});
             }if ($.trim($('#cohortText').val()).length == 0){
-                swal({text:"please add patient id(s)", showConfirmButton: true});
+                swal({text:"please add patient id", showConfirmButton: true});
             }
             else{
+                var patientIds = $('#cohortText').val().split(",");
+                _queriedPatientId = $('#cohortText').val()
+                $('#feedbackLabel').html('feedback for ' + _queriedPatientId);
                 $.ajax({
                     url: _log_call_url,
                     data: {q: q, u: semehr.search._user_id},
                     success: function(s){console.log(s)}
                 });
-                var patientIds = $('#cohortText').val().split(",");
                 cohortSearch({"terms": null, "query": q}, patientIds, [], 0, patientIds.length);
             }
         });
@@ -910,6 +938,26 @@
 		populateDiseaseList(diseases.sort());
 		$('#listDisease').on('change', function() {
 		  renderDiseasePHO();
+		});
+
+		$('#btnSaveFeedback').click(function(){
+		    if ($('#feedBackText').val().length == 0){
+		        swal({text:"please input your feedback", showConfirmButton: true});
+		    }else{
+                var feedbackItemId = getFeedbackKey();
+                var feedback = {};
+                feedback[feedbackItemId] = $('#feedBackText').val();
+                console.log($.toJSON(feedback));
+                swal({title:"saving feedback...", showConfirmButton: false});
+                qbb.inf.saveEvalResult($.toJSON(feedback), _invitationId, function(res){
+                    if (res == 'true'){
+                        retrieveFeedback();
+                        swal('saved');
+                    }else{
+                        swal('NOT saved! something is wrong!');
+                    }
+                });
+		    }
 		});
     })
 

@@ -90,7 +90,7 @@
                     <span style="display:none">
                         <label for="searchEntityInput">Terms</label> <input type="text" id="searchEntityInput" value="*"/><br/>
                     </span>
-                    <span id="cohortDiv"><input id="cohortText" type="text" placeholder="past comma separated patient IDs (e.g., 123,345)"/> <button id="btnEntitySearch">search</button></span>
+                    <span id="cohortDiv"><input id="cohortText" type="text" placeholder="put patient ID here"/> <button id="btnEntitySearch">search</button></span>
 
                     <br/>
                     <span id="validatedDocDiv"><textarea id="validatedDocText" placeholder="past comma separated doc IDs (e.g., 123,345)"></textarea><br/></span>
@@ -136,6 +136,11 @@
                 <div class="sumCol">Other Experiencers</div>
             </div>       
         </div>
+    </div>
+    <div id="feedbackDiv">
+        <label for="feedBackText" id="feedbackLabel">Feedback</label><br/>
+        <textarea rows="6" id="feedBackText"></textarea><br/>
+        <button id="btnSaveFeedback">save</button>
     </div>
     <div id="pageCtrl">
         <span class="clsPrev">&lt; prev</span> <span class="clsPageInfo">1/1</span> <span class="clsNext">next &gt;</span>
