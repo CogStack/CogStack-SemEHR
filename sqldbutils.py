@@ -1,6 +1,6 @@
 import utils as imutil
 import pyodbc
-# import MySQLdb
+import MySQLdb
 
 
 #SQL db setting
@@ -19,6 +19,12 @@ def get_db_connection():
 
 def get_db_connection_by_setting(setting_file):
     settings = imutil.load_json_data(setting_file)
+    if 'db_type' in settings and settings['db_type'] == 'mysql':
+        return get_mysqldb_connection(settings['server'],
+                                      settings['user'],
+                                      settings['password'],
+                                      settings['database'],
+                                      settings['mysql_sock_file'])
     if 'trusted_connection' in settings:
         con_string = 'driver=%s;server=%s;trusted_connection=yes;DATABASE=%s;' % (settings['driver'],
                                                                          settings['server'],
@@ -48,6 +54,7 @@ def get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock='/var/lib/my
                          unix_socket=my_sock)  # name of the data base
     cursor = db.cursor()
     return {'cnxn': db, 'cursor': cursor}
+
 
 def release_db_connection(cnn_obj):
     cnn_obj['cnxn'].close()
