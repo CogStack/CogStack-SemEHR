@@ -8,12 +8,7 @@ import random
 from ann_post_rules import AnnRuleExecutor
 
 
-db_conn_type = 'mysql'
-my_host = ''
-my_user = ''
-my_pwd = ''
-my_db = ''
-my_sock = ''
+
 
 
 # query concept sql
@@ -24,7 +19,8 @@ select distinct concept_name from [SQLCRIS_User].[Kconnect].[ulms_concept_mappin
 # query patient sql
 patients_sql = """
 select brcid from
-[SQLCRIS_User].[Kconnect].[cohorts]
+-- [SQLCRIS_User].[Kconnect].[cohorts]
+cohorts
 where patient_group='{}'
 """
 
@@ -119,7 +115,7 @@ term_doc_anns_sql = """
 # query term docs for applying post processing rules
 term_doc_anns_sql_mysql = """
   select a.CN_Doc_ID, c.brcid, d.TextContent, a.start_offset, a.end_offset, d.src_table, d.src_col, a.inst_uri
-  from [cohorts] c, Kconnect.kconnect_annotations a, working_docs d
+  from cohorts c, kconnect_annotations a, working_docs d
   where
   a.inst_uri in ({concepts})
   and a.CN_Doc_ID = d.CN_Doc_ID
@@ -251,7 +247,8 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     :return:
     """
     patients = []
-    dutil.query_data(patients_sql.format(cohort_name), patients)
+    dutil.query_data(patients_sql.format(cohort_name), patients, 
+                     dbconn=dutil.get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock) if db_conn_type == 'mysql' else None)
     id2p = {}
     for p in patients:
         id2p[p['brcid']] = p
@@ -308,9 +305,10 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                     id2p[p][sc_key] = str(p_to_dfreq[p])
 
                 # save sample docs
-                if sample_size >= positive_doc_anns:
+                if sample_size >= len(positive_doc_anns):
                     term_to_docs[sc_key] = positive_doc_anns
                 else:
+                    print 'random out %s from %s' % (sample_size, len(positive_doc_anns))
                     sampled = []
                     for i in xrange(sample_size):
                         index = random.randrange(len(positive_doc_anns))
@@ -323,8 +321,8 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     for p in patients:
         s += '\t'.join([p['brcid']] + [p[k] if k in p else '0' for k in concept_labels]) + '\n'
     utils.save_string(s, out_file)
-    utils.save_json_array(term_to_docs, sample_out_file)
-    utils.save_json_array(ruled_anns, ruled_ann_out_file)
+    utils.save_json_array(term_to_docs, sample_out_file, 'iso-8859-1')
+    utils.save_json_array(ruled_anns, ruled_ann_out_file, 'iso-8859-1')
     print 'done'
 
 
