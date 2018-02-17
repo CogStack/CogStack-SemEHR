@@ -1,0 +1,11 @@
+<sql>
+    <term_doc_anns_sql>
+
+    </term_doc_anns_sql>
+    <patients_sql>
+
+    </patients_sql>
+    <skip_term_sql>
+
+    </skip_term_sql>
+</sql>
