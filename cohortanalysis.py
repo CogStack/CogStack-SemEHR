@@ -11,7 +11,6 @@ from ann_post_rules import AnnRuleExecutor
 
 
 
-<<<<<<< HEAD
 # query concept sql
 autoimmune_concepts_sql = """
 select distinct concept_name from [SQLCRIS_User].[Kconnect].[ulms_concept_mapping]
@@ -129,9 +128,6 @@ term_doc_anns_sql_mysql = """
 
 
 def get_doc_detail_by_id(doc_id):
-=======
-def get_doc_detail_by_id(doc_id, fulltext_date_by_doc_id):
->>>>>>> 6bc13b8e4d99deafaa196bb8c7cf972de46beeaf
     sql = fulltext_date_by_doc_id.format(**{'doc_id': doc_id})
     docs = []
     dutil.query_data(sql, docs)
@@ -256,12 +252,8 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     :return:
     """
     patients = []
-<<<<<<< HEAD
     dutil.query_data(patients_sql.format(cohort_name), patients, 
                      dbconn=dutil.get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock) if db_conn_type == 'mysql' else None)
-=======
-    dutil.query_data(patients_sql.format(cohort_name), patients, dbconn=dutil.get_db_connection_by_setting(db_conn_file))
->>>>>>> 6bc13b8e4d99deafaa196bb8c7cf972de46beeaf
     id2p = {}
     for p in patients:
         id2p[p['brcid']] = p
