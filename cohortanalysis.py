@@ -8,126 +8,15 @@ import random
 from ann_post_rules import AnnRuleExecutor
 
 
+db_conn_type = 'mysql'
+my_host = ''
+my_user = ''
+my_pwd = ''
+my_db = ''
+my_sock = ''
 
 
-
-# query concept sql
-autoimmune_concepts_sql = """
-select distinct concept_name from [SQLCRIS_User].[Kconnect].[ulms_concept_mapping]
-"""
-
-# query patient sql
-patients_sql = """
-select brcid from
--- [SQLCRIS_User].[Kconnect].[cohorts]
-cohorts
-where patient_group='{}'
-"""
-
-# query concept freqs over patient
-concept_doc_freq_sql = """
-  select c.brcid, COUNT(distinct a.CN_Doc_ID) num
-  from [SQLCRIS_User].[Kconnect].[cohorts] c, [SQLCRIS_User].Kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d
-  where
-  a.inst_uri='{0}'
-  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
-  and a.CN_Doc_ID = d.CN_Doc_ID
-  and c.brcid = d.BrcId
-  and c.patient_group='{1}'
-  group by c.brcid
-"""
-
-# query term (potentially represented by a list of concepts) freqs over patient
-term_doc_freq_sql = """
-  select c.brcid, COUNT(distinct a.CN_Doc_ID) num
-  from [SQLCRIS_User].[Kconnect].[cohorts] c, [SQLCRIS_User].Kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d
-  where
-  a.inst_uri in ({concepts})
-  and a.CN_Doc_ID = d.CN_Doc_ID
-  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
-  and c.brcid = d.BrcId
-  and c.patient_group='{cohort_id}'
-  {extra_constrains}
-  group by c.brcid
-"""
-
-# query doc ids by term (potentially represented by a list of concepts)
-docs_by_term_sql = """
-  select distinct a.CN_Doc_ID
-  from [SQLCRIS_User].[Kconnect].[cohorts] c, [SQLCRIS_User].Kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d
-  where
-  a.inst_uri in ({concepts})
-  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
-  and a.CN_Doc_ID = d.CN_Doc_ID
-  and c.brcid = d.BrcId
-  and c.patient_group='{cohort_id}'
-  {extra_constrains}
-"""
-
-# query doc ids by cohort - including every doc of this cohort no matter whether the concepts present or not
-docs_by_cohort_sql = """
-  select distinct d.CN_Doc_ID
-  from [SQLCRIS_User].[Kconnect].[cohorts] c, GateDB_Cris.dbo.gate d
-  where
-  c.brcid = d.BrcId
-  and c.patient_group='{cohort_id}'
-  {extra_constrains}
-"""
-
-# query docs & annotations by doc ids and concepts
-docs_by_ids_sql = """
-  select d.CN_Doc_ID, d.src_table, d.src_col, d.TextContent, a.start_offset, a.end_offset, a.string_orig, a.inst_uri
-  from GateDB_Cris.dbo.gate d left join [SQLCRIS_User].Kconnect.kconnect_annotations a on
-  a.CN_Doc_ID = d.CN_Doc_ID
-  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
-  and a.inst_uri in ({concepts})
-  where
-  d.CN_Doc_ID in ({docs})
-  {extra_constrains}
-"""
-
-# skip term constrain template
-skip_term_sql = """
-and a.string_orig not in ({0})
-"""
-
-# get full text of a doc
-fulltext_date_by_doc_id = """
- select TextContent, Date, src_table, src_col, BrcId from sqlcris_user.KConnect.vw_hepcpos_docs
- where CN_Doc_ID='{doc_id}'
-"""
-
-
-# query term docs for applying post processing rules
-term_doc_anns_sql = """
-  select a.CN_Doc_ID, c.brcid, d.TextContent, a.start_offset, a.end_offset, d.src_table, d.src_col, a.inst_uri
-  from [SQLCRIS_User].[Kconnect].[cohorts] c, [SQLCRIS_User].Kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d
-  where
-  a.inst_uri in ({concepts})
-  and a.CN_Doc_ID = d.CN_Doc_ID
-  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
-  and c.brcid = d.BrcId
-  and c.patient_group='{cohort_id}'
-  {extra_constrains}
-  order by CN_Doc_ID
-"""
-
-# query term docs for applying post processing rules
-term_doc_anns_sql_mysql = """
-  select a.CN_Doc_ID, c.brcid, d.TextContent, a.start_offset, a.end_offset, d.src_table, d.src_col, a.inst_uri
-  from cohorts c, kconnect_annotations a, working_docs d
-  where
-  a.inst_uri in ({concepts})
-  and a.CN_Doc_ID = d.CN_Doc_ID
-  and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
-  and c.brcid = d.BrcId
-  and c.patient_group='{cohort_id}'
-  {extra_constrains}
-  order by CN_Doc_ID
-"""
-
-
-def get_doc_detail_by_id(doc_id):
+def get_doc_detail_by_id(doc_id, fulltext_date_by_doc_id):
     sql = fulltext_date_by_doc_id.format(**{'doc_id': doc_id})
     docs = []
     dutil.query_data(sql, docs)
@@ -252,8 +141,7 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     :return:
     """
     patients = []
-    dutil.query_data(patients_sql.format(cohort_name), patients, 
-                     dbconn=dutil.get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock) if db_conn_type == 'mysql' else None)
+    dutil.query_data(patients_sql.format(cohort_name), patients, dbconn=dutil.get_db_connection_by_setting(db_conn_file))
     id2p = {}
     for p in patients:
         id2p[p['brcid']] = p
@@ -312,7 +200,6 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                 if sample_size >= len(positive_doc_anns):
                     term_to_docs[sc_key] = positive_doc_anns
                 else:
-                    print 'random out %s from %s' % (sample_size, len(positive_doc_anns))
                     sampled = []
                     for i in xrange(sample_size):
                         index = random.randrange(len(positive_doc_anns))
@@ -325,8 +212,8 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     for p in patients:
         s += '\t'.join([p['brcid']] + [p[k] if k in p else '0' for k in concept_labels]) + '\n'
     utils.save_string(s, out_file)
-    utils.save_json_array(term_to_docs, sample_out_file, 'iso-8859-1')
-    utils.save_json_array(ruled_anns, ruled_ann_out_file, 'iso-8859-1')
+    utils.save_json_array(term_to_docs, sample_out_file)
+    utils.save_json_array(ruled_anns, ruled_ann_out_file)
     print 'done'
 
 
