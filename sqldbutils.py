@@ -1,6 +1,6 @@
 import utils as imutil
 import pyodbc
-import MySQLdb
+# import MySQLdb
 
 
 #SQL db setting
@@ -19,10 +19,22 @@ def get_db_connection():
 
 def get_db_connection_by_setting(setting_file):
     settings = imutil.load_json_data(setting_file)
-    con_string = 'DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (settings['dsn'],
-                                                        settings['user'],
-                                                        settings['password'],
-                                                        settings['database'])
+    if 'trusted_connection' in settings:
+        con_string = 'driver=%s;server=%s;trusted_connection=yes;DATABASE=%s;' % (settings['driver'],
+                                                                         settings['server'],
+                                                                         settings['database'])
+    elif 'dsn' in settings:
+        con_string = 'DSN=%s;UID=%s;PWD=%s;DATABASE=%s;' % (settings['dsn'],
+                                                            settings['user'],
+                                                            settings['password'],
+                                                            settings['database'])
+    else:
+        con_string = 'driver=%s;server=%s;UID=%s;PWD=%s;DATABASE=%s;' % (settings['driver'],
+                                                                         settings['server'],
+                                                                         settings['user'],
+                                                                         settings['password'],
+                                                                         settings['database'])
+    # print pyodbc.drivers()
     cnxn = pyodbc.connect(con_string)
     cursor = cnxn.cursor()
     return {'cnxn': cnxn, 'cursor': cursor}

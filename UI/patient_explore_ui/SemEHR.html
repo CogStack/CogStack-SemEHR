@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SemEHR - PHI</title>
+    <link href="js/libs/sweetalert2.min.css" rel="stylesheet" />
+    <script src="sample_data/mimic_FHIR_discharge_summary_map.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.3.5/bluebird.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="js/libs/elasticsearch.jquery.js"></script>
+    <script src="js/libs/jquery.json-2.3.js"></script>
+    <script src="js/es.search.js?v=1"></script>
+    <script src="js/semehr.analytics.js"></script>
+    <script src="js/semehr.entities.js"></script>
+    <script src="js/semehr.render.js"></script>
+    <script src="js/semehr.medprofile.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/libs/sweetalert2.min.js"></script>
+    <script src="js/hpo-umls.js"></script>
+    <script src="js/main.js?v=0.2"></script>
+</head>
+<link type="text/css" href="css/semehr.css" rel="stylesheet"/>
+<body>
+    <div id="mainDiv">
+        <div class="banner">
+            <div><img src="./imgs/KConnect_logo_150px.png"/> <img src="./imgs/logo.png" width="46"/></div>
+            <div class="head">PHI <br/><span>PRECISION HEALTH INFORMATICS</span></div>
+            <div class="projectName">Semantic EHR </div>
+        </div>
+        <nav id="primaryNav"></nav>
+        <div style="display:block;width: 100%;font-size:200%;margin-bottom:30px;text-align: center">&nbsp; </div>
+        <div id="searchDiv">
+            <!--<label for="chkCohort">Filter by patients</label><input type="checkbox" id="chkCohort"/>-->
+            <!--<label for="chkValidDoc">Filter by docs</label><input type="checkbox" id="chkValidDoc"/>-->
+            <!--<br/>-->
+            <div class="tabContainer">
+                <div class="tabHeaders">
+                <a class="tabTitle tabSelected" >CONCEPT</a>
+                <a class="tabTitle" >PATIENT</a>
+                </div>
+
+                <span id="tabConcept" class="semTab">
+                    <label for="searchInput">Terms</label> <input type="text" id="searchInput" value="*"/>
+                    <button id="btnSearch">search</button>
+                    <br/>
+                    <label for="chkSearchConcept">Search Concepts</label><input type="checkbox" id="chkSearchConcept"/>
+                    <span id="styGeneralListSpan">
+                    <select id="listGeneralSTY">
+                        <option value="*">-All-</option>
+                        <option value="Acquired Abnormality">Acquired Abnormality</option>
+                        <option value="Anatomical Abnormality">Anatomical Abnormality</option>
+                        <option value="Antibiotic">Antibiotic</option>
+                        <option value="Body Location or Region">Body Location or Region</option>
+                        <option value="Body Part, Organ, or Organ Component">Body Part, Organ, or Organ Component</option>
+                        <option value="Body Space or Junction">Body Space or Junction</option>
+                        <option value="Body System">Body System</option>
+                        <option value="Cell or Molecular Dysfunction">Cell or Molecular Dysfunction</option>
+                        <option value="Clinical Attribute">Clinical Attribute</option>
+                        <option value="Clinical Drug">Clinical Drug</option>
+                        <option value="Congenital Abnormality,Disease or Syndrome">Congenital Abnormality,Disease or Syndrome</option>
+                        <option value="Diagnostic Procedure">Diagnostic Procedure</option>
+                        <option value="Disease or Syndrome">Disease or Syndrome</option>
+                        <option value="Finding">Finding</option>
+                        <option value="Health Care Activity">Health Care Activity</option>
+                        <option value="Health Care Related Organization">Health Care Related Organization</option>
+                        <option value="Individual Behavior">Individual Behavior</option>
+                        <option value="Injury or Poisoning">Injury or Poisoning</option>
+                        <option value="Laboratory Procedure">Laboratory Procedure</option>
+                        <option value="Laboratory or Test Result">Laboratory or Test Result</option>
+                        <option value="Mental Process">Mental Process</option>
+                        <option value="Mental or Behavioral Dysfunction">Mental or Behavioral Dysfunction</option>
+                        <option value="Neoplastic Process">Neoplastic Process</option>
+                        <option value="Pathologic Function">Pathologic Function</option>
+                        <option value="Pharmacologic Substance">Pharmacologic Substance</option>
+                        <option value="Research Activity">Research Activity</option>
+                        <option value="Sign or Symptom">Sign or Symptom</option>
+                        <option value="Temporal Concept">Temporal Concept</option>
+                        <option value="Therapeutic or Preventive Procedure">Therapeutic or Preventive Procedure</option>
+                        <option value="Tissue">Tissue</option>
+                    </select>
+                    </span>
+                    <span id="btnGeneralMoreSTY">more concepts</span>
+                    <div id="styConceptContainer" style="display:block;max-height:200px;overflow:auto">
+                        <div id="conceptMapDiv"></div>
+                    </div>
+                </span>
+                <span id="tabEntity" class="semTab">
+                    <label for="searchEntityInput">Terms</label> <input type="text" id="searchEntityInput" value="*"/>
+                    <button id="btnEntitySearch">search</button>
+                    <br/>
+                    <span id="cohortDiv"><textarea id="cohortText" placeholder="past comma separated patient IDs (e.g., 123,345)"></textarea><br/></span>
+                    <span id="validatedDocDiv"><textarea id="validatedDocText" placeholder="past comma separated doc IDs (e.g., 123,345)"></textarea><br/></span>
+                    <span id="styListSpan"><select id="listSTY"></select></span>
+                    <span id="btnMoreSTY">more concepts</span>
+                    <div id="patientConceptContainer" style="display:block;max-height:200px;overflow:auto">
+                        <div id="patientConceptMapDiv"></div>
+                    </div>
+                </span>
+
+            </div>
+        </div>
+    </div>
+    <div id="sumTermDiv"></div>
+    <div id="entityPaginationDiv">
+        <span class="clsEntityPrev">&lt; prev</span> <span class="clsEntityPageInfo">1/1</span> <span class="clsEntityNext">next &gt;</span>
+    </div>
+
+    <div id="entitySummHeader">
+        <div class="sumRow headerRow">
+            <div class="sumCol">Patient ID</div>
+            <div class="sumCol">Total Mentions</div>
+            <div class="sumCol">Positive Mentions</div>
+            <div class="sumCol">History/hypothetical Mentions</div>
+            <div class="sumCol">Negative Mentions</div>
+            <div class="sumCol">Other Experiencers</div>
+        </div>        
+    </div>
+    <div style="display:block;overflow:hidden;width:100%;display:none" id="dataRowDiv">
+        <div id="entitySumm">
+            <div class="sumRow headerRow" style="visibility: hidden;">
+                <div class="sumCol">Patient ID</div>
+                <div class="sumCol">Total Mentions</div>
+                <div class="sumCol">Positive Mentions</div>
+                <div class="sumCol">History/hypothetical Mentions</div>
+                <div class="sumCol">Negative Mentions</div>
+                <div class="sumCol">Other Experiencers</div>
+            </div>       
+        </div>
+    </div>
+    <div id="pageCtrl">
+        <span class="clsPrev">&lt; prev</span> <span class="clsPageInfo">1/1</span> <span class="clsNext">next &gt;</span>
+    </div>
+    <div id="results"></div>
+</div>
+<div id="chartDivOverlay" class="overlay">
+    <div id="chartDiv" class="popup">
+    </div>
+</div>
+<div id="sumRowTemplate" style="display:none">
+    <div class="sumRow dataRow">
+        <div class="sumCol"><span class="patientId">-</span></div>
+        <div class="sumCol"><span class="allM sum">-</span></div>
+        <div class="sumCol"><span class="posM sum">-</span></div>
+        <div class="sumCol"><span class="hisM sum">-</span></div>
+        <div class="sumCol"><span class="negM sum">-</span></div>
+        <div class="sumCol"><span class="otherM sum">-</span></div>
+    </div>
+</div>
+</body>
+</html>

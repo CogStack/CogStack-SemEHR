@@ -11,6 +11,7 @@ from ann_post_rules import AnnRuleExecutor
 
 
 
+<<<<<<< HEAD
 # query concept sql
 autoimmune_concepts_sql = """
 select distinct concept_name from [SQLCRIS_User].[Kconnect].[ulms_concept_mapping]
@@ -128,6 +129,9 @@ term_doc_anns_sql_mysql = """
 
 
 def get_doc_detail_by_id(doc_id):
+=======
+def get_doc_detail_by_id(doc_id, fulltext_date_by_doc_id):
+>>>>>>> 6bc13b8e4d99deafaa196bb8c7cf972de46beeaf
     sql = fulltext_date_by_doc_id.format(**{'doc_id': doc_id})
     docs = []
     dutil.query_data(sql, docs)
@@ -152,7 +156,8 @@ def dump_doc_as_files(folder):
     utils.multi_thread_tasking(load_all_docs(), 10, do_save_file, args=[folder])
 
 
-def populate_patient_concept_table(cohort_name, concepts, out_file):
+def populate_patient_concept_table(cohort_name, concepts, out_file,
+                                   patients_sql, concept_doc_freq_sql):
     patients = []
     dutil.query_data(patients_sql.format(cohort_name), patients)
     id2p = {}
@@ -183,14 +188,16 @@ def populate_patient_concept_table(cohort_name, concepts, out_file):
     print 'done'
 
 
-def generate_skip_term_constrain(study_analyzer):
+def generate_skip_term_constrain(study_analyzer,
+                                 skip_term_sql):
     if len(study_analyzer.skip_terms) > 0:
         return skip_term_sql.format(', '.join(['\'%s\'' % t for t in study_analyzer.skip_terms]))
     else:
         return ''
 
 
-def populate_patient_study_table(cohort_name, study_analyzer, out_file):
+def populate_patient_study_table(cohort_name, study_analyzer, out_file,
+                                 patients_sql, term_doc_freq_sql):
     """
     populate result table for a given study analyzer instance
     :param cohort_name:
@@ -235,7 +242,9 @@ def populate_patient_study_table(cohort_name, study_analyzer, out_file):
 
 
 def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_file, rule_executor,
-                                            sample_size, sample_out_file, ruled_ann_out_file):
+                                            sample_size, sample_out_file, ruled_ann_out_file,
+                                            patients_sql, term_doc_anns_sql, skip_term_sql,
+                                            db_conn_file):
     """
     populate patient study result with post processing to remove unwanted mentions
     :param cohort_name:
@@ -247,8 +256,12 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     :return:
     """
     patients = []
+<<<<<<< HEAD
     dutil.query_data(patients_sql.format(cohort_name), patients, 
                      dbconn=dutil.get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock) if db_conn_type == 'mysql' else None)
+=======
+    dutil.query_data(patients_sql.format(cohort_name), patients, dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+>>>>>>> 6bc13b8e4d99deafaa196bb8c7cf972de46beeaf
     id2p = {}
     for p in patients:
         id2p[p['brcid']] = p
@@ -263,19 +276,18 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
         concept_list = ', '.join(['\'%s\'' % c for c in sc.concept_closure])
         doc_anns = []
         if len(sc.concept_closure) > 0:
-            sql_temp = term_doc_anns_sql_mysql if db_conn_type == 'mysql' else term_doc_anns_sql
+            sql_temp = term_doc_anns_sql
             data_sql = sql_temp.format(**{'concepts': concept_list,
                                           'cohort_id': cohort_name,
                                           'extra_constrains':
                                               ' \n '.join(
-                                                  [generate_skip_term_constrain(study_analyzer)]
+                                                  [generate_skip_term_constrain(study_analyzer, skip_term_sql)]
                                                   + [] if (study_analyzer.study_options is None or
                                                            study_analyzer.study_options['extra_constrains'] is None)
                                                   else study_analyzer.study_options['extra_constrains'])})
             print data_sql
             dutil.query_data(data_sql, doc_anns,
-                             dbconn=dutil.get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock)
-                             if db_conn_type == 'mysql' else None)
+                             dbconn=dutil.get_db_connection_by_setting(db_conn_file))
         if len(doc_anns) > 0:
             p_to_dfreq = {}
             counted_docs = set()
@@ -326,7 +338,9 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     print 'done'
 
 
-def random_extract_annotated_docs(cohort_name, study_analyzer, out_file, sample_size=5):
+def random_extract_annotated_docs(cohort_name, study_analyzer, out_file,
+                                  docs_by_term_sql, docs_by_cohort_sql, docs_by_ids_sql,
+                                  sample_size=5):
 
     term_to_docs = {}
     study_concepts = study_analyzer.study_concepts

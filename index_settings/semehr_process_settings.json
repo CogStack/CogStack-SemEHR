@@ -1,18 +1,25 @@
 {
   "env": {
-    "java_home": "java-1.8.0-openjdk-amd64",
-    "gcp_home": "bio-yodie/gcp-2.5-18658",
-    "gate_home": "bio-yodie/gate-8.1-build5169-ALL",
-    "yodie_path": "bio-yodie",
-    "ukb_home": "bio-yodie/ukb"
+    "java_home": "",
+    "gcp_home": "",
+    "gate_home": "",
+    "yodie_path": "",
+    "ukb_home": ""
   },
   "yodie": {
+    "os": "win",
     "gcp_run_path": "",
     "input_doc_file_path": "",
-    "thread_num": "20",
+    "thread_num": "40",
     "memory": "30g",
     "config_xml_path": "",
-    "output_file_path": ""
+    "output_file_path": "",
+    "output_destination": "sql",
+    "output_dbconn_setting_file": "..dbconn.json..",
+    "output_table": "..[kconnect_annotations]..",
+    "output_concept_filter_file": "..retain_concepts.txt..",
+    "input_source": "sql",
+    "input_dbconn_setting_file": "..dbconn.json.."
   },
   "semehr": {
     "es_doc_url": "",
@@ -36,15 +43,15 @@
     "dest_doc_type": ""
   },
   "new_docs":{
-    "sql_query": "",
-    "dbconn_setting_file": ""
+    "sql_query": "select docid from ...",
+    "dbconn_setting_file": "..dbconn.json.."
  },
   "job":{
     "copy_docs": "no",
     "yodie": "yes",
-    "semehr-concept": "yes",
-    "semehr-patients": "yes",
-    "job_id": "imparts",
-    "job_status_file_path": ""
+    "semehr-concept": "no",
+    "semehr-patients": "no",
+    "job_id": "camcris",
+    "job_status_file_path": "..semehr-runtime.."
   }
 }

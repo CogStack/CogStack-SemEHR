@@ -1,0 +1,10 @@
+{
+  "driver": "{SQL Server Native Client 10.0}",
+  "server": "x.x.x.x",
+  "user": "",
+  "password": "",
+  "database": "",
+  "db_driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+  "db_url": "jdbc:sqlserver://x.x.x.x/",
+  "get_doc_sql_prefix": "select xxxx"
+}

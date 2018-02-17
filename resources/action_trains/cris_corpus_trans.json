@@ -1,0 +1,1548 @@
+[
+  {
+    "instance_number": 4,
+    "variation_pos": [
+      0
+    ],
+    "infrequent_variants": [
+      ""
+    ],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [],
+    "mini_comp_pattern": "",
+    "hard_ones": {},
+    "all_accuracy": 0.75
+  },
+  {
+    "instance_number": 7,
+    "variation_pos": [
+      1,
+      2
+    ],
+    "infrequent_variants": [
+      "RNA 165",
+      "RNA 542526"
+    ],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [
+      [
+        "Positive 2007",
+        1,
+        5
+      ]
+    ],
+    "mini_comp_pattern": "KCL->PROPN->NUM",
+    "hard_ones": {},
+    "all_accuracy": 1
+  },
+  {
+    "instance_number": 4,
+    "variation_pos": [
+      1,
+      2
+    ],
+    "infrequent_variants": [
+      "status unknown",
+      "positive positive aware",
+      "status status unknown"
+    ],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [],
+    "mini_comp_pattern": "KCL->NOUN->ADJ",
+    "hard_ones": {},
+    "all_accuracy": 0.75
+  },
+  {
+    "instance_number": 3,
+    "variation_pos": [
+      1,
+      2
+    ],
+    "infrequent_variants": [
+      "C. C. He",
+      "C. He"
+    ],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [],
+    "mini_comp_pattern": "KCL->PROPN->PRON",
+    "hard_ones": {},
+    "all_accuracy": 0.6666666666666666
+  },
+  {
+    "instance_number": 3,
+    "variation_pos": [
+      0
+    ],
+    "infrequent_variants": [
+      "RNA",
+      "Diagnosed"
+    ],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [],
+    "mini_comp_pattern": "PROPN->KCL",
+    "hard_ones": {},
+    "all_accuracy": 0.6666666666666666
+  },
+  {
+    "instance_number": 5,
+    "variation_pos": [
+      0,
+      2
+    ],
+    "infrequent_variants": [
+      "yesterday =#= positive",
+      "Reports =#= pos",
+      "hie =#= diagnosis",
+      "acupuncture ore =#= group",
+      "what =#= result"
+    ],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [],
+    "mini_comp_pattern": "NOUN->KCL->NOUN",
+    "hard_ones": {},
+    "all_accuracy": 0.8
+  },
+  {
+    "instance_number": 4,
+    "variation_pos": [
+      0,
+      2,
+      3
+    ],
+    "infrequent_variants": [
+      "his =#= positive status"
+    ],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [],
+    "mini_comp_pattern": "ADJ->KCL->ADJ->NOUN",
+    "hard_ones": {},
+    "all_accuracy": 1
+  },
+  {
+    "instance_number": 12,
+    "variation_pos": [
+      1,
+      2
+    ],
+    "infrequent_variants": [
+      "viral load",
+      "positive status",
+      "positive positive chronic asthma",
+      "oral swab",
+      "positive positive recent diagnosis",
+      "oral stick test reactive",
+      "positive prev",
+      "positive platelet levels",
+      "reactive status"
+    ],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [],
+    "mini_comp_pattern": "KCL->ADJ->NOUN",
+    "hard_ones": {},
+    "all_accuracy": 0.45454545454545453
+  },
+  {
+    "instance_number": 51,
+    "variation_pos": [
+      1
+    ],
+    "infrequent_variants": [
+      "reactive reactive",
+      "positive positive untreated"
+    ],
+    "hard": [
+      [
+        "positive positive",
+        0.6666666666666666,
+        6
+      ]
+    ],
+    "easy_inaccurate": [],
+    "easy_accurate": [
+      [
+        "positive",
+        0.8095238095238095,
+        43
+      ]
+    ],
+    "mini_comp_pattern": "KCL->ADJ",
+    "hard_ones": {
+      "positive positive": {
+        "hard": [],
+        "hard_ones": {},
+        "easy_inaccurate": [],
+        "easy_accurate": []
+      }
+    },
+    "all_accuracy": 0.8
+  },
+  {
+    "instance_number": 3,
+    "variation_pos": [
+      0,
+      1
+    ],
+    "infrequent_variants": [
+      "Liver /",
+      "Hep B /",
+      "HIV /"
+    ],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [],
+    "mini_comp_pattern": "PROPN->SYM->KCL",
+    "hard_ones": {},
+    "all_accuracy": 0.3333333333333333
+  },
+  {
+    "instance_number": 17,
+    "variation_pos": [
+      1,
+      2
+    ],
+    "infrequent_variants": [
+      "C. Short term goal",
+      "RNA RNA test",
+      "RNA RNA check",
+      "IgG IgG report",
+      "RNA RNA positive",
+      "Outreach Outreach nurse",
+      "C. Overdose Overdose risk",
+      "PCR PCR test",
+      "C+ diagnosis",
+      "C. Further Further appointment",
+      "IgG IgG antibodies"
+    ],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [],
+    "mini_comp_pattern": "KCL->PROPN->NOUN",
+    "hard_ones": {},
+    "all_accuracy": 0.29411764705882354
+  },
+  {
+    "instance_number": 401,
+    "variation_pos": [
+      1
+    ],
+    "infrequent_variants": [
+      "treatment commencing",
+      "test date",
+      "approx",
+      "medication",
+      "treatment treatment detox",
+      "positive\"",
+      "injections",
+      "damage",
+      "date",
+      "clinic",
+      "reactive reactive",
+      "result",
+      "serology serology",
+      "Nurse",
+      "positive positive",
+      "swab test",
+      "–ve",
+      "management",
+      "monitoring",
+      "C-",
+      "swab",
+      "antibody test",
+      "reactive",
+      "ANTIBODY",
+      "treatmant",
+      "test results",
+      "prev",
+      "assessment",
+      "screen",
+      "screening",
+      "function tests",
+      "tests",
+      "liver failure",
+      "appointment",
+      "c.",
+      "LFTs",
+      "rna",
+      "blood spot test",
+      "RNA RNA test",
+      "testing testing results",
+      "infection",
+      "cirrhosis",
+      "failure",
+      "virus",
+      "levels",
+      "therapy",
+      "nurse-",
+      "positive positive liver function tests",
+      "diagnosis",
+      "injection",
+      "treatment trial",
+      "Antibody",
+      "reactive status",
+      "positve",
+      "antibodies",
+      "nad",
+      "mouth swab test",
+      "transmission",
+      "support group",
+      "appointments",
+      "trial",
+      "pos",
+      "treatment treatment –anti retrovirals",
+      "positive test",
+      "nurse today",
+      "beacuse"
+    ],
+    "hard": [
+      [
+        "positive-",
+        0.6,
+        5
+      ],
+      [
+        "status",
+        0.3333333333333333,
+        10
+      ],
+      [
+        "care",
+        0.4,
+        5
+      ]
+    ],
+    "easy_inaccurate": [
+      [
+        "testing",
+        0,
+        11
+      ],
+      [
+        "results",
+        0,
+        5
+      ],
+      [
+        "test",
+        0,
+        11
+      ],
+      [
+        "services",
+        0.14285714285714285,
+        7
+      ],
+      [
+        "nurse",
+        0.16666666666666666,
+        18
+      ]
+    ],
+    "easy_accurate": [
+      [
+        "positive",
+        0.8823529411764706,
+        121
+      ],
+      [
+        "treatment",
+        0.8111111111111111,
+        91
+      ],
+      [
+        "antibody",
+        0.8571428571428571,
+        9
+      ]
+    ],
+    "mini_comp_pattern": "KCL->NOUN",
+    "hard_ones": {
+      "status": {
+        "hard": [],
+        "hard_ones": {},
+        "easy_inaccurate": [],
+        "easy_accurate": []
+      },
+      "care": {
+        "hard": [],
+        "hard_ones": {},
+        "easy_inaccurate": [],
+        "easy_accurate": []
+      },
+      "positive-": {
+        "hard": [],
+        "hard_ones": {},
+        "easy_inaccurate": [],
+        "easy_accurate": []
+      }
+    },
+    "all_accuracy": 0.6198979591836735
+  },
+  {
+    "instance_number": 11,
+    "variation_pos": [
+      0
+    ],
+    "infrequent_variants": [],
+    "hard": [],
+    "easy_inaccurate": [
+      [
+        "e.g.",
+        0,
+        11
+      ]
+    ],
+    "easy_accurate": [],
+    "mini_comp_pattern": "ADV->KCL",
+    "hard_ones": {},
+    "all_accuracy": 0
+  },
+  {
+    "instance_number": 32,
+    "variation_pos": [
+      0,
+      2
+    ],
+    "infrequent_variants": [
+      "the =#= support meeting",
+      "a =#= education assessment",
+      "the =#= appointment",
+      "The =#= treatment",
+      "a =#= treatment assessment",
+      "the =#= nurse",
+      "the =#= issue",
+      "the =#= clinic",
+      "the =#= results",
+      "the =#= box",
+      "the =#= test",
+      "the =#= virus",
+      "a =#= nurse",
+      "the =#= reactive result",
+      "a =#= test",
+      "the =#= support",
+      "the =#= liaison nurse",
+      "the =#= outreach outreach nurse",
+      "a =#= appointment",
+      "a =#= result"
+    ],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [
+      [
+        "the =#= treatment",
+        1,
+        6
+      ]
+    ],
+    "mini_comp_pattern": "DET->KCL->NOUN",
+    "hard_ones": {},
+    "all_accuracy": 0.59375
+  },
+  {
+    "instance_number": 3,
+    "variation_pos": [
+      1,
+      2
+    ],
+    "infrequent_variants": [
+      "Nurse Nurse Sarah",
+      "Nurse Rebecca Hawley",
+      "nurse nurse Becky"
+    ],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [],
+    "mini_comp_pattern": "KCL->NOUN->PROPN",
+    "hard_ones": {},
+    "all_accuracy": 0
+  },
+  {
+    "instance_number": 9,
+    "variation_pos": [
+      0
+    ],
+    "infrequent_variants": [],
+    "hard": [],
+    "easy_inaccurate": [
+      [
+        "the",
+        0.2222222222222222,
+        9
+      ]
+    ],
+    "easy_accurate": [],
+    "mini_comp_pattern": "DET->KCL",
+    "hard_ones": {},
+    "all_accuracy": 0.2222222222222222
+  },
+  {
+    "instance_number": 207,
+    "variation_pos": [
+      1
+    ],
+    "infrequent_variants": [
+      "PCR",
+      "Negative",
+      "Pos",
+      "Treatment",
+      "Nurse",
+      "Positive Positive",
+      "C. Ms ZZZZZ",
+      "C. C.",
+      "C)and",
+      "Screen",
+      "POS",
+      "Infection",
+      "LFT",
+      "C. Reports",
+      "Specialists",
+      "Antibodies",
+      "B",
+      "Ben",
+      "C.He",
+      "Hepatitis C",
+      "C+ Sees Gastroenterologist",
+      "C+VE",
+      "RNA",
+      "C. ZZZZZ",
+      "Clinic",
+      "C. GP",
+      "C. Immunised"
+    ],
+    "hard": [
+      [
+        "Positive",
+        0.7115384615384616,
+        61
+      ],
+      [
+        "C.",
+        0.6067415730337079,
+        89
+      ]
+    ],
+    "easy_inaccurate": [],
+    "easy_accurate": [
+      [
+        "C+",
+        1,
+        9
+      ],
+      [
+        "C+ve",
+        1,
+        7
+      ]
+    ],
+    "mini_comp_pattern": "KCL->PROPN",
+    "hard_ones": {
+      "Positive": {
+        "hard": [
+          [
+            "KCL_COMP",
+            0.7058823529411765,
+            60
+          ]
+        ],
+        "hard_ones": {
+          "KCL_COMP": {
+            "cls2ptns": {
+              "": [
+                ""
+              ]
+            },
+            "hard": [
+              [
+                "",
+                0.7058823529411765,
+                60
+              ]
+            ],
+            "easy_inaccurate": [],
+            "easy_accurate": []
+          }
+        },
+        "easy_inaccurate": [],
+        "easy_accurate": []
+      },
+      "C.": {
+        "hard": [
+          [
+            "KCL_COMP<-VERB",
+            0.6666666666666666,
+            18
+          ],
+          [
+            "KCL_COMP<-ADP<-NOUN<-ADP<-VERB",
+            0.4444444444444444,
+            9
+          ],
+          [
+            "KCL_COMP<-ADP<-NOUN<-VERB",
+            0.6666666666666666,
+            9
+          ]
+        ],
+        "hard_ones": {
+          "KCL_COMP<-VERB": {
+            "cls2ptns": {
+              "regarding": [
+                "regarding"
+              ],
+              "has": [
+                "has"
+              ],
+              "contracting": [
+                "contracting"
+              ],
+              "Is": [
+                "Is"
+              ],
+              "Discussed": [
+                "Discussed"
+              ],
+              "tested": [
+                "tested"
+              ],
+              "have": [
+                "have"
+              ],
+              "re": [
+                "re"
+              ],
+              "cleared": [
+                "cleared"
+              ]
+            },
+            "hard": [],
+            "easy_inaccurate": [],
+            "easy_accurate": [
+              [
+                "has",
+                1,
+                8
+              ]
+            ]
+          },
+          "KCL_COMP<-ADP<-NOUN<-ADP<-VERB": {
+            "cls2ptns": {
+              "test consider": [
+                "test consider"
+              ],
+              "spec_verbs1": [
+                "treatment talked",
+                "treatment started",
+                "treatment sent",
+                "treatment need"
+              ],
+              "spec_verbs0": [
+                "discussion Referred",
+                "investigation Referred",
+                "assessment Referred"
+              ]
+            },
+            "hard": [],
+            "easy_inaccurate": [
+              [
+                "spec_verbs0",
+                0,
+                3
+              ]
+            ],
+            "easy_accurate": [
+              [
+                "spec_verbs1",
+                0.8,
+                5
+              ]
+            ]
+          },
+          "KCL_COMP<-ADP<-NOUN<-VERB": {
+            "cls2ptns": {
+              "options explore": [
+                "options explore"
+              ],
+              "markers were": [
+                "markers were"
+              ],
+              "results awaiting": [
+                "results awaiting"
+              ],
+              "spec_verbs0": [
+                "treatment have",
+                "treatment started",
+                "treatment completed",
+                "treatment awaiting",
+                "treatment start"
+              ]
+            },
+            "hard": [],
+            "easy_inaccurate": [],
+            "easy_accurate": [
+              [
+                "spec_verbs0",
+                0.8,
+                5
+              ]
+            ]
+          }
+        },
+        "easy_inaccurate": [
+          [
+            "KCL_COMP<-ADP<-VERB",
+            0.25,
+            8
+          ]
+        ],
+        "easy_accurate": [
+          [
+            "KCL_COMP",
+            0.7777777777777778,
+            18
+          ]
+        ]
+      }
+    },
+    "all_accuracy": 0.6818181818181818
+  },
+  {
+    "instance_number": 13,
+    "variation_pos": [
+      0,
+      2
+    ],
+    "infrequent_variants": [
+      "Hepatitis =#= positive",
+      "Becky =#= nurse",
+      "Diagnosed =#= positive",
+      "Mags O'Sullivan =#= nurse",
+      "Client =#= positive",
+      "P+ =#= referral",
+      "Patient =#= positive",
+      "Copy NEG =#= result",
+      "A =#= test"
+    ],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [],
+    "mini_comp_pattern": "PROPN->KCL->NOUN",
+    "hard_ones": {},
+    "all_accuracy": 0.38461538461538464
+  },
+  {
+    "instance_number": 44,
+    "variation_pos": [
+      0
+    ],
+    "infrequent_variants": [
+      "His",
+      "positive",
+      "Negative",
+      "chronic",
+      "active",
+      "my",
+      "your"
+    ],
+    "hard": [
+      [
+        "her",
+        0.5714285714285714,
+        7
+      ]
+    ],
+    "easy_inaccurate": [],
+    "easy_accurate": [
+      [
+        "his",
+        0.8,
+        30
+      ]
+    ],
+    "mini_comp_pattern": "ADJ->KCL",
+    "hard_ones": {
+      "her": {
+        "hard": [],
+        "hard_ones": {},
+        "easy_inaccurate": [],
+        "easy_accurate": []
+      }
+    },
+    "all_accuracy": 0.7441860465116279
+  },
+  {
+    "instance_number": 16,
+    "variation_pos": [
+      1
+    ],
+    "infrequent_variants": [],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [
+      [
+        "+",
+        0.9375,
+        16
+      ]
+    ],
+    "mini_comp_pattern": "KCL->X",
+    "hard_ones": {},
+    "all_accuracy": 0.9375
+  },
+  {
+    "instance_number": 561,
+    "variation_pos": [],
+    "infrequent_variants": [],
+    "hard": [
+      [
+        "",
+        0.6120527306967984,
+        561
+      ]
+    ],
+    "easy_inaccurate": [],
+    "easy_accurate": [],
+    "mini_comp_pattern": "KCL",
+    "hard_ones": {
+      "": {
+        "hard": [
+          [
+            "KCL_COMP<-VERB",
+            0.6090225563909775,
+            136
+          ],
+          [
+            "KCL_COMP<-ADP<-VERB",
+            0.6213592233009708,
+            110
+          ],
+          [
+            "KCL_COMP",
+            0.71,
+            106
+          ],
+          [
+            "KCL_COMP<-ADP<-NOUN<-VERB",
+            0.6428571428571429,
+            29
+          ],
+          [
+            "KCL_COMP<-PROPN",
+            0.5555555555555556,
+            16
+          ],
+          [
+            "KCL_COMP<-PROPN<-ADP<-VERB",
+            0.4375,
+            16
+          ],
+          [
+            "KCL_COMP<-NOUN<-VERB",
+            0.7272727272727273,
+            11
+          ],
+          [
+            "KCL_COMP<-NOUN",
+            0.6,
+            10
+          ],
+          [
+            "KCL_COMP<-ADP",
+            0.5714285714285714,
+            7
+          ]
+        ],
+        "hard_ones": {
+          "KCL_COMP<-ADP": {
+            "cls2ptns": {
+              "": [
+                ""
+              ]
+            },
+            "hard": [
+              [
+                "",
+                0.5714285714285714,
+                7
+              ]
+            ],
+            "easy_inaccurate": [],
+            "easy_accurate": []
+          },
+          "KCL_COMP<-NOUN": {
+            "cls2ptns": {
+              "status": [
+                "status"
+              ],
+              "hep": [
+                "hep"
+              ],
+              "epilepsy": [
+                "epilepsy"
+              ],
+              "disease": [
+                "disease"
+              ],
+              "states": [
+                "states"
+              ],
+              "re": [
+                "re"
+              ],
+              "ivdu": [
+                "ivdu"
+              ],
+              "disorder": [
+                "disorder"
+              ],
+              "depression": [
+                "depression"
+              ]
+            },
+            "hard": [],
+            "easy_inaccurate": [],
+            "easy_accurate": []
+          },
+          "KCL_COMP<-VERB": {
+            "cls2ptns": {
+              "ve": [
+                "ve"
+              ],
+              "caused": [
+                "caused"
+              ],
+              "advised": [
+                "advised"
+              ],
+              "contracting": [
+                "contracting"
+              ],
+              "catching": [
+                "catching"
+              ],
+              "including": [
+                "including"
+              ],
+              "given": [
+                "given"
+              ],
+              "Tried": [
+                "Tried"
+              ],
+              "make": [
+                "make"
+              ],
+              "contracted": [
+                "contracted"
+              ],
+              "seems": [
+                "seems"
+              ],
+              "re": [
+                "re"
+              ],
+              "antigen": [
+                "antigen"
+              ],
+              "adress": [
+                "adress"
+              ],
+              "contacting": [
+                "contacting"
+              ],
+              "told": [
+                "told"
+              ],
+              "tests": [
+                "tests"
+              ],
+              "attended": [
+                "attended"
+              ],
+              "c.": [
+                "c."
+              ],
+              "started": [
+                "started"
+              ],
+              "offered": [
+                "offered"
+              ],
+              "spec_verbs1": [
+                "is",
+                "Is"
+              ],
+              "spec_verbs0": [
+                "being",
+                "had",
+                "have",
+                "been",
+                "got",
+                "has",
+                "was",
+                "be"
+              ],
+              "reported": [
+                "reported"
+              ],
+              "address": [
+                "address"
+              ],
+              "injected": [
+                "injected"
+              ],
+              "awaiting": [
+                "awaiting"
+              ],
+              "cleared": [
+                "cleared"
+              ],
+              "discuss": [
+                "discuss"
+              ],
+              "repeat": [
+                "repeat"
+              ],
+              "arrange": [
+                "arrange"
+              ],
+              "obtained": [
+                "obtained"
+              ],
+              "received": [
+                "received"
+              ],
+              "regarding": [
+                "regarding"
+              ],
+              "tested": [
+                "tested"
+              ],
+              "discussed": [
+                "discussed"
+              ],
+              "contract": [
+                "contract"
+              ],
+              "conducted": [
+                "conducted"
+              ],
+              "diagnosed": [
+                "diagnosed"
+              ],
+              "passing": [
+                "passing"
+              ],
+              "referred": [
+                "referred"
+              ]
+            },
+            "hard": [
+              [
+                "spec_verbs0",
+                0.6428571428571429,
+                42
+              ],
+              [
+                "spec_verbs1",
+                0.6923076923076923,
+                26
+              ],
+              [
+                "diagnosed",
+                0.6666666666666666,
+                6
+              ],
+              [
+                "contracted",
+                0.6666666666666666,
+                3
+              ],
+              [
+                "referred",
+                0.5,
+                3
+              ]
+            ],
+            "easy_inaccurate": [
+              [
+                "cleared",
+                0.16666666666666666,
+                6
+              ]
+            ],
+            "easy_accurate": [
+              [
+                "c.",
+                0.8333333333333334,
+                6
+              ],
+              [
+                "including",
+                1,
+                4
+              ]
+            ]
+          },
+          "KCL_COMP<-NOUN<-VERB": {
+            "cls2ptns": {
+              "hep weakened": [
+                "hep weakened"
+              ],
+              "psoriasis connected": [
+                "psoriasis connected"
+              ],
+              "treatment asked": [
+                "treatment asked"
+              ],
+              "cell cure": [
+                "cell cure"
+              ],
+              "history find": [
+                "history find"
+              ],
+              "TB have": [
+                "TB have"
+              ],
+              "hep Tested": [
+                "hep Tested"
+              ],
+              "hep ve": [
+                "hep ve"
+              ],
+              "weight regarding": [
+                "weight regarding"
+              ],
+              "cirrhosis smokes": [
+                "cirrhosis smokes"
+              ],
+              "incl had": [
+                "incl had"
+              ]
+            },
+            "hard": [],
+            "easy_inaccurate": [],
+            "easy_accurate": []
+          },
+          "KCL_COMP<-ADP<-NOUN<-VERB": {
+            "cls2ptns": {
+              "terms consider": [
+                "terms consider"
+              ],
+              "spec_verbs1": [
+                "tests had",
+                "tests redoing",
+                "problesm had",
+                "history has",
+                "history given",
+                "test had",
+                "test done"
+              ],
+              "spec_verbs0": [
+                "treatment is",
+                "treatment receiving",
+                "treatment Discussed",
+                "diagnosis has",
+                "diagnosis have",
+                "treatment be",
+                "diagnosis include",
+                "treatment undertake",
+                "treatment starting",
+                "treatment started"
+              ],
+              "antibodies informed": [
+                "antibodies informed"
+              ]
+            },
+            "hard": [],
+            "easy_inaccurate": [
+              [
+                "spec_verbs1",
+                0.2222222222222222,
+                9
+              ]
+            ],
+            "easy_accurate": [
+              [
+                "spec_verbs0",
+                0.8235294117647058,
+                18
+              ]
+            ]
+          },
+          "KCL_COMP<-PROPN": {
+            "cls2ptns": {
+              "BBV": [
+                "BBV"
+              ],
+              "C": [
+                "C"
+              ],
+              "B": [
+                "B"
+              ],
+              "Discussed": [
+                "Discussed"
+              ],
+              "HIV": [
+                "HIV"
+              ]
+            },
+            "hard": [
+              [
+                "C",
+                0.6,
+                11
+              ]
+            ],
+            "easy_inaccurate": [],
+            "easy_accurate": []
+          },
+          "KCL_COMP": {
+            "cls2ptns": {
+              "": [
+                ""
+              ]
+            },
+            "hard": [
+              [
+                "",
+                0.71,
+                106
+              ]
+            ],
+            "easy_inaccurate": [],
+            "easy_accurate": []
+          },
+          "KCL_COMP<-PROPN<-ADP<-VERB": {
+            "cls2ptns": {
+              "TB tested": [
+                "TB tested"
+              ],
+              "spec_verbs1": [
+                "C Tested",
+                "C met",
+                "C tested"
+              ],
+              "spec_verbs0": [
+                "HIV checked",
+                "HIV tested"
+              ],
+              "Psoriasis diagnosed": [
+                "Psoriasis diagnosed"
+              ],
+              "spec_verbs2": [
+                "HIV dying",
+                "HIV suffers"
+              ]
+            },
+            "hard": [
+              [
+                "spec_verbs2",
+                0.6666666666666666,
+                3
+              ]
+            ],
+            "easy_inaccurate": [
+              [
+                "spec_verbs1",
+                0.14285714285714285,
+                7
+              ]
+            ],
+            "easy_accurate": [
+              [
+                "spec_verbs0",
+                0.75,
+                4
+              ]
+            ]
+          },
+          "KCL_COMP<-ADP<-VERB": {
+            "cls2ptns": {
+              "was": [
+                "was"
+              ],
+              "suffers": [
+                "suffers"
+              ],
+              "ve": [
+                "ve"
+              ],
+              "reported": [
+                "reported"
+              ],
+              "being": [
+                "being"
+              ],
+              "spec_verbs1": [
+                "Diagnosed",
+                "diagnosed"
+              ],
+              "genotyping": [
+                "genotyping"
+              ],
+              "informed": [
+                "informed"
+              ],
+              "spec_verbs0": [
+                "Tested",
+                "tested"
+              ],
+              "spoken": [
+                "spoken"
+              ],
+              "dignosised": [
+                "dignosised"
+              ],
+              "talking": [
+                "talking"
+              ],
+              "infected": [
+                "infected"
+              ],
+              "using": [
+                "using"
+              ],
+              "found": [
+                "found"
+              ],
+              "treated": [
+                "treated"
+              ],
+              "start": [
+                "start"
+              ],
+              "is": [
+                "is"
+              ]
+            },
+            "hard": [
+              [
+                "spec_verbs0",
+                0.4473684210526316,
+                45
+              ]
+            ],
+            "easy_inaccurate": [
+              [
+                "treated",
+                0,
+                8
+              ]
+            ],
+            "easy_accurate": [
+              [
+                "spec_verbs1",
+                0.8,
+                35
+              ],
+              [
+                "suffers",
+                1,
+                3
+              ],
+              [
+                "was",
+                1,
+                3
+              ],
+              [
+                "is",
+                1,
+                3
+              ]
+            ]
+          }
+        },
+        "easy_inaccurate": [
+          [
+            "KCL_COMP<-ADP<-NOUN",
+            0.1,
+            11
+          ],
+          [
+            "KCL_COMP<-ADP<-PROPN",
+            0,
+            9
+          ]
+        ],
+        "easy_accurate": [
+          [
+            "KCL_COMP<-ADP<-NOUN<-ADP<-VERB",
+            0.9090909090909091,
+            11
+          ],
+          [
+            "KCL_COMP<-PROPN<-VERB",
+            0.8,
+            10
+          ]
+        ]
+      }
+    },
+    "all_accuracy": 0.6120527306967984
+  },
+  {
+    "instance_number": 27,
+    "variation_pos": [
+      0,
+      2
+    ],
+    "infrequent_variants": [
+      "her =#= C.",
+      "his =#= Virus",
+      "his =#= C. Appointment"
+    ],
+    "hard": [
+      [
+        "his =#= C.",
+        0.6666666666666666,
+        24
+      ]
+    ],
+    "easy_inaccurate": [],
+    "easy_accurate": [],
+    "mini_comp_pattern": "ADJ->KCL->PROPN",
+    "hard_ones": {
+      "his =#= C.": {
+        "hard": [
+          [
+            "KCL_COMP<-VERB",
+            0.42857142857142855,
+            7
+          ]
+        ],
+        "hard_ones": {
+          "KCL_COMP<-VERB": {
+            "cls2ptns": {
+              "follow": [
+                "follow"
+              ],
+              "regarding": [
+                "regarding"
+              ],
+              "monitor": [
+                "monitor"
+              ]
+            },
+            "hard": [
+              [
+                "regarding",
+                0.5,
+                4
+              ]
+            ],
+            "easy_inaccurate": [],
+            "easy_accurate": []
+          }
+        },
+        "easy_inaccurate": [],
+        "easy_accurate": []
+      }
+    },
+    "all_accuracy": 0.7037037037037037
+  },
+  {
+    "instance_number": 5,
+    "variation_pos": [
+      0
+    ],
+    "infrequent_variants": [
+      "BBVs",
+      "infection",
+      "Reports"
+    ],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [],
+    "mini_comp_pattern": "NOUN->KCL",
+    "hard_ones": {},
+    "all_accuracy": 1
+  },
+  {
+    "instance_number": 3,
+    "variation_pos": [
+      1,
+      2
+    ],
+    "infrequent_variants": [
+      "positive 8.11.07",
+      "RNA 1323",
+      "RNA 9894"
+    ],
+    "hard": [],
+    "easy_inaccurate": [],
+    "easy_accurate": [],
+    "mini_comp_pattern": "KCL->NOUN->NUM",
+    "hard_ones": {},
+    "all_accuracy": 1
+  },
+  {
+    "instance_number": 69,
+    "variation_pos": [
+      0,
+      2
+    ],
+    "infrequent_variants": [
+      "his =#= medication",
+      "other =#= meds",
+      "her reactive =#= result",
+      "new =#= treatments",
+      "her =#= reaction",
+      "his =#= positive",
+      "recent =#= –ve results",
+      "his =#= c.",
+      "his =#= condition",
+      "positive =#= result",
+      "his =#= diagnosis",
+      "his =#= appointments",
+      "his =#= test test whcih",
+      "his =#= situation",
+      "his forthcoming =#= treatment",
+      "his =#= test",
+      "his =#= issues",
+      "his =#= reactive result",
+      "her =#= treatment",
+      "her recent =#= test",
+      "his =#= disease",
+      "his positive =#= infection",
+      "our =#= outreach outreach clinic",
+      "her =#= status",
+      "his =#= appointment",
+      "his =#= results",
+      "his recent =#= test"
+    ],
+    "hard": [
+      [
+        "his =#= status",
+        0.375,
+        9
+      ]
+    ],
+    "easy_inaccurate": [],
+    "easy_accurate": [
+      [
+        "his =#= treatment",
+        0.8518518518518519,
+        27
+      ]
+    ],
+    "mini_comp_pattern": "ADJ->KCL->NOUN",
+    "hard_ones": {
+      "his =#= status": {
+        "hard": [],
+        "hard_ones": {},
+        "easy_inaccurate": [],
+        "easy_accurate": []
+      }
+    },
+    "all_accuracy": 0.6911764705882353
+  }
+]
