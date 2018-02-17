@@ -5,6 +5,7 @@ from os.path import isfile, join, split
 import joblib as jl
 import cohortanalysis as cohort
 from ann_post_rules import AnnRuleExecutor
+import sys
 
 
 class StudyConcept(object):
@@ -203,8 +204,6 @@ def study(folder, cohort_name):
                 scs.append(sc)
                 print sc.term_to_concept, sc.concept_closure
             sa.study_concepts = scs
-            print scs
-            exit(0)
         else:
             concepts = utils.load_json_data(join(folder, 'study_concepts.json'))
             if len(concepts) > 0:
@@ -248,10 +247,12 @@ def study(folder, cohort_name):
     print 'done'
 
 if __name__ == "__main__":
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
     # study('./studies/slam_physical_health/', 'CC_physical_health')
     # study('./studies/autoimmune.v2/', 'auto_immune')
     # study('./studies/autoimmune', 'auto_immune')
     # study('./studies/HCVpos', 'HCVpos_cohort')
     # study('./studies/liver', 'auto_immune')
     # study('./studies/hepc_unknown_200', 'hepc_unknown')
-    study('./studies/karen', 'karen_2017')
+    study('./studies/karen', 'karen_072017')
