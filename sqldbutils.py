@@ -19,7 +19,7 @@ def get_db_connection():
 
 def get_db_connection_by_setting(setting_file):
     settings = imutil.load_json_data(setting_file)
-    if 'db_type' in settings and settings['db_type'] == 'mysql':
+    if 'db_type' in settings and settings['db_type'] == 'mysql_socket':
         return get_mysqldb_connection(settings['server'],
                                       settings['user'],
                                       settings['password'],

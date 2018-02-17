@@ -1,5 +1,5 @@
 {
-  "db_type": "mysql",
+  "db_type": "mysql_socket",
   "driver": "{SQL Server Native Client 10.0}",
   "server": "x.x.x.x",
   "user": "",
