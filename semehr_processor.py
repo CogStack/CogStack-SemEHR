@@ -236,6 +236,8 @@ def clear_folder(folder):
     :param folder:
     :return:
     """
+    if not os.path.exists(folder):
+        return
     for the_file in os.listdir(folder):
         file_path = os.path.join(folder, the_file)
         try:
