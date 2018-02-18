@@ -1,6 +1,7 @@
 # SemEHR
 Surfacing Semantic Data from Clinical Notes in Electronic Health Records for Tailored Care, Trial Recruitment and Clinical Research
-- [Documentation on API calls to SemEHR](https://github.com/CogStack/SemEHR/wiki/API-calls-to-SemEHR-index).
+- [Documentation on running SemEHR](https://github.com/CogStack/SemEHR/wiki)
+- [Documentation on API calls to SemEHR](https://github.com/CogStack/SemEHR/wiki/API-calls-to-SemEHR-index)
 
 ## updates
 - (9 Feb 2018) [Patient Phenome UI](https://github.com/CogStack/SemEHR/tree/master/UI/patient_phenome_ui) implemented - to support 100k Genomics England (GeL) phenome model population for patients recruited for rare disease studies. ![HPO Phenome Model](https://raw.githubusercontent.com/CogStack/SemEHR/master/resources/HPO_Phenome_Model_sample.png "HPO Phenome Model")
