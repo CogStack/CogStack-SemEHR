@@ -26,4 +26,4 @@ SemEHR: surfacing semantic data from clinical notes in electronic health records
 SemEHR: A General-purpose Semantic Search System to Surface Semantic Data from Clinical Notes for Tailored Care, Trial Recruitment and Clinical Research. Honghan Wu, Giulia Toti, Katherine I Morley, Zina Ibrahim, Amos Folarin, Ismail Kartoglu, Richard Jackson, Asha Agrawal, Clive Stringer, Darren Gale, Genevieve M Gorrell, Angus Roberts, Matthew Broadbent, Robert Stewart, Richard J B Dobson.Journal of the American Medical Informatics Association, 2017. [10.1093/jamia/ocx160](http://dx.doi.org/10.1093/jamia/ocx160)
 
 ## Questions?
-contact honghan.wu@gmail.com
+Email Honghan Wu (honghan.wu@gmail.com)
