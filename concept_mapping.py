@@ -69,6 +69,30 @@ class UMLSAPI(object):
         # print content
         return json.loads(content)
 
+    def transitive_narrower(self, concept, processed_set=None, result_set=None):
+        """
+        get transitive narrower concepts of a given concept
+        :param concept:
+        :param processed_set:
+        :param result_set:
+        :return:
+        """
+        if result_set is None:
+            result_set = set([concept])
+        if processed_set is None:
+            processed_set = set()
+        if concept in processed_set:
+            return list(result_set)
+
+        subconcepts = self.get_narrower_concepts(concept)
+        subconcepts = [c[0] for c in subconcepts]
+        print '%s has %s children' % (concept, len(subconcepts))
+        result_set |= set(subconcepts)
+        processed_set.add(concept)
+        for c in subconcepts:
+            self.transitive_narrower(c, processed_set, result_set)
+        return list(result_set)
+
 
 def align_mapped_concepts(map_file, disorder_file):
     concept_map = utils.load_json_data(map_file)
@@ -82,18 +106,35 @@ def align_mapped_concepts(map_file, disorder_file):
     print json.dumps(exact_mapped)
 
 
+def get_umls_concept_detail(umls, cui):
+    return umls.get_object(UMLSAPI.api_url + '/content/current/CUI/%s/' % cui)
+
+
+def complete_tsv_concept_label(umls, tsv_file):
+    lines = []
+    for l in utils.read_text_file(tsv_file):
+        arr = l.split('\t')
+        print arr
+        arr.insert(1, get_umls_concept_detail(umls, arr[1])['result']['name'])
+        lines.append(arr)
+    print '\n'.join(['\t'.join(l) for l in lines])
+
+
 if __name__ == "__main__":
     # align_mapped_concepts('./resources/autoimmune-concepts.json', './resources/auto_immune_gazetteer.txt')
-    umls = UMLSAPI('148475b7-ad37-4e15-95a0-ff4d4060c132')
-    # rets = umls.match_term('Diabetes Mellitus')
+    umls = UMLSAPI('')
+    # rets = umls.match_term('Holter monitor test')
     # cui = rets[0]['ui']
     # print cui
-    subconcepts = umls.get_narrower_concepts('C0023895')
+    subconcepts = umls.transitive_narrower('C0178298', None, None)
     print len(subconcepts), json.dumps(subconcepts)
-    next_scs = set([c[0] for c in subconcepts])
-    for sc in subconcepts:
-        local_scs = umls.get_narrower_concepts(sc[0])
-        next_scs |= set([c[0] for c in local_scs])
-        print len(local_scs)
-    print 'total concepts: %s' % len(next_scs), json.dumps(list(next_scs))
-    # print umls.get_object('https://uts-ws.nlm.nih.gov/rest/search/current?string=fracture')
+    # next_scs = set([c[0] for c in subconcepts])
+    # for sc in subconcepts:
+    #     local_scs = umls.get_narrower_concepts(sc[0])
+    #     next_scs |= set([c[0] for c in local_scs])
+    #     print len(local_scs)
+    # print 'total concepts: %s' % len(next_scs), json.dumps(list(next_scs))
+    # print json.dumps(umls.get_object('https://uts-ws.nlm.nih.gov/rest/content/current/CUI/C0178298/relations'))
+    # print get_umls_concept_detail(umls, 'C0020538')
+    # print get_umls_concept_detail(umls, 'C0020538')['result']['name']
+    # complete_tsv_concept_label(umls, './studies/IMPARTS/concepts_verified_chris.tsv')
