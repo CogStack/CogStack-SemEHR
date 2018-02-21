@@ -2,7 +2,10 @@ import utils
 import json
 from umls_api.Authentication import Authentication
 import requests
-import json
+import sys
+import urllib2
+import urllib
+import traceback
 
 
 class UMLSAPI(object):
@@ -83,10 +86,15 @@ class UMLSAPI(object):
             processed_set = set()
         if concept in processed_set:
             return list(result_set)
+        print 'working on %s...' % concept
+        subconcepts = []
+        try:
+            subconcepts = self.get_narrower_concepts(concept)
+            subconcepts = [c[0] for c in subconcepts]
+            print '%s has %s children' % (concept, len(subconcepts))
+        except:
+            print 'error %s ' % sys.exc_info()[0]
 
-        subconcepts = self.get_narrower_concepts(concept)
-        subconcepts = [c[0] for c in subconcepts]
-        print '%s has %s children' % (concept, len(subconcepts))
         result_set |= set(subconcepts)
         processed_set.add(concept)
         for c in subconcepts:
@@ -120,14 +128,82 @@ def complete_tsv_concept_label(umls, tsv_file):
     print '\n'.join(['\t'.join(l) for l in lines])
 
 
+def get_umls_client_inst(umls_key_file):
+    """
+    create a umls client instance using the key stored in give file
+    :param umls_key_file: the text file containing UMLS API key
+    :return:
+    """
+    key = utils.read_text_file_as_string(umls_key_file)
+    print key
+    return UMLSAPI(key)
+
+
+def query_result(q, endpoint_url, key_file):
+    headers = {
+        "Accept": "application/sparql-results+json",
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+    response = utils.http_post_result(endpoint_url,
+                                      "apikey:" + utils.read_text_file_as_string(key_file) + "&query=" + q,
+                                      headers=headers)
+    print response
+    ret = json.loads(response)
+    return ret['results']['bindings']
+
+
+def query(q,apikey,epr,f='application/json'):
+    """Function that uses urllib/urllib2 to issue a SPARQL query.
+       By default it requests json as data format for the SPARQL resultset"""
+
+    try:
+        params = {'query': q, 'apikey': apikey}
+        params = urllib.urlencode(params)
+        opener = urllib2.build_opener(urllib2.HTTPHandler)
+        request = urllib2.Request(epr+'?'+params)
+        request.add_header('Accept', f)
+        request.get_method = lambda: 'GET'
+        url = opener.open(request)
+        return url.read()
+    except Exception, e:
+        traceback.print_exc(file=sys.stdout)
+        raise e
+
+
+def icd10_queries():
+    endpoint = 'http://sparql.bioontology.org/sparql/'
+    query_template = """
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT distinct ?umls
+FROM <http://bioportal.bioontology.org/ontologies/ICD10>
+WHERE {{
+  <http://purl.bioontology.org/ontology/ICD10/{}> <http://bioportal.bioontology.org/ontologies/umls/cui> ?umls.
+  ?s <http://bioportal.bioontology.org/ontologies/umls/isRoot> true.
+}}
+    """
+    icd2umls = {}
+    for c in range(ord('A'), ord('Z')+1):
+        for i in xrange(0, 100):
+            icd = '%s%s' % (chr(c), '0' + str(i) if i <= 9 else str(i))
+            q = query_template.format(icd)
+            ret = json.loads(query(q, utils.read_text_file_as_string('./resources/HW_NCBO_KEY.txt'), endpoint))
+            ret = ret['results']['bindings']
+            if len(ret) > 0:
+                icd2umls[icd] = ret[0]['umls']['value']
+                print '%s\t%s' % (icd, ret[0]['umls']['value'])
+    print json.dumps(icd2umls)
+
+
 if __name__ == "__main__":
     # align_mapped_concepts('./resources/autoimmune-concepts.json', './resources/auto_immune_gazetteer.txt')
-    umls = UMLSAPI('')
+    umls = get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
     # rets = umls.match_term('Holter monitor test')
     # cui = rets[0]['ui']
     # print cui
-    subconcepts = umls.transitive_narrower('C0178298', None, None)
-    print len(subconcepts), json.dumps(subconcepts)
+    # subconcepts = umls.transitive_narrower('C0019104', None, None)
+    # print len(subconcepts), json.dumps(subconcepts)
     # next_scs = set([c[0] for c in subconcepts])
     # for sc in subconcepts:
     #     local_scs = umls.get_narrower_concepts(sc[0])
@@ -138,3 +214,4 @@ if __name__ == "__main__":
     # print get_umls_concept_detail(umls, 'C0020538')
     # print get_umls_concept_detail(umls, 'C0020538')['result']['name']
     # complete_tsv_concept_label(umls, './studies/IMPARTS/concepts_verified_chris.tsv')
+    icd10_queries()
