@@ -7,20 +7,23 @@ import cohortanalysis as cohort
 from ann_post_rules import AnnRuleExecutor
 import sys
 import xml.etree.ElementTree as ET
+import concept_mapping
 
 
 class StudyConcept(object):
 
-    def __init__(self, name, terms):
+    def __init__(self, name, terms, umls_instance=None):
         self.terms = terms
         self._name = name
         self._term_to_concept = None
         self._concept_closure = None
+        self._umls_instance = umls_instance
 
-    def gen_concept_closure(self, term_concepts=None):
+    def gen_concept_closure(self, term_concepts=None, umls_instance=None):
         """
         generate concept closures for all terms
         :param term_concepts: optional - expert verified mappings can be used
+        :param umls_instance: the umls client instance to use, if None, ontotex APIs will be used instead
         :return:
         """
         self._term_to_concept = {}
@@ -35,7 +38,10 @@ class StudyConcept(object):
         for term in term_concepts:
             candidate_terms = []
             for concept in term_concepts[term]:
-                candidate_terms.append((concept, onto.get_transitive_subconcepts(concept)))
+                if umls_instance is not None:
+                    candidate_terms.append((concept, umls_instance.transitive_narrower(concept)))
+                else:
+                    candidate_terms.append((concept, onto.get_transitive_subconcepts(concept)))
 
             # pick the rich sub-concept mappings
             if len(candidate_terms) > 1:
@@ -57,7 +63,7 @@ class StudyConcept(object):
     @property
     def concept_closure(self):
         if self._concept_closure is None:
-            self.gen_concept_closure()
+            self.gen_concept_closure(umls_instance=self._umls_instance)
         return self._concept_closure
 
     @concept_closure.setter
@@ -67,7 +73,7 @@ class StudyConcept(object):
     @property
     def term_to_concept(self):
         if self._concept_closure is None:
-            self.gen_concept_closure()
+            self.gen_concept_closure(umls_instance=self._umls_instance)
         return self._term_to_concept
 
     @term_to_concept.setter
@@ -187,7 +193,7 @@ def get_sql_template(config_file):
             'skip_term_sql': root.find('skip_term_sql').text}
 
 
-def study(folder, cohort_name, sql_config_file, db_conn_file):
+def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance):
     p, fn = split(folder)
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
@@ -200,7 +206,7 @@ def study(folder, cohort_name, sql_config_file, db_conn_file):
                 sc = StudyConcept(t, [t])
                 t_c = {}
                 t_c[t] = [concept_mappings[t]]
-                sc.gen_concept_closure(term_concepts=t_c)
+                sc.gen_concept_closure(term_concepts=t_c, umls_instance=umls_instance)
                 scs.append(sc)
                 print sc.concept_closure
             sa.study_concepts = scs
@@ -217,12 +223,14 @@ def study(folder, cohort_name, sql_config_file, db_conn_file):
                 scs.append(sc)
                 print sc.term_to_concept, sc.concept_closure
             sa.study_concepts = scs
+            print scs
+            exit(0)
         else:
             concepts = utils.load_json_data(join(folder, 'study_concepts.json'))
             if len(concepts) > 0:
                 scs = []
                 for name in concepts:
-                    scs.append(StudyConcept(name, concepts[name]))
+                    scs.append(StudyConcept(name, concepts[name], umls_instance=umls_instance))
                     print name, concepts[name]
             sa.study_concepts = scs
             sa.serialise(join(folder, 'study_analyzer.pickle'))
@@ -256,26 +264,32 @@ def study(folder, cohort_name, sql_config_file, db_conn_file):
     print 'generating result table...'
     # sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
     # sa.gen_sample_docs(cohort_name, join(folder, 'sample_docs.json'))
-    ruler = AnnRuleExecutor()
-    rules = utils.load_json_data(join(folder, 'post_filter_rules.json'))
-    for r in rules:
-        ruler.add_filter_rule(r['offset'], r['regs'])
-    sa.gen_study_table_with_rules(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'), ruler,
-                                  join(folder, 'ruled_anns.json'), sql_config_file, db_conn_file)
+    # ruler = AnnRuleExecutor()
+    # rules = utils.load_json_data(join(folder, 'post_filter_rules.json'))
+    # for r in rules:
+    #     ruler.add_filter_rule(r['offset'], r['regs'])
+    # sa.gen_study_table_with_rules(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'), ruler,
+    #                               join(folder, 'ruled_anns.json'), sql_config_file, db_conn_file)
     print 'done'
+
 
 if __name__ == "__main__":
     reload(sys)
     sys.setdefaultencoding('utf-8')
     # study('./studies/slam_physical_health/', 'CC_physical_health')
-    study('./studies/autoimmune.v2/', 'auto_immune',
-          './index_settings/query_config_cam.xml',
-          './index_settings/cam_dbconn.json'
-          )
+    # study('./studies/autoimmune.v2/', 'auto_immune',
+    #       './index_settings/query_config_cam.xml',
+    #       './index_settings/cam_dbconn.json'
+    #       )
     # study('./studies/autoimmune', 'auto_immune',
     #       './index_settings/query_config_cam.xml',
     #       './index_settings/cam_dbconn.json')
     # study('./studies/HCVpos', 'HCVpos_cohort')
     # study('./studies/liver', 'auto_immune')
     # study('./studies/hepc_unknown_200', 'hepc_unknown')
-    study('./studies/karen', 'karen_072017')
+    # study('./studies/karen', 'karen_2017')
+    study('./studies/prathiv/', 'prathiv',
+          './index_settings/query_config_cam.xml',
+          './index_settings/cam_dbconn.json',
+          concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
+          )
