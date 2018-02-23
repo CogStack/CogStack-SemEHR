@@ -181,8 +181,9 @@ def produce_yodie_config(settings):
     report = ET.SubElement(batch, "report")
     report_file = '%s/%s.xml' % (settings.get_attr(['env', 'yodie_path']), task_id)
     report.set('file', report_file)
-    if os.path.isfile(report_file):
-        os.unlink(report_file)
+    if settings.get_attr(['yodie', 'retain_report']) != 'yes':
+        if os.path.isfile(report_file):
+            os.unlink(report_file)
 
     input = ET.SubElement(batch, "input")
     input.set('encoding', 'UTF-8')
