@@ -6,6 +6,8 @@ import ontotextapi as oi
 import random
 # from study_analyzer import StudyAnalyzer
 from ann_post_rules import AnnRuleExecutor
+import trans_anns.sentence_pattern as tssp
+import trans_anns.text_generaliser as tstg
 
 
 db_conn_type = 'mysql'
@@ -290,16 +292,84 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file,
     print 'done'
 
 
-def test_connection():
-    sql = "select top 1 * from GateDB_Cris.dbo.gate"
+def do_action_trans_docs(docs, nlp,
+                         doc_ann_sql_template,
+                         doc_content_sql_template,
+                         action_trans_update_sql_template,
+                         db_conn_file,
+                         corpus_predictor):
+    """
+    do actionable transparency prediction on a batch of docs.
+    this function is to supposed to be called in a single thread
+    :param docs:
+    :param nlp:
+    :param doc_ann_sql_template:
+    :param doc_content_sql_template:
+    :param action_trans_update_sql_template:
+    :param db_conn_file:
+    :param corpus_predictor:
+    :return:
+    """
+    for doc_id in docs:
+        doc_anns = []
+        dutil.query_data(doc_ann_sql_template.format(doc_id),
+                         doc_anns,
+                         dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+        doc_container = []
+        dutil.query_data(doc_content_sql_template.format(doc_id),
+                         doc_container,
+                         dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+        ptns = tstg.doc_processing(nlp,
+                                   doc_container[0],
+                                   doc_anns,
+                                   doc_id)
+
+        for inst in ptns:
+            acc = corpus_predictor.predcit(inst)
+            anns = inst.annotations
+            sql = action_trans_update_sql_template.format(**{'acc': acc, 'ann_id': anns[0]['AnnId']})
+            dutil.query_data(sql, container=None, dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+
+
+def action_transparentise(cohort_name, db_conn_file,
+                          cohort_doc_sql_template,
+                          doc_ann_sql_template,
+                          doc_content_sql_template,
+                          action_trans_update_sql_template,
+                          corpus_trans_file):
+    """
+    use actionable transparency model to create confidence value for each annotations;
+    this method split all cohort documents into batches that are to processed in multiple threads
+    :param cohort_name:
+    :param db_conn_file:
+    :param cohort_doc_sql_template:
+    :param doc_ann_sql_template:
+    :param doc_content_sql_template:
+    :param action_trans_update_sql_template:
+    :param corpus_trans_file:
+    :return:
+    """
     docs = []
-    dutil.query_data(sql, docs)
-    for d in docs:
-        for k in d:
-            print '%s\t%s' % (k, d[k])
+    dutil.query_data(cohort_doc_sql_template.format(cohort_name), docs,
+                     dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+    batch_size = 50
+    batches = []
+    for i in xrange(0, len(docs), step=batch_size):
+        batches.append(docs[i:i+batch_size])
+    nlp = tstg.load_mode('en')
+    corpus_predictor = tssp.CorpusPredictor.load_corpus_model(corpus_trans_file)
+    utils.multi_thread_tasking(batches, 30, do_action_trans_docs,
+                               args=[nlp,
+                                     doc_ann_sql_template,
+                                     doc_content_sql_template,
+                                     action_trans_update_sql_template,
+                                     db_conn_file,
+                                     corpus_predictor
+                                     ])
+
 
 if __name__ == "__main__":
     # concepts = utils.load_json_data('./resources/Surgical_Procedures.json')
     # populate_patient_concept_table('dementia', concepts, 'dementia_cohorts.csv')
     # dump_doc_as_files('./hepc_data')
-    test_connection()
+    pass
