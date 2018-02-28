@@ -356,7 +356,7 @@ def action_transparentise(cohort_name, db_conn_file,
                      dbconn=dutil.get_db_connection_by_setting(db_conn_file))
     batch_size = 50
     batches = []
-    for i in xrange(0, len(docs), step=batch_size):
+    for i in range(0, len(docs), batch_size):
         batches.append(docs[i:i+batch_size])
     nlp = tstg.load_mode('en')
     corpus_predictor = tssp.CorpusPredictor.load_corpus_model(corpus_trans_file)
