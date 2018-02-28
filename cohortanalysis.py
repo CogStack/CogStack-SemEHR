@@ -214,8 +214,8 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     for p in patients:
         s += '\t'.join([p['brcid']] + [p[k] if k in p else '0' for k in concept_labels]) + '\n'
     utils.save_string(s, out_file)
-    utils.save_json_array(term_to_docs, sample_out_file)
-    utils.save_json_array(ruled_anns, ruled_ann_out_file)
+    utils.save_json_array(term_to_docs, sample_out_file, encoding='cp1252')
+    utils.save_json_array(ruled_anns, ruled_ann_out_file, encoding='cp1252')
     print 'done'
 
 
@@ -361,7 +361,7 @@ def action_transparentise(cohort_name, db_conn_file,
         batches.append(docs[i:i+batch_size])
     nlp = tstg.load_mode('en')
     corpus_predictor = tssp.CorpusPredictor.load_corpus_model(corpus_trans_file)
-    utils.multi_thread_tasking(batches, 30, do_action_trans_docs,
+    utils.multi_thread_tasking(batches, 1, do_action_trans_docs,
                                args=[nlp,
                                      doc_ann_sql_template,
                                      doc_content_sql_template,
