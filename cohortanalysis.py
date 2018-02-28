@@ -322,9 +322,9 @@ def do_action_trans_docs(docs, nlp,
                          doc_container,
                          dbconn=dutil.get_db_connection_by_setting(db_conn_file))
         ptns = tstg.doc_processing(nlp,
-                                   doc_container[0]['content'],
+                                   unicode(doc_container[0]['content']),
                                    doc_anns,
-                                   doc_id)
+                                   doc_id['docid'])
 
         for inst in ptns:
             acc = corpus_predictor.predcit(inst)
