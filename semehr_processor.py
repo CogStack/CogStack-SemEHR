@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 from subprocess import Popen, STDOUT
 from entity_centric_es import EntityCentricES, do_index_100k_anns, do_index_100k_patients, JSONSerializerPython2
 from elasticsearch import Elasticsearch
+import cohortanalysis as cohort
 
 
 class ProcessSetting(object):
@@ -162,6 +163,19 @@ def set_sys_env(settings):
     gcp_home = settings.get_attr(['env', 'gcp_home'])
     if gcp_home is not None and len(gcp_home) > 0 and gcp_home not in os.environ['PATH']:
         os.environ['PATH'] += ':' + gcp_home
+
+
+def actionable_transparise(settings):
+    cohort_name = settings.get_attr(['action_trans', 'cohort_name'])
+    dbcnn_file = settings.get_attr(['action_trans', 'dbconn_setting_file'])
+    sql_cohort_doc = settings.get_attr(['action_trans', 'sql_cohort_doc_template'])
+    sql_doc_anns = settings.get_attr(['action_trans', 'sql_doc_anns_template'])
+    sql_doc_content = settings.get_attr(['action_trans', 'sql_doc_content_template'])
+    sql_action_trans_inert = settings.get_attr(['action_trans', 'sql_action_trans_update_template'])
+    action_trans_model_file = settings.get_attr(['action_trans', 'action_trans_model_file'])
+    cohort.action_transparentise(cohort_name, dbcnn_file,
+                                 sql_cohort_doc, sql_doc_anns, sql_doc_content, sql_action_trans_inert,
+                                 action_trans_model_file)
 
 
 def produce_yodie_config(settings):
@@ -374,13 +388,20 @@ def process_semehr(config_file):
                 exit(p.returncode)
 
         # 2. do SemEHR concept/entity indexing
-        patients = []
-        doc_to_patient = {}
-        for r in data_rows:
-            patients.append(str(r['patientid']))
-            doc_to_patient[str(r['docid'])] = str(r['patientid'])
-        patients = list(set(patients))
-        do_semehr_index(ps, patients, doc_to_patient)
+        if ps.get_attr(['job', 'semehr-concept']) == 'yes' or ps.get_attr(['job', 'semehr-patients']) == 'yes':
+            patients = []
+            doc_to_patient = {}
+            for r in data_rows:
+                patients.append(str(r['patientid']))
+                doc_to_patient[str(r['docid'])] = str(r['patientid'])
+            patients = list(set(patients))
+            do_semehr_index(ps, patients, doc_to_patient)
+
+        # 3. do SemEHR actionable transparency
+        if ps.get_attr(['job', 'action_trans']) == 'yes':
+            print 'doing transparency...'
+            actionable_transparise(settings=ps)
+
         job_status.set_status(True)
         job_status.save()
     # except Exception as e:

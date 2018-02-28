@@ -366,6 +366,7 @@ def action_transparentise(cohort_name, db_conn_file,
                                      db_conn_file,
                                      corpus_predictor
                                      ])
+    print 'all anns transparentised'
 
 
 if __name__ == "__main__":
