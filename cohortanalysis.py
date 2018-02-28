@@ -310,6 +310,7 @@ def do_action_trans_docs(docs, nlp,
     :param corpus_predictor:
     :return:
     """
+    self_nlp = tstg.load_mode('en')
     for doc_id in docs:
         doc_anns = []
         dutil.query_data(doc_ann_sql_template.format(doc_id['docid']),
@@ -321,7 +322,7 @@ def do_action_trans_docs(docs, nlp,
         dutil.query_data(doc_content_sql_template.format(doc_id['docid']),
                          doc_container,
                          dbconn=dutil.get_db_connection_by_setting(db_conn_file))
-        ptns = tstg.doc_processing(nlp,
+        ptns = tstg.doc_processing(self_nlp,
                                    unicode(doc_container[0]['content']),
                                    doc_anns,
                                    doc_id['docid'])
@@ -354,7 +355,7 @@ def action_transparentise(cohort_name, db_conn_file,
     docs = []
     dutil.query_data(cohort_doc_sql_template.format(cohort_name), docs,
                      dbconn=dutil.get_db_connection_by_setting(db_conn_file))
-    batch_size = 50
+    batch_size = 500
     batches = []
     for i in range(0, len(docs), batch_size):
         batches.append(docs[i:i+batch_size])
