@@ -314,7 +314,7 @@ def do_action_trans_docs(docs, nlp,
     for doc_id in docs:
         doc_anns = []
         dutil.query_data(doc_ann_sql_template.format(doc_id['docid']),
-                         doc_anns,
+                         [{'s': int(ann['s']), 'e': int(ann['e']), 'AnnId': str(ann['AnnId'])} for ann in doc_anns],
                          dbconn=dutil.get_db_connection_by_setting(db_conn_file))
         if len(doc_anns) == 0:
             continue
