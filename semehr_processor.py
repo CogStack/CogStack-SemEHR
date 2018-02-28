@@ -414,7 +414,7 @@ def process_semehr(config_file):
 
 if __name__ == "__main__":
     reload(sys)
-    sys.setdefaultencoding('utf-8')
+    sys.setdefaultencoding('cp1252')
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     if len(sys.argv) != 2:
         print 'the syntax is [python semehr_processor.py PROCESS_SETTINGS_FILE_PATH]'
