@@ -323,7 +323,7 @@ def do_action_trans_docs(docs, nlp,
         doc_container = []
         dutil.query_data(doc_content_sql_template.format(doc_id['docid']),
                          doc_container,
-                         dtbconn=dutil.get_db_connection_by_setting(db_conn_file))
+                         dbconn=dutil.get_db_connection_by_setting(db_conn_file))
         ptns = tstg.doc_processing(self_nlp,
                                    unicode(doc_container[0]['content']),
                                    doc_anns,
