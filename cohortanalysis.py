@@ -317,7 +317,7 @@ def do_action_trans_docs(docs, nlp,
                          doc_anns,
                          dbconn=dutil.get_db_connection_by_setting(db_conn_file))
         doc_anns = [{'s': int(ann['s']), 'e': int(ann['e']),
-                     'AnnId': str(ann['AnnId'], 'signed_label':'', 'gt_label':'')} for ann in doc_anns]
+                     'AnnId': str(ann['AnnId']), 'signed_label':'', 'gt_label':''} for ann in doc_anns]
         if len(doc_anns) == 0:
             continue
         doc_container = []
