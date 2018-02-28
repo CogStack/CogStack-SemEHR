@@ -316,13 +316,14 @@ def do_action_trans_docs(docs, nlp,
         dutil.query_data(doc_ann_sql_template.format(doc_id['docid']),
                          doc_anns,
                          dbconn=dutil.get_db_connection_by_setting(db_conn_file))
-        doc_anns = [{'s': int(ann['s']), 'e': int(ann['e']), 'AnnId': str(ann['AnnId'])} for ann in doc_anns]
+        doc_anns = [{'s': int(ann['s']), 'e': int(ann['e']),
+                     'AnnId': str(ann['AnnId'], 'signed_label':'', 'gt_label':'')} for ann in doc_anns]
         if len(doc_anns) == 0:
             continue
         doc_container = []
         dutil.query_data(doc_content_sql_template.format(doc_id['docid']),
                          doc_container,
-                         dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+                         dtbconn=dutil.get_db_connection_by_setting(db_conn_file))
         ptns = tstg.doc_processing(self_nlp,
                                    unicode(doc_container[0]['content']),
                                    doc_anns,
