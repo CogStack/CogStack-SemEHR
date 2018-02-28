@@ -49,7 +49,7 @@ def doc_processing(nlp, doc_text, anns, doc_id):
         ptn = sp.POSSentencePatternInst(s['sent'], s['anns'])
         ptn.process()
         ptn_inst.append(ptn)
-        ptn_inst.doc_id = doc_id
+        ptn.doc_id = doc_id
         # print '>>%s: >>%s\n' % (ret['sent'], ret['pattern'])
     return ptn_inst
 
