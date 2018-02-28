@@ -326,7 +326,7 @@ def do_action_trans_docs(docs, nlp,
                                    unicode(doc_container[0]['content']),
                                    doc_anns,
                                    doc_id['docid'])
-
+        print 'doc %s read/model created, predicting...'
         for inst in ptns:
             acc = corpus_predictor.predcit(inst)
             anns = inst.annotations
