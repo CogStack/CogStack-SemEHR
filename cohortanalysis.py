@@ -318,7 +318,7 @@ def do_action_trans_docs(docs, nlp,
         if len(doc_anns) == 0:
             continue
         doc_container = []
-        dutil.query_data(doc_content_sql_template.format(doc_id),
+        dutil.query_data(doc_content_sql_template.format(doc_id['docid']),
                          doc_container,
                          dbconn=dutil.get_db_connection_by_setting(db_conn_file))
         ptns = tstg.doc_processing(nlp,
