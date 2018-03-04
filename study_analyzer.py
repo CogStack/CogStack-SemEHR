@@ -19,11 +19,11 @@ class StudyConcept(object):
         self._concept_closure = None
         self._umls_instance = umls_instance
 
-    def gen_concept_closure(self, term_concepts=None, umls_instance=None):
+    def gen_concept_closure(self, term_concepts=None, concept_to_closure=None):
         """
         generate concept closures for all terms
         :param term_concepts: optional - expert verified mappings can be used
-        :param umls_instance: the umls client instance to use, if None, ontotex APIs will be used instead
+        :param concept_to_closure: precomputed concept to closure dictionary
         :return:
         """
         self._term_to_concept = {}
@@ -38,8 +38,8 @@ class StudyConcept(object):
         for term in term_concepts:
             candidate_terms = []
             for concept in term_concepts[term]:
-                if umls_instance is not None:
-                    candidate_terms.append((concept, umls_instance.transitive_narrower(concept)))
+                if concept_to_closure is not None:
+                    candidate_terms.append((concept, concept_to_closure[concept]))
                 else:
                     candidate_terms.append((concept, onto.get_transitive_subconcepts(concept)))
 
@@ -56,6 +56,26 @@ class StudyConcept(object):
                 self._concept_closure |= set(candidate_terms[0][1])
             self._term_to_concept[term] = {'mapped': candidate_terms[0][0], 'closure': len(candidate_terms[0][1])}
 
+    @staticmethod
+    def compute_all_concept_closure(all_concepts, umls_instance):
+        concept_to_closure = {}
+        print 'all concepts number %s' % len(all_concepts)
+        computed = []
+        results =[]
+        utils.multi_thread_tasking(all_concepts, 40, StudyConcept.do_compute_concept_closure,
+                                   args=[umls_instance, computed, results])
+        for r in results:
+            concept_to_closure[r['concept']] = r['closure']
+        return concept_to_closure
+
+    @staticmethod
+    def do_compute_concept_closure(concept, umls_instance, computed, results):
+        if concept not in computed:
+            closure = umls_instance.transitive_narrower(concept)
+            computed.append(concept)
+            results.append({'concept': concept, 'closure': closure})
+            print 'concept: %s transitive children %s' % (concept, closure)
+
     @property
     def name(self):
         return self._name
@@ -63,7 +83,7 @@ class StudyConcept(object):
     @property
     def concept_closure(self):
         if self._concept_closure is None:
-            self.gen_concept_closure(umls_instance=self._umls_instance)
+            self.gen_concept_closure()
         return self._concept_closure
 
     @concept_closure.setter
@@ -73,7 +93,7 @@ class StudyConcept(object):
     @property
     def term_to_concept(self):
         if self._concept_closure is None:
-            self.gen_concept_closure(umls_instance=self._umls_instance)
+            self.gen_concept_closure()
         return self._term_to_concept
 
     @term_to_concept.setter
@@ -201,12 +221,16 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance):
         sa = StudyAnalyzer(fn)
         if isfile(join(folder, 'exact_concepts_mappings.json')):
             concept_mappings = utils.load_json_data(join(folder, 'exact_concepts_mappings.json'))
+            concept_to_closure = \
+                StudyConcept.compute_all_concept_closure([concept_mappings[t] for t in concept_mappings],
+                                                         umls_instance)
+
             scs = []
             for t in concept_mappings:
                 sc = StudyConcept(t, [t])
                 t_c = {}
                 t_c[t] = [concept_mappings[t]]
-                sc.gen_concept_closure(term_concepts=t_c, umls_instance=umls_instance)
+                sc.gen_concept_closure(term_concepts=t_c, concept_to_closure=concept_to_closure)
                 scs.append(sc)
                 print sc.concept_closure
             sa.study_concepts = scs
@@ -264,12 +288,12 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance):
     print 'generating result table...'
     # sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
     # sa.gen_sample_docs(cohort_name, join(folder, 'sample_docs.json'))
-    # ruler = AnnRuleExecutor()
-    # rules = utils.load_json_data(join(folder, 'post_filter_rules.json'))
-    # for r in rules:
-    #     ruler.add_filter_rule(r['offset'], r['regs'])
-    # sa.gen_study_table_with_rules(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'), ruler,
-    #                               join(folder, 'ruled_anns.json'), sql_config_file, db_conn_file)
+    ruler = AnnRuleExecutor()
+    rules = utils.load_json_data(join(folder, 'post_filter_rules.json'))
+    for r in rules:
+        ruler.add_filter_rule(r['offset'], r['regs'])
+    sa.gen_study_table_with_rules(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'), ruler,
+                                  join(folder, 'ruled_anns.json'), sql_config_file, db_conn_file)
     print 'done'
 
 
@@ -288,8 +312,13 @@ if __name__ == "__main__":
     # study('./studies/liver', 'auto_immune')
     # study('./studies/hepc_unknown_200', 'hepc_unknown')
     # study('./studies/karen', 'karen_2017')
-    study('./studies/prathiv/', 'prathiv',
-          './index_settings/query_config_cam.xml',
-          './index_settings/cam_dbconn.json',
+    # study('./studies/skin_conditions/', 'addiction',
+    #       './studies/skin_conditions/cluster_sql_config.xml',
+    #       './studies/skin_conditions/dbcnn_input.json',
+    #       concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
+    #       )
+    study('./studies/COMOB_SD/', 'dyson',
+          './studies/COMOB_SD/cluster_sql_config.xml',
+          './studies/COMOB_SD/dbcnn_input.json',
           concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
           )
