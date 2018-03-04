@@ -320,7 +320,8 @@ def process_semehr(config_file):
     job_status = JobStatus(job_file)
     job_status.job_start()
 
-    if ps.get_attr(['job', 'loading_docs']) == 'yes':
+    data_rows = []
+    if ps.get_attr(['job', 'load_docs']) == 'yes':
         sql_template = ps.get_attr(['new_docs', 'sql_query'])
         print 'retrieving docs by using the template [%s]' % sql_template
         data_rows = get_docs_for_processing(job_status, sql_template, ps.get_attr(['new_docs', 'dbconn_setting_file']))

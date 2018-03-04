@@ -264,18 +264,18 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance):
     print 'generating result table...'
     # sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
     # sa.gen_sample_docs(cohort_name, join(folder, 'sample_docs.json'))
-    # ruler = AnnRuleExecutor()
-    # rules = utils.load_json_data(join(folder, 'post_filter_rules.json'))
-    # for r in rules:
-    #     ruler.add_filter_rule(r['offset'], r['regs'])
-    # sa.gen_study_table_with_rules(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'), ruler,
-    #                               join(folder, 'ruled_anns.json'), sql_config_file, db_conn_file)
+    ruler = AnnRuleExecutor()
+    rules = utils.load_json_data(join(folder, 'post_filter_rules.json'))
+    for r in rules:
+        ruler.add_filter_rule(r['offset'], r['regs'])
+    sa.gen_study_table_with_rules(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'), ruler,
+                                  join(folder, 'ruled_anns.json'), sql_config_file, db_conn_file)
     print 'done'
 
 
 if __name__ == "__main__":
     reload(sys)
-    sys.setdefaultencoding('utf-8')
+    sys.setdefaultencoding('cp1252')
     # study('./studies/slam_physical_health/', 'CC_physical_health')
     # study('./studies/autoimmune.v2/', 'auto_immune',
     #       './index_settings/query_config_cam.xml',
@@ -288,8 +288,13 @@ if __name__ == "__main__":
     # study('./studies/liver', 'auto_immune')
     # study('./studies/hepc_unknown_200', 'hepc_unknown')
     # study('./studies/karen', 'karen_2017')
-    study('./studies/prathiv/', 'prathiv',
-          './index_settings/query_config_cam.xml',
-          './index_settings/cam_dbconn.json',
+    # study('./studies/skin_conditions/', 'addiction',
+    #       './studies/skin_conditions/cluster_sql_config.xml',
+    #       './studies/skin_conditions/dbcnn_input.json',
+    #       concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
+    #       )
+    study('./studies/COMOB_SD/', 'dyson',
+          './studies/COMOB_SD/cluster_sql_config.xml',
+          './studies/COMOB_SD/dbcnn_input.json',
           concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
           )
