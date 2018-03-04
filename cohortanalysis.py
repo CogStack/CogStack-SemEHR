@@ -214,9 +214,26 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     for p in patients:
         s += '\t'.join([p['brcid']] + [p[k] if k in p else '0' for k in concept_labels]) + '\n'
     utils.save_string(s, out_file)
-    utils.save_json_array(term_to_docs, sample_out_file)
-    utils.save_json_array(ruled_anns, ruled_ann_out_file)
+    utils.save_json_array(convert_encoding(term_to_docs, 'cp1252', 'utf-8'), sample_out_file)
+    utils.save_json_array(convert_encoding(ruled_anns, 'cp1252', 'utf-8'), ruled_ann_out_file)
     print 'done'
+
+
+def convert_encoding(dic_obj, orig, target):
+    if isinstance(dic_obj, str):
+        return dic_obj.decode(orig).encode(target)
+    elif isinstance(dic_obj, list):
+        ret = []
+        for itm in dic_obj:
+            ret.append(convert_encoding(itm, orig, target))
+        return ret        
+    elif isinstance(dic_obj, dict):
+        for k in dic_obj:
+            dic_obj[k] = convert_encoding(dic_obj[k], orig, target)
+        return dic_obj
+    else:
+        # print '%s not supported for conversion' % isinstance(dic_obj[k], dict)
+        return dic_obj
 
 
 def random_extract_annotated_docs(cohort_name, study_analyzer, out_file,
@@ -310,21 +327,24 @@ def do_action_trans_docs(docs, nlp,
     :param corpus_predictor:
     :return:
     """
-    self_nlp = tstg.load_mode('en')
+    # self_nlp = tstg.load_mode('en')
     for doc_id in docs:
         doc_anns = []
         dutil.query_data(doc_ann_sql_template.format(doc_id['docid']),
                          doc_anns,
                          dbconn=dutil.get_db_connection_by_setting(db_conn_file))
         doc_anns = [{'s': int(ann['s']), 'e': int(ann['e']),
-                     'AnnId': str(ann['AnnId']), 'signed_label':'', 'gt_label':''} for ann in doc_anns]
+                     'AnnId': str(ann['AnnId']), 'signed_label':'', 'gt_label':'', 'action_trans': ann['action_trans']} for ann in doc_anns]
         if len(doc_anns) == 0:
+            continue
+        if doc_anns[0]['action_trans'] is not None:
+            print 'found trans %s of first ann, skipping doc' % doc_anns[0]['action_trans']
             continue
         doc_container = []
         dutil.query_data(doc_content_sql_template.format(doc_id['docid']),
                          doc_container,
                          dbconn=dutil.get_db_connection_by_setting(db_conn_file))
-        ptns = tstg.doc_processing(self_nlp,
+        ptns = tstg.doc_processing(nlp,
                                    unicode(doc_container[0]['content']),
                                    doc_anns,
                                    doc_id['docid'])
@@ -332,7 +352,8 @@ def do_action_trans_docs(docs, nlp,
         for inst in ptns:
             acc = corpus_predictor.predcit(inst)
             anns = inst.annotations
-            sql = action_trans_update_sql_template.format(**{'acc': acc, 'ann_id': anns[0]['AnnId']})
+            sql = action_trans_update_sql_template.format(**{'acc': acc, 'AnnId': anns[0]['AnnId']})
+            print 'executing %s' % sql
             dutil.query_data(sql, container=None, dbconn=dutil.get_db_connection_by_setting(db_conn_file))
 
 
@@ -363,14 +384,25 @@ def action_transparentise(cohort_name, db_conn_file,
         batches.append(docs[i:i+batch_size])
     nlp = tstg.load_mode('en')
     corpus_predictor = tssp.CorpusPredictor.load_corpus_model(corpus_trans_file)
-    utils.multi_thread_tasking(batches, 30, do_action_trans_docs,
-                               args=[nlp,
-                                     doc_ann_sql_template,
-                                     doc_content_sql_template,
-                                     action_trans_update_sql_template,
-                                     db_conn_file,
-                                     corpus_predictor
-                                     ])
+    i = 1
+    for batch in batches:
+        print 'working on %s/%s batch' % (i, len(batches))
+        do_action_trans_docs(batch, 
+                             nlp,
+                             doc_ann_sql_template,
+                             doc_content_sql_template,
+                             action_trans_update_sql_template,
+                             db_conn_file,
+                             corpus_predictor)
+        i += 1
+    #utils.multi_thread_tasking(batches, 1, do_action_trans_docs,
+    #                           args=[nlp,
+    #                                 doc_ann_sql_template,
+    #                                 doc_content_sql_template,
+    #                                 action_trans_update_sql_template,
+    #                                 db_conn_file,
+    #                                 corpus_predictor
+    #                                 ])
     print 'all anns transparentised'
 
 

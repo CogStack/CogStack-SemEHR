@@ -68,10 +68,12 @@ def query_data(query, container, dbconn=None):
     else:
         conn_dic = dbconn
 
+    conn_dic['cursor'].execute(query)
     if container is not None:
-        conn_dic['cursor'].execute(query)
         rows = conn_dic['cursor'].fetchall()
         columns = [column[0] for column in conn_dic['cursor'].description]
         for row in rows:
             container.append(dict(zip(columns, row)))
+    else:
+        conn_dic['cnxn'].commit()
     release_db_connection(conn_dic)

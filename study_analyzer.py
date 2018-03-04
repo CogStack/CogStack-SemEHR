@@ -299,7 +299,7 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance):
 
 if __name__ == "__main__":
     reload(sys)
-    sys.setdefaultencoding('utf-8')
+    sys.setdefaultencoding('cp1252')
     # study('./studies/slam_physical_health/', 'CC_physical_health')
     # study('./studies/autoimmune.v2/', 'auto_immune',
     #       './index_settings/query_config_cam.xml',
