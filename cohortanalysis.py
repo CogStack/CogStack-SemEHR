@@ -406,6 +406,123 @@ def action_transparentise(cohort_name, db_conn_file,
     print 'all anns transparentised'
 
 
+def generate_result_in_one_iteration(cohort_name, study_analyzer, out_file,
+                                     sample_size, sample_out_file,
+                                     doc_to_brc_sql, brc_sql, anns_iter_sql, skip_term_sql, doc_content_sql,
+                                     db_conn_file):
+    """
+    generate result in one iteration over all annotations. this is supposed to be much faster when working on
+    large study concepts. But post-processing using rules not supported now
+    :param cohort_name:
+    :param study_analyzer:
+    :param out_file:
+    :param sample_size:
+    :param sample_out_file:
+    :param doc_to_brc_sql:
+    :param brc_sql:
+    :param anns_iter_sql:
+    :param skip_term_sql:
+    :param doc_content_sql:
+    :param db_conn_file:
+    :return:
+    """
+    # populate concept to anns maps
+    sc2anns = {}
+    for sc in study_analyzer.study_concepts:
+        sc2anns[sc.name] = []
+
+    # populate patient list
+    print 'populating patient list...'
+    patients = {}
+    rows_container = []
+    dutil.query_data(brc_sql.format(cohort_name), rows_container,
+                     dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+    for r in rows_container:
+        patients[r['brcid']] = {}
+
+    # populate document id to patient id dictionary
+    print 'populating doc to patient map...'
+    rows_container = []
+    dutil.query_data(doc_to_brc_sql.format(cohort_name), rows_container,
+                     dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+    doc2brc = {}
+    for dp in rows_container:
+        doc2brc[dp['doc_id']] = dp['brcid']
+
+    # query annotations
+    print 'iterating annotations...'
+    rows_container = []
+    dutil.query_data(anns_iter_sql.format(**{'cohort_id': cohort_name,
+                                             'extra_constrains':
+                                                 ' \n '.join(
+                                                  [generate_skip_term_constrain(study_analyzer, skip_term_sql)]
+                                                  + [] if (study_analyzer.study_options is None or
+                                                           study_analyzer.study_options['extra_constrains'] is None)
+                                                  else study_analyzer.study_options['extra_constrains'])}),
+                     rows_container,
+                     dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+    for r in rows_container:
+        concept_id = r['inst_uri']
+        brcid = doc2brc[r['doc_id']] if r['doc_id'] in doc2brc else None
+        if brcid is None:
+            print 'doc %s not matched to a patient!!!' % r['doc_id']
+            continue
+        patient = patients[brcid] if brcid in patients else None
+        if patient is None:
+            print 'brc id %s not matched a patient!!!' % brcid
+            continue
+        # get matched study concepts
+        for sc in study_analyzer.study_concepts:
+            if concept_id in sc.concept_closure:
+                patient[sc.name] = (patient[sc.name] + 1) if sc.name in patient else 1
+                sc2anns[sc.name].append({'ann_id': r['ann_id'], 'doc_id': r['doc_id'], 'concept_id': concept_id,
+                                         'start': r['start_offset'], 'end': r['end_offset']})
+
+    # generate result table
+    print 'generate result table...'
+    concept_labels = sorted([k for k in sc2anns])
+    s = '\t'.join(['brcid'] + concept_labels) + '\n'
+    for p in patients:
+        s += '\t'.join([p['brcid']] + [str(p[k]) if k in p else '0' for k in concept_labels]) + '\n'
+    utils.save_string(s, out_file)
+
+    # generate sample annotations
+    term_to_docs = {}
+    for concept in sc2anns:
+        ann_ids = sc2anns[concept]
+        sample_ids = []
+        if len(ann_ids) <= sample_size:
+            sample_ids = ann_ids
+        else:
+            for i in xrange(sample_size):
+                index = random.randrange(len(ann_ids))
+                sample_ids.append(ann_ids[index])
+                del ann_ids[index]
+        term_to_docs[concept] = sample_ids
+
+    # query doc contents
+    print 'populating term to sampled anns...'
+    term_to_sampled = {}
+    for term in term_to_docs:
+        sample_ids = term_to_docs[term]
+        sample_doc_ids = ['\'' + s['doc_id'] + '\'' for s in sample_ids]
+        rows_container = []
+        dutil.query_data(doc_content_sql.format(sample_doc_ids), rows_container,
+                         dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+        doc_to_content = {}
+        for r in rows_container:
+            doc_to_content[r['doc_id']] = r['TextContent']
+        term_sampled = []
+        for s in sample_ids:
+            term_sampled.append({'id': s['doc_id'],
+                                 'content': doc_to_content[s['doc_id']],
+                                 'annotations': [{'start': s['start'],
+                                                  'end': s['end'],
+                                                  'concept': s['concept_id']}]})
+        term_to_sampled[term] = term_sampled
+    utils.save_json_array(convert_encoding(term_to_sampled, 'cp1252', 'utf-8'), sample_out_file)
+
+
 if __name__ == "__main__":
     # concepts = utils.load_json_data('./resources/Surgical_Procedures.json')
     # populate_patient_concept_table('dementia', concepts, 'dementia_cohorts.csv')
