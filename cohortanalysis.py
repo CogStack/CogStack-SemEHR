@@ -438,7 +438,7 @@ def generate_result_in_one_iteration(cohort_name, study_analyzer, out_file,
     dutil.query_data(brc_sql.format(cohort_name), rows_container,
                      dbconn=dutil.get_db_connection_by_setting(db_conn_file))
     for r in rows_container:
-        patients[r['brcid']] = {}
+        patients[r['brcid']] = {'brcid': r['brcid']}
 
     # populate document id to patient id dictionary
     print 'populating doc to patient map...'
@@ -482,7 +482,8 @@ def generate_result_in_one_iteration(cohort_name, study_analyzer, out_file,
     print 'generate result table...'
     concept_labels = sorted([k for k in sc2anns])
     s = '\t'.join(['brcid'] + concept_labels) + '\n'
-    for p in patients:
+    for pid in patients:
+        p = patients[pid]
         s += '\t'.join([p['brcid']] + [str(p[k]) if k in p else '0' for k in concept_labels]) + '\n'
     utils.save_string(s, out_file)
 
