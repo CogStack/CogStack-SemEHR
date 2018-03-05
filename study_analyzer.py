@@ -207,7 +207,7 @@ class StudyAnalyzer(object):
 
     def gen_study_table_in_one_iteration(self, cohort_name, out_file, sample_out_file,
                                          sql_config, db_conn_file):
-        sql_setting = get_sql_template(sql_config)
+        sql_setting = get_one_iteration_sql_template(sql_config)
         cohort.generate_result_in_one_iteration(cohort_name, self, out_file, 20, sample_out_file,
                                                 sql_setting['doc_to_brc_sql'],
                                                 sql_setting['brc_sql'],
@@ -221,6 +221,15 @@ def get_sql_template(config_file):
     root = ET.parse(config_file).getroot()
     return {'term_doc_anns_sql': root.find('term_doc_anns_sql').text,
             'patients_sql': root.find('patients_sql').text,
+            'skip_term_sql': root.find('skip_term_sql').text}
+
+
+def get_one_iteration_sql_template(config_file):
+    root = ET.parse(config_file).getroot()
+    return {'doc_to_brc_sql': root.find('doc_to_brc_sql').text,
+            'brc_sql': root.find('brc_sql').text,
+            'anns_iter_sql': root.find('anns_iter_sql').text,
+            'doc_content_sql': root.find('doc_content_sql').text,
             'skip_term_sql': root.find('skip_term_sql').text}
 
 
