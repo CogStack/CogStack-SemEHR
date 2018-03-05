@@ -406,6 +406,11 @@ def action_transparentise(cohort_name, db_conn_file,
     print 'all anns transparentised'
 
 
+def do_put_line(p, concept_labels, container):
+    print 'working on %s' % p['brcid']
+    container.append('\t'.join([p['brcid']] + [str(p[k]) if k in p else '0' for k in concept_labels]))
+
+
 def generate_result_in_one_iteration(cohort_name, study_analyzer, out_file,
                                      sample_size, sample_out_file,
                                      doc_to_brc_sql, brc_sql, anns_iter_sql, skip_term_sql, doc_content_sql,
@@ -482,9 +487,10 @@ def generate_result_in_one_iteration(cohort_name, study_analyzer, out_file,
     print 'generate result table...'
     concept_labels = sorted([k for k in sc2anns])
     s = '\t'.join(['brcid'] + concept_labels) + '\n'
-    for pid in patients:
-        p = patients[pid]
-        s += '\t'.join([p['brcid']] + [str(p[k]) if k in p else '0' for k in concept_labels]) + '\n'
+    lines = []
+    utils.multi_thread_tasking([patients[pid] for pid in patients], 40, do_put_line,
+                               args=[concept_labels, lines])
+    s += '\n'.join(lines)
     utils.save_string(s, out_file)
 
     # generate sample annotations
