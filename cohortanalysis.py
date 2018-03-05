@@ -514,7 +514,7 @@ def generate_result_in_one_iteration(cohort_name, study_analyzer, out_file,
         sample_ids = term_to_docs[term]
         sample_doc_ids = ['\'' + s['doc_id'] + '\'' for s in sample_ids]
         rows_container = []
-        dutil.query_data(doc_content_sql.format(sample_doc_ids), rows_container,
+        dutil.query_data(doc_content_sql.format(','.join(sample_doc_ids)), rows_container,
                          dbconn=dutil.get_db_connection_by_setting(db_conn_file))
         doc_to_content = {}
         for r in rows_container:
