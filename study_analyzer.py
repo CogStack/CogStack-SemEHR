@@ -205,6 +205,17 @@ class StudyAnalyzer(object):
                                                        sql_setting['skip_term_sql'],
                                                        db_conn_file)
 
+    def gen_study_table_in_one_iteration(self, cohort_name, out_file, sample_out_file,
+                                         sql_config, db_conn_file):
+        sql_setting = get_sql_template(sql_config)
+        cohort.generate_result_in_one_iteration(cohort_name, self, out_file, 20, sample_out_file,
+                                                sql_setting['doc_to_brc_sql'],
+                                                sql_setting['brc_sql'],
+                                                sql_setting['anns_iter_sql'],
+                                                sql_setting['skip_term_sql'],
+                                                sql_setting['doc_content_sql'],
+                                                db_conn_file)
+
 
 def get_sql_template(config_file):
     root = ET.parse(config_file).getroot()
@@ -213,7 +224,7 @@ def get_sql_template(config_file):
             'skip_term_sql': root.find('skip_term_sql').text}
 
 
-def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance):
+def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance, do_one_iter=False):
     p, fn = split(folder)
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
@@ -292,8 +303,12 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance):
     rules = utils.load_json_data(join(folder, 'post_filter_rules.json'))
     for r in rules:
         ruler.add_filter_rule(r['offset'], r['regs'])
-    sa.gen_study_table_with_rules(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'), ruler,
-                                  join(folder, 'ruled_anns.json'), sql_config_file, db_conn_file)
+    if do_one_iter:
+        sa.gen_study_table_in_one_iteration(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'),
+                                            sql_config_file, db_conn_file)
+    else:
+        sa.gen_study_table_with_rules(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'), ruler,
+                                      join(folder, 'ruled_anns.json'), sql_config_file, db_conn_file)
     print 'done'
 
 
