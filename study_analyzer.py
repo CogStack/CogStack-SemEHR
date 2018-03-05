@@ -332,8 +332,15 @@ if __name__ == "__main__":
     #       './studies/skin_conditions/dbcnn_input.json',
     #       concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
     #       )
-    study('./studies/COMOB_SD/', 'dyson',
-          './studies/COMOB_SD/cluster_sql_config.xml',
-          './studies/COMOB_SD/dbcnn_input.json',
-          concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
+    #study('./studies/COMOB_SD/', 'dyson',
+    #      './studies/COMOB_SD/cluster_sql_config.xml',
+    #      './studies/COMOB_SD/dbcnn_input.json',
+    #      concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
+    #      )
+    study('./studies/prathiv/', 'pirathiv',
+          './studies/prathiv/one_iter_sql_config.xml',
+          './studies/prathiv/dbcnn_input.json',
+          concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt'),
+          do_one_iter=True
           )
+
