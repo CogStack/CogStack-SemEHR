@@ -176,10 +176,11 @@ def icd10_queries():
 PREFIX owl:  <http://www.w3.org/2002/07/owl#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT distinct ?umls
+SELECT distinct ?umls, ?label
 FROM <http://bioportal.bioontology.org/ontologies/ICD10>
 WHERE {{
-  <http://purl.bioontology.org/ontology/ICD10/{}> <http://bioportal.bioontology.org/ontologies/umls/cui> ?umls.
+  <http://purl.bioontology.org/ontology/ICD10/{}> <http://bioportal.bioontology.org/ontologies/umls/cui> ?umls;
+  <http://www.w3.org/2004/02/skos/core#prefLabel> ?label.
   ?s <http://bioportal.bioontology.org/ontologies/umls/isRoot> true.
 }}
     """
@@ -192,7 +193,7 @@ WHERE {{
             ret = ret['results']['bindings']
             if len(ret) > 0:
                 icd2umls[icd] = ret[0]['umls']['value']
-                print '%s\t%s' % (icd, ret[0]['umls']['value'])
+                print '%s\t%s\t%s' % (icd, ret[0]['umls']['value'], ret[0]['label']['value'])
     print json.dumps(icd2umls)
 
 
@@ -211,7 +212,7 @@ if __name__ == "__main__":
     #     print len(local_scs)
     # print 'total concepts: %s' % len(next_scs), json.dumps(list(next_scs))
     # print json.dumps(umls.get_object('https://uts-ws.nlm.nih.gov/rest/content/current/CUI/C0178298/relations'))
-    # print get_umls_concept_detail(umls, 'C0020538')
+    # print get_umls_concept_detail(umls, 'C0480493')
     # print get_umls_concept_detail(umls, 'C0020538')['result']['name']
     # complete_tsv_concept_label(umls, './studies/IMPARTS/concepts_verified_chris.tsv')
     icd10_queries()
