@@ -532,25 +532,34 @@ def generate_result_in_one_iteration(cohort_name, study_analyzer, out_file,
     utils.save_json_array(convert_encoding(term_to_sampled, 'cp1252', 'utf-8'), sample_out_file)
 
 
-def complete_sample_ann_data(ann, complete_sql, db_conn_file, container):
-    rows_container = []
-    dutil.query_data(complete_sql.format(**{'doc_id': ann['id'],
-                                            'start': ann['annotations'][0]['start'],
-                                            'end': ann['annotations'][0]['end'],
-                                            'concept': ann['annotations'][0]['concept']}),
-                     rows_container,
-                     dbconn=dutil.get_db_connection_by_setting(db_conn_file))
-    if len(rows_container) > 0:
-        ann['annotations'][0]['string_orig'] = rows_container[0]['string_orig']
-    container.append(ann)
+def complete_sample_ann_data(key_anns, complete_sql, db_conn_file, container):
+    k = key_anns[0]
+    anns = key_anns[1]
+    for ann in anns:
+        rows_container = []
+        dutil.query_data(complete_sql.format(**{'doc_id': ann['id'],
+                                                'start': ann['annotations'][0]['start'],
+                                                'end': ann['annotations'][0]['end'],
+                                                'concept': ann['annotations'][0]['concept']}),
+                         rows_container,
+                         dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+        if len(rows_container) > 0:
+            ann['annotations'][0]['string_orig'] = rows_container[0]['string_orig']
+    container.append([k, anns])
 
 
 def complete_samples(sample_file, complete_sql, db_conn_file, out_file):
     anns = utils.load_json_data(sample_file)
+    key_anns = []
+    for k in anns:
+        key_anns.append((k, anns[k]))
     container = []
-    utils.multi_thread_tasking(anns, 40, complete_sample_ann_data,
+    utils.multi_thread_tasking(key_anns, 40, complete_sample_ann_data,
                                args=[complete_sql, db_conn_file, container])
-    utils.save_json_array(container, out_file)
+    results = {}
+    for r in container:
+        results[r[0]] = r[1]
+    utils.save_json_array(results, out_file)
     print 'done'
 
 
