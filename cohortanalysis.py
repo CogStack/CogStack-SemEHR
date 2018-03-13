@@ -542,6 +542,7 @@ def complete_sample_ann_data(ann, complete_sql, db_conn_file, container):
                      dbconn=dutil.get_db_connection_by_setting(db_conn_file))
     if len(rows_container) > 0:
         ann['annotations'][0]['string_orig'] = rows_container[0]['string_orig']
+        ann['annotations'][0]['confidence'] = rows_container[0]['action_trans']
     container.append(ann)
 
 
