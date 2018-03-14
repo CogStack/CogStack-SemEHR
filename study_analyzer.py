@@ -267,8 +267,6 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance, do_
                 scs.append(sc)
                 print sc.term_to_concept, sc.concept_closure
             sa.study_concepts = scs
-            print scs
-            exit(0)
         else:
             concepts = utils.load_json_data(join(folder, 'study_concepts.json'))
             if len(concepts) > 0:
@@ -341,15 +339,27 @@ if __name__ == "__main__":
     #       './studies/skin_conditions/dbcnn_input.json',
     #       concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
     #       )
-    #study('./studies/COMOB_SD/', 'dyson',
-    #      './studies/COMOB_SD/cluster_sql_config.xml',
-    #      './studies/COMOB_SD/dbcnn_input.json',
+    #study('./studies/COMOB_VAD_SD/', 'VAD',
+    #      './studies/COMOB_VAD_SD/cluster_sql_config.xml',
+    #      './studies/COMOB_VAD_SD/dbcnn_input.json',
     #      concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
     #      )
-    study('./studies/prathiv/', 'pirathiv',
-          './studies/prathiv/one_iter_sql_config.xml',
-          './studies/prathiv/dbcnn_input.json',
-          concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt'),
-          do_one_iter=True
+    #study('./studies/prathiv/', 'pirathiv',
+    #      './studies/prathiv/one_iter_sql_config.xml',
+    #      './studies/prathiv/dbcnn_input.json',
+    #      concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt'),
+    #      do_one_iter=True
+    #      )
+    #study('./studies/raquel_cardic/', 'depression',
+    #      './studies/raquel_cardic/cluster_sql_config.xml',
+    #      './studies/raquel_cardic/dbcnn_input.json',
+    #      concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
+    #      )
+    study('./studies/karen/', 'karen_072017',
+          './studies/karen/cluster_sql_config.xml',
+          './studies/karen/dbcnn_input.json',
+          concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
           )
+
+
 
