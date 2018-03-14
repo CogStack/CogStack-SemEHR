@@ -70,7 +70,8 @@
     ".*predisposition to(\\s)+.{0,20}",
     ".*chances of(\\s)+.{0,20}",
     ".*medicines information(\\s)+.{0,20}",
-    ".*people(\\s)+.{0,40}"
+    ".*people(\\s)+.{0,40}",
+    ".*formcheckbox(\\s)+.{0,40}"
   ]},
   {"offset": 1, "regs": [
     "\\s+(society|organisation|unit)", "\\s+care", "[\\s\\n]+team", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}",
@@ -87,7 +88,7 @@
     "\\s+[^\\r\\n\\.]{0,30}care home",
     "\\s+(test|screen|pathway|blood screen)",
     "\\s+football",
-    "\\s+.{0,20}formcheckbox",
+    "\\s+.{0,50}formcheckbox",
     "\\s{0,}/ss"
   ]},
   {"offset": 1, "regs": [
