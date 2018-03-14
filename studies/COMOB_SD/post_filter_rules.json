@@ -69,7 +69,7 @@
     ".*monitor(ing){0,1} for(\\s)+.{0,20}",
     ".*predisposition to(\\s)+.{0,20}",
     ".*chances of(\\s)+.{0,20}",
-    ".*medicines information(\\s)+.{0,20}",
+    ".*medicines information(\\s)+.{0,20}"
   ]},
   {"offset": 1, "regs": [
     "\\s+(society|organisation|unit)", "\\s+care", "[\\s\\n]+team", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}",
