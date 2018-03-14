@@ -8,6 +8,7 @@ import random
 from ann_post_rules import AnnRuleExecutor
 import trans_anns.sentence_pattern as tssp
 import trans_anns.text_generaliser as tstg
+import re
 
 
 db_conn_type = 'mysql'
@@ -131,7 +132,7 @@ def populate_patient_study_table(cohort_name, study_analyzer, out_file,
 def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_file, rule_executor,
                                             sample_size, sample_out_file, ruled_ann_out_file,
                                             patients_sql, term_doc_anns_sql, skip_term_sql,
-                                            db_conn_file):
+                                            db_conn_file, text_preprocessing=False):
     """
     populate patient study result with post processing to remove unwanted mentions
     :param cohort_name:
@@ -178,7 +179,8 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                 d = ann['CN_Doc_ID']
                 if d in counted_docs:
                     continue
-                ruled, rule = rule_executor.execute(ann['TextContent'],
+                ruled, rule = rule_executor.execute(ann['TextContent'] if not text_preprocessing else
+                                                    preprocessing_text_befor_rule_execution(ann['TextContent']),
                                                     int(ann['start_offset']),
                                                     int(ann['end_offset']))
                 if not ruled:
@@ -217,6 +219,10 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     utils.save_json_array(convert_encoding(term_to_docs, 'cp1252', 'utf-8'), sample_out_file)
     utils.save_json_array(convert_encoding(ruled_anns, 'cp1252', 'utf-8'), ruled_ann_out_file)
     print 'done'
+
+
+def preprocessing_text_befor_rule_execution(t):
+    return re.sub(r'\s{2,}', ' ', t)
 
 
 def convert_encoding(dic_obj, orig, target):
@@ -575,5 +581,9 @@ if __name__ == "__main__":
     # concepts = utils.load_json_data('./resources/Surgical_Procedures.json')
     # populate_patient_concept_table('dementia', concepts, 'dementia_cohorts.csv')
     # dump_doc_as_files('./hepc_data')
-    complete_samples('./studies/karen/sample_docs.json',
-                     'select string_orig, action_trans from kconnect_annotations where cn_doc_id=\'{doc_id}\' and start_offset={start} and end_offset={end} and inst_uri=\'{concept}\'', './studies/karen/dbcnn_input.json', './studies/karen/sample_docs_completed.json')
+    # complete_samples('./studies/karen/sample_docs.json',
+    #                  'select string_orig, action_trans from kconnect_annotations where cn_doc_id=\'{doc_id}\' and start_offset={start} and end_offset={end} and inst_uri=\'{concept}\'', './studies/karen/dbcnn_input.json', './studies/karen/sample_docs_completed.json')
+    print preprocessing_text_befor_rule_execution('abc  '
+                                                  '\n'
+                                                  '\n'
+                                                  'dea   adf dafsf')
