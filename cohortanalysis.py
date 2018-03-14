@@ -348,12 +348,12 @@ def do_action_trans_docs(docs, nlp,
                                    unicode(doc_container[0]['content']),
                                    doc_anns,
                                    doc_id['docid'])
-        print 'doc %s read/model created, predicting...'
+        # print 'doc %s read/model created, predicting...'
         for inst in ptns:
             acc = corpus_predictor.predcit(inst)
             anns = inst.annotations
             sql = action_trans_update_sql_template.format(**{'acc': acc, 'AnnId': anns[0]['AnnId']})
-            print 'executing %s' % sql
+            # print 'executing %s' % sql
             dutil.query_data(sql, container=None, dbconn=dutil.get_db_connection_by_setting(db_conn_file))
 
 
@@ -386,14 +386,20 @@ def action_transparentise(cohort_name, db_conn_file,
     corpus_predictor = tssp.CorpusPredictor.load_corpus_model(corpus_trans_file)
     i = 1
     for batch in batches:
+        if i <= 1949:
+            i += 1
+            continue
         print 'working on %s/%s batch' % (i, len(batches))
-        do_action_trans_docs(batch, 
-                             nlp,
-                             doc_ann_sql_template,
-                             doc_content_sql_template,
-                             action_trans_update_sql_template,
-                             db_conn_file,
-                             corpus_predictor)
+        try:
+            do_action_trans_docs(batch, 
+                                 nlp,
+                                 doc_ann_sql_template,
+                                 doc_content_sql_template,
+                                 action_trans_update_sql_template,
+                                 db_conn_file,
+                                 corpus_predictor)
+        except Exception as e:
+            print 'error processing [%s]' % e
         i += 1
     #utils.multi_thread_tasking(batches, 1, do_action_trans_docs,
     #                           args=[nlp,
@@ -569,4 +575,5 @@ if __name__ == "__main__":
     # concepts = utils.load_json_data('./resources/Surgical_Procedures.json')
     # populate_patient_concept_table('dementia', concepts, 'dementia_cohorts.csv')
     # dump_doc_as_files('./hepc_data')
-    pass
+    complete_samples('./studies/karen/sample_docs.json',
+                     'select string_orig, action_trans from kconnect_annotations where cn_doc_id=\'{doc_id}\' and start_offset={start} and end_offset={end} and inst_uri=\'{concept}\'', './studies/karen/dbcnn_input.json', './studies/karen/sample_docs_completed.json')
