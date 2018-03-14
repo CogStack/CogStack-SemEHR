@@ -2,6 +2,7 @@ import re
 import utils
 
 _text_window = 60
+_head_text_window_size = 200
 
 
 class AnnRuleExecutor(object):
@@ -25,6 +26,8 @@ class AnnRuleExecutor(object):
         matched = []
         for r in self._filter_rules:
             s_compare = s_end if r['offset'] > 0 else s_before
+            if r['offset'] == 0:
+                s_compare = text[:_head_text_window_size]
             s_compare = s_compare.replace('\n', ' ')
             reg_p = re.compile('|'.join(r['regs']), re.IGNORECASE)
             # print 'matching %s on %s' % (reg_p, s_compare)
