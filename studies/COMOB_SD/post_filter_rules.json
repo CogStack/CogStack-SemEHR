@@ -13,7 +13,7 @@
   ]},
   {
     "offset": -1, "regs":[
-    ".*(mean(s){0,1}|worried|threaten|clear|cleared|anxious|feeling|feels|thinking|thinks|discussed|convinced|worries|worreis|concern|concerns|inkling)(\\s)+.{0,50}",
+    ".*(mean(s){0,1}|worried|threaten|clear|cleared|felt|anxious|feeling|feels|thinking|thinks|discussed|convinced|worries|worreis|concern|concerns|inkling)(\\s)+.{0,50}",
     ".*danger of having(\\s)+.{0,20}",
     ".*unsure whether(\\s)+.{0,40}",
     ".*(\\s)+non\\-",
@@ -65,11 +65,12 @@
     ".*no history of(\\s)+.{0,20}",
     ".*caution\\s+[^\\.]{0,20}\\s+with(\\s)+.{0,20}",
     ".*side effect of(\\s)+.{0,20}",
-    ".*(likely to|may|could|potential for)\\s+(cause|causing)(\\s)+.{0,20}",
-    ".*monitor(ing){0,1} for(\\s)+.{0,20}",
+    ".*(likely to|may|maybe|could|potential for)\\s+(cause|causing)(\\s)+.{0,20}",
+    ".*monitor(ing){0,1}( for){0,1}(\\s)+.{0,20}",
     ".*predisposition to(\\s)+.{0,20}",
     ".*chances of(\\s)+.{0,20}",
-    ".*medicines information(\\s)+.{0,20}"
+    ".*medicines information(\\s)+.{0,20}",
+    ".*people(\\s)+.{0,40}"
   ]},
   {"offset": 1, "regs": [
     "\\s+(society|organisation|unit)", "\\s+care", "[\\s\\n]+team", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}",
