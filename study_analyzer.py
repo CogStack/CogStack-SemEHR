@@ -197,13 +197,13 @@ class StudyAnalyzer(object):
         cohort.random_extract_annotated_docs(cohort_name, self, out_file, 10)
 
     def gen_study_table_with_rules(self, cohort_name, out_file, sample_out_file, ruler, ruled_out_file,
-                                   sql_config, db_conn_file):
+                                   sql_config, db_conn_file, text_preprocessing=False):
         sql_setting = get_sql_template(sql_config)
         cohort.populate_patient_study_table_post_ruled(cohort_name, self, out_file, ruler, 20,
                                                        sample_out_file, ruled_out_file,
                                                        sql_setting['patients_sql'], sql_setting['term_doc_anns_sql'],
                                                        sql_setting['skip_term_sql'],
-                                                       db_conn_file)
+                                                       db_conn_file, text_preprocessing=text_preprocessing)
 
     def gen_study_table_in_one_iteration(self, cohort_name, out_file, sample_out_file,
                                          sql_config, db_conn_file):
@@ -233,7 +233,7 @@ def get_one_iteration_sql_template(config_file):
             'skip_term_sql': root.find('skip_term_sql').text}
 
 
-def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance, do_one_iter=False):
+def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance, do_one_iter=False, do_preprocessing=False):
     p, fn = split(folder)
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
@@ -315,7 +315,8 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance, do_
                                             sql_config_file, db_conn_file)
     else:
         sa.gen_study_table_with_rules(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'), ruler,
-                                      join(folder, 'ruled_anns.json'), sql_config_file, db_conn_file)
+                                      join(folder, 'ruled_anns.json'), sql_config_file, db_conn_file,
+                                      text_preprocessing=do_preprocessing)
     print 'done'
 
 
@@ -360,6 +361,11 @@ if __name__ == "__main__":
           './studies/karen/dbcnn_input.json',
           concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
           )
+    # study('./studies/raquel_cardic/', 'raquel_cardic',
+    #       './studies/raquel_cardic/one_iter_sql_config.xml',
+    #       './studies/raquel_cardic/dbcnn_input.json',
+    #       concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
+    #       )
 
 
 

@@ -197,6 +197,15 @@ WHERE {{
     print json.dumps(icd2umls)
 
 
+def get_concepts_names(umls, concepts):
+    c2label = {}
+    for c in concepts:
+        details = get_umls_concept_detail(umls, c)
+        c2label[c] = details['result']['name']
+        print '%s\t%s' % (c, c2label[c])
+    return c2label
+
+
 if __name__ == "__main__":
     # align_mapped_concepts('./resources/autoimmune-concepts.json', './resources/auto_immune_gazetteer.txt')
     umls = get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
@@ -212,7 +221,8 @@ if __name__ == "__main__":
     #     print len(local_scs)
     # print 'total concepts: %s' % len(next_scs), json.dumps(list(next_scs))
     # print json.dumps(umls.get_object('https://uts-ws.nlm.nih.gov/rest/content/current/CUI/C0178298/relations'))
-    # print get_umls_concept_detail(umls, 'C0480493')
+    # print get_umls_concept_detail(umls, 'C0946252')
+    get_concepts_names(umls, utils.read_text_file('./studies/emma_violence/all_concepts.txt'))
     # print get_umls_concept_detail(umls, 'C0020538')['result']['name']
     # complete_tsv_concept_label(umls, './studies/IMPARTS/concepts_verified_chris.tsv')
-    icd10_queries()
+    # icd10_queries()
