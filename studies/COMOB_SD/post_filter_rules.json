@@ -9,7 +9,8 @@
     ".*(\\s)+(cat(s){0,1}|dog(s){0,1}|family|mother|father|auntie|brother|sister|partner|QQQQQ|(step-){0,1}mum|dad|daughter|son|friend|friends|cousin|niece)'{0,1}s(\\s)+.{0,50}",
     ".*(\\s)+rule out(\\s)+.{0,10}",
     ".*(\\s)+would have(\\s)+.{0,10}",
-    ".*(\\s)+charity(\\s)+.{0,20}"
+    ".*(\\s)+charity(\\s)+.{0,20}",
+    ".*(\\s)+consultant(\\s)+.{0,20}"
   ]},
   {
     "offset": -1, "regs":[
@@ -72,7 +73,8 @@
     ".*medicines information(\\s)+.{0,20}",
     ".*people(\\s)+.{0,40}",
     ".*formcheckbox(\\s)+.{0,40}",
-    ".*information on(\\s)+.{0,40}"
+    ".*information on(\\s)+.{0,40}",
+    ".*e\\.g\\.(\\s)+.{0,40}",
   ]},
   {"offset": 1, "regs": [
     "\\s+(society|organisation|unit)", "\\s+care", "[\\s\\n]+team", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}",
