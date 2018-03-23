@@ -1,6 +1,6 @@
-from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions, helpers
+from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions, helpers, TransportError
 from datetime import timedelta, datetime
-import utils
+# import utils as semutils
 
 _es_host = '10.200.102.23'
 _es_index = 'mimic'
@@ -14,7 +14,7 @@ _page_size = 200
 class SemEHRES(object):
     def __init__(self, es_host, es_index, doc_type, concept_type, patient_type):
         self._host = es_host
-        self._es_instance = Elasticsearch([self._host])
+        self._es_instance = Elasticsearch([self._host], verify_certs=False)
         self._index = es_index
         self._doc_type = doc_type
         self._patient_type = patient_type
@@ -107,7 +107,8 @@ class SemEHRES(object):
             query['_source'] = {
                 "includes": include_fields
             }
-        results = self._es_instance.search(self._index, entity, query)
+        print query
+        results = self._es_instance.search(index=self._index, doc_type=entity, body=query)
         return results['hits']['total'], results['hits']['hits']
 
     def scroll(self, q, entity, size=100, include_fields=None, q_obj=None):
@@ -122,6 +123,7 @@ class SemEHRES(object):
             query['_source'] = {
                 "includes": include_fields
             }
+        query['sort'] = '_doc'
         return helpers.scan(self._es_instance, query,
                             size=size, scroll='10m', index=self._index, doc_type=entity)
 
@@ -143,3 +145,14 @@ class SemEHRES(object):
             _es_instance = SemEHRES(es_host, es_index, es_doc_type, es_concept_type, es_patient_type)
         return _es_instance
 
+
+if __name__ == "__main__":
+    es = SemEHRES.get_instance_by_setting('', '', '', '', '')
+    # print es.get_doc_detail('1044334459', 'docs')
+    # print es.search('docs', 'ward')
+    try:
+        print es.search('docs', 'ward')
+    except TransportError as terr:
+        #print terr
+        print terr.info
+        #print terr.status_code
