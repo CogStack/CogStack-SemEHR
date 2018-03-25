@@ -1,7 +1,7 @@
 [
   {"offset": -1, "regs": [
     ".*(\\s)+died of(\\s)+.{0,10}", ".*(\\s)+died from(\\s)+.{0,10}", ".*(\\s)+dying(\\s)+.{0,10}",
-    ".*(\\s)+(died|passed away)(\\s)+.{0,30}",
+    ".*(\\s)+(died|passed away|dies)(\\s)+.{0,30}",
     ".*(\\s)+die(\\s)+.{0,30}",
     ".*(\\s)+death from(\\s)+.{0,10}", ".*(\\s)+deaths from(\\s)+.{0,10}", ".*(\\s)+death by(\\s)+.{0,10}", ".*(\\s)+death .{0,10} result of .{0,5}(\\s)+.{0,10}",
     ".*(\\s)+(dog|mother|family member|father|parent(s){0,1}|brother(s){0,1}|mate(s){0,1}|sister(s){0,1}|partner|QQQQQ|mum|dad|daughter|son(s){0,1}|friend(s){0,1}|friends|cousin(s){0,1}|niece(s){0,1}|niece(s){0,1}).{0,50}",
@@ -86,7 +86,7 @@
     "\\s+ward", "\\s+interpreter", "\\s+date", "\\s+corner",
     "\\s+.{0,20}centre", "\\s+urologist", "\\s+counselling", "\\s+counsellor", "\\s+markers", "\\s+rescource", "\\s+charity", "\\s+assessment", "\\s+specialist", "\\s+medicine", "\\s+scare",
     "\\s+.{0,10}(guideline|guide)",
-    "\\s+.{0,10}negtive",
+    "\\s+.{0,10}negtive", "\\s+.{0,10}unlikely",
     "\\s+[^\\r\\n\\.]{0,30}Adult(s){0,1}",
     "\\s+[^\\r\\n\\.]{0,30}care home",
     "\\s+(test|screen|pathway|blood screen)",
