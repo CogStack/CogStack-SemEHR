@@ -74,7 +74,7 @@
     ".*people(\\s)+.{0,40}",
     ".*formcheckbox(\\s)+.{0,40}",
     ".*information on(\\s)+.{0,40}",
-    ".*e\\.g\\.(\\s)+.{0,40}",
+    ".*e\\.g\\.(\\s)+.{0,40}"
   ]},
   {"offset": 1, "regs": [
     "\\s+(society|organisation|unit)", "\\s+care", "[\\s\\n]+team", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}",
