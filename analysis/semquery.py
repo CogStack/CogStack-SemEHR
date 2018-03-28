@@ -1,6 +1,6 @@
 from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions, helpers, TransportError
 from datetime import timedelta, datetime
-# import utils as semutils
+import utils
 
 _es_host = '10.200.102.23'
 _es_index = 'mimic'
@@ -145,14 +145,19 @@ class SemEHRES(object):
             _es_instance = SemEHRES(es_host, es_index, es_doc_type, es_concept_type, es_patient_type)
         return _es_instance
 
+    @staticmethod
+    def get_instance_by_setting_file(setting_file_path):
+        setting = utils.load_json_data(setting_file_path)
+        return SemEHRES.get_instance_by_setting(setting['es_host'], setting['es_index'],
+                                                setting['es_doc_type'], setting['es_concept_type'],
+                                                setting['es_patient_type'])
+
 
 if __name__ == "__main__":
-    es = SemEHRES.get_instance_by_setting('', '', '', '', '')
+    es = SemEHRES.get_instance_by_setting_file('../index_settings/sem_idx_setting.json')
     # print es.get_doc_detail('1044334459', 'docs')
     # print es.search('docs', 'ward')
     try:
         print es.search('docs', 'ward')
     except TransportError as terr:
-        #print terr
         print terr.info
-        #print terr.status_code
