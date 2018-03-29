@@ -38,6 +38,24 @@ class SemEHRES(object):
                 need_next_query = False
         return patients
 
+    def search_all(self, q, doc_type):
+        patients = []
+        need_next_query = True
+        offset = 0
+        while need_next_query:
+            query = {"match": {"_all": q}} if len(q) > 0 else {"match_all": {}}
+            results = self._es_instance.search(self._index, doc_type, {"query": query,
+                                                                                 "from": offset,
+                                                                                 "size": _page_size,
+                                                                                 "sort": "_doc"})
+            total = results['hits']['total']
+            for p in results['hits']['hits']:
+                patients.append(p)
+            offset += len(results['hits']['hits'])
+            if offset >= total:
+                need_next_query = False
+        return patients
+
     @property
     def patient_type(self):
         return self._patient_type
