@@ -38,6 +38,29 @@ class SemEHRES(object):
                 need_next_query = False
         return patients
 
+    @property
+    def patient_type(self):
+        return self._patient_type
+
+    @property
+    def doc_type(self):
+        return self._doc_type
+
+    @property
+    def concept_type(self):
+        return self._concept_type
+
+    @staticmethod
+    def do_collect_ids(d, container):
+        container.append(d['_id'])
+
+    def search_by_scroll(self, q, doc_type, collection_func=do_collect_ids):
+        print q
+        scroll_obj = self.scroll(q, doc_type, size=300)
+        container = []
+        utils.multi_thread_tasking_it(scroll_obj, 1, collection_func, args=[container])
+        return container
+
     def get_contexted_concepts(self, concept):
         results = self._es_instance.search(self._index, self._concept_type, {"query": {"match": {"_all": concept}},
                                                                              "size": 2000
@@ -64,7 +87,7 @@ class SemEHRES(object):
         cc_to_ctx = {}
         for t in concepts:
             cc_to_ctx.update(self.get_contexted_concepts(t))
-        print len(cc_to_ctx)
+        # print cc_to_ctx
         patients = self.search_patient(' '.join(concepts))
         results = []
         valid_docs = set()
@@ -158,6 +181,6 @@ if __name__ == "__main__":
     # print es.get_doc_detail('1044334459', 'docs')
     # print es.search('docs', 'ward')
     try:
-        print es.search('docs', 'ward')
+        print es.search('eprdoc', 'ward')
     except TransportError as terr:
         print terr.info
