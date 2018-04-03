@@ -4,8 +4,13 @@ import json
 from os.path import join
 import ontotextapi as oi
 import random
-# from study_analyzer import StudyAnalyzer
+import study_analyzer as sa
 from ann_post_rules import AnnRuleExecutor
+import trans_anns.sentence_pattern as tssp
+import trans_anns.text_generaliser as tstg
+import re
+from analysis.semquery import SemEHRES
+import analysis.cohort_analysis_helper as chelper
 
 
 db_conn_type = 'mysql'
@@ -129,7 +134,7 @@ def populate_patient_study_table(cohort_name, study_analyzer, out_file,
 def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_file, rule_executor,
                                             sample_size, sample_out_file, ruled_ann_out_file,
                                             patients_sql, term_doc_anns_sql, skip_term_sql,
-                                            db_conn_file):
+                                            db_conn_file, text_preprocessing=False):
     """
     populate patient study result with post processing to remove unwanted mentions
     :param cohort_name:
@@ -176,7 +181,8 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                 d = ann['CN_Doc_ID']
                 if d in counted_docs:
                     continue
-                ruled, rule = rule_executor.execute(ann['TextContent'],
+                ruled, rule = rule_executor.execute(ann['TextContent'] if not text_preprocessing else
+                                                    preprocessing_text_befor_rule_execution(ann['TextContent']),
                                                     int(ann['start_offset']),
                                                     int(ann['end_offset']))
                 if not ruled:
@@ -212,9 +218,110 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     for p in patients:
         s += '\t'.join([p['brcid']] + [p[k] if k in p else '0' for k in concept_labels]) + '\n'
     utils.save_string(s, out_file)
-    utils.save_json_array(term_to_docs, sample_out_file)
-    utils.save_json_array(ruled_anns, ruled_ann_out_file)
+    utils.save_json_array(convert_encoding(term_to_docs, 'cp1252', 'utf-8'), sample_out_file)
+    utils.save_json_array(convert_encoding(ruled_anns, 'cp1252', 'utf-8'), ruled_ann_out_file)
     print 'done'
+
+
+def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_executor,
+                                               sample_size, sample_out_file, ruled_ann_out_file,
+                                               es_conn_file, text_preprocessing=False):
+    """
+    populate patient study result with post processing to remove unwanted mentions
+    :param cohort_name:
+    :param study_analyzer:
+    :param out_file:
+    :param rule_executor:
+    :param sample_size:
+    :param sample_out_file:
+    :return:
+    """
+    es = SemEHRES.get_instance_by_setting_file(es_conn_file)
+    pids = es.search_by_scroll("14479", es.patient_type)
+    patients = [{'brcid': p} for p in pids]
+    id2p = {}
+    for p in patients:
+        id2p[p['brcid']] = p
+    print patients
+    non_empty_concepts = []
+    study_concepts = study_analyzer.study_concepts
+    term_to_docs = {}
+    ruled_anns = []
+    for sc in study_concepts:
+        positive_doc_anns = []
+        sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
+        concept_list = ', '.join(['\'%s\'' % c for c in sc.concept_closure])
+        doc_anns = []
+        if len(sc.concept_closure) > 0:
+            chelper.query_doc_anns(es, concept_list, study_analyzer.skip_terms)
+
+        if len(doc_anns) > 0:
+            p_to_dfreq = {}
+            counted_docs = set()
+            for d in doc_anns:
+                doc = doc_anns[d]
+                p = doc['pid']
+                if d in counted_docs:
+                    continue
+                for ann in doc['anns']:
+                    ruled, rule = rule_executor.execute(doc['text'] if not text_preprocessing else
+                                                        preprocessing_text_befor_rule_execution(doc['text']),
+                                                        int(ann['s']),
+                                                        int(ann['e']))
+                    if not ruled:
+                        counted_docs.add(d)
+                        p_to_dfreq[p] = 1 if p not in p_to_dfreq else 1 + p_to_dfreq[p]
+                        positive_doc_anns.append({'id': d,
+                                                  'content': doc['text'],
+                                                  'annotations': [{'start': ann['s'],
+                                                                   'end': ann['e'],
+                                                                   'concept': ann['features']['inst']}]})
+                    else:
+                        ruled_anns.append({'p': p, 'd': d, 'ruled': rule})
+            if len(counted_docs) > 0:
+                non_empty_concepts.append(sc_key)
+                for p in p_to_dfreq:
+                    id2p[p][sc_key] = str(p_to_dfreq[p])
+
+                # save sample docs
+                if sample_size >= len(positive_doc_anns):
+                    term_to_docs[sc_key] = positive_doc_anns
+                else:
+                    sampled = []
+                    for i in xrange(sample_size):
+                        index = random.randrange(len(positive_doc_anns))
+                        sampled.append(positive_doc_anns[index])
+                        positive_doc_anns.pop(index)
+                    term_to_docs[sc_key] = sampled
+
+    concept_labels = sorted(non_empty_concepts)
+    s = '\t'.join(['brcid'] + concept_labels) + '\n'
+    for p in patients:
+        s += '\t'.join([p['brcid']] + [p[k] if k in p else '0' for k in concept_labels]) + '\n'
+    utils.save_string(s, out_file)
+    utils.save_json_array(convert_encoding(term_to_docs, 'cp1252', 'utf-8'), sample_out_file)
+    utils.save_json_array(convert_encoding(ruled_anns, 'cp1252', 'utf-8'), ruled_ann_out_file)
+    print 'done'
+
+def preprocessing_text_befor_rule_execution(t):
+    return re.sub(r'\s{2,}', ' ', t)
+
+
+def convert_encoding(dic_obj, orig, target):
+    if isinstance(dic_obj, str):
+        return dic_obj.decode(orig).encode(target)
+    elif isinstance(dic_obj, list):
+        ret = []
+        for itm in dic_obj:
+            ret.append(convert_encoding(itm, orig, target))
+        return ret        
+    elif isinstance(dic_obj, dict):
+        for k in dic_obj:
+            dic_obj[k] = convert_encoding(dic_obj[k], orig, target)
+        return dic_obj
+    else:
+        # print '%s not supported for conversion' % isinstance(dic_obj[k], dict)
+        return dic_obj
 
 
 def random_extract_annotated_docs(cohort_name, study_analyzer, out_file,
@@ -290,16 +397,289 @@ def random_extract_annotated_docs(cohort_name, study_analyzer, out_file,
     print 'done'
 
 
-def test_connection():
-    sql = "select top 1 * from GateDB_Cris.dbo.gate"
+def do_action_trans_docs(docs, nlp,
+                         doc_ann_sql_template,
+                         doc_content_sql_template,
+                         action_trans_update_sql_template,
+                         db_conn_file,
+                         corpus_predictor):
+    """
+    do actionable transparency prediction on a batch of docs.
+    this function is to supposed to be called in a single thread
+    :param docs:
+    :param nlp:
+    :param doc_ann_sql_template:
+    :param doc_content_sql_template:
+    :param action_trans_update_sql_template:
+    :param db_conn_file:
+    :param corpus_predictor:
+    :return:
+    """
+    # self_nlp = tstg.load_mode('en')
+    for doc_id in docs:
+        doc_anns = []
+        dutil.query_data(doc_ann_sql_template.format(doc_id['docid']),
+                         doc_anns,
+                         dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+        doc_anns = [{'s': int(ann['s']), 'e': int(ann['e']),
+                     'AnnId': str(ann['AnnId']), 'signed_label':'', 'gt_label':'', 'action_trans': ann['action_trans']} for ann in doc_anns]
+        if len(doc_anns) == 0:
+            continue
+        if doc_anns[0]['action_trans'] is not None:
+            print 'found trans %s of first ann, skipping doc' % doc_anns[0]['action_trans']
+            continue
+        doc_container = []
+        dutil.query_data(doc_content_sql_template.format(doc_id['docid']),
+                         doc_container,
+                         dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+        ptns = tstg.doc_processing(nlp,
+                                   unicode(doc_container[0]['content']),
+                                   doc_anns,
+                                   doc_id['docid'])
+        # print 'doc %s read/model created, predicting...'
+        for inst in ptns:
+            acc = corpus_predictor.predcit(inst)
+            anns = inst.annotations
+            sql = action_trans_update_sql_template.format(**{'acc': acc, 'AnnId': anns[0]['AnnId']})
+            # print 'executing %s' % sql
+            dutil.query_data(sql, container=None, dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+
+
+def action_transparentise(cohort_name, db_conn_file,
+                          cohort_doc_sql_template,
+                          doc_ann_sql_template,
+                          doc_content_sql_template,
+                          action_trans_update_sql_template,
+                          corpus_trans_file):
+    """
+    use actionable transparency model to create confidence value for each annotations;
+    this method split all cohort documents into batches that are to processed in multiple threads
+    :param cohort_name:
+    :param db_conn_file:
+    :param cohort_doc_sql_template:
+    :param doc_ann_sql_template:
+    :param doc_content_sql_template:
+    :param action_trans_update_sql_template:
+    :param corpus_trans_file:
+    :return:
+    """
     docs = []
-    dutil.query_data(sql, docs)
-    for d in docs:
-        for k in d:
-            print '%s\t%s' % (k, d[k])
+    dutil.query_data(cohort_doc_sql_template.format(cohort_name), docs,
+                     dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+    batch_size = 500
+    batches = []
+    for i in range(0, len(docs), batch_size):
+        batches.append(docs[i:i+batch_size])
+    nlp = tstg.load_mode('en')
+    corpus_predictor = tssp.CorpusPredictor.load_corpus_model(corpus_trans_file)
+    i = 1
+    for batch in batches:
+        if i <= 1949:
+            i += 1
+            continue
+        print 'working on %s/%s batch' % (i, len(batches))
+        try:
+            do_action_trans_docs(batch, 
+                                 nlp,
+                                 doc_ann_sql_template,
+                                 doc_content_sql_template,
+                                 action_trans_update_sql_template,
+                                 db_conn_file,
+                                 corpus_predictor)
+        except Exception as e:
+            print 'error processing [%s]' % e
+        i += 1
+    #utils.multi_thread_tasking(batches, 1, do_action_trans_docs,
+    #                           args=[nlp,
+    #                                 doc_ann_sql_template,
+    #                                 doc_content_sql_template,
+    #                                 action_trans_update_sql_template,
+    #                                 db_conn_file,
+    #                                 corpus_predictor
+    #                                 ])
+    print 'all anns transparentised'
+
+
+def do_put_line(p, concept_labels, container):
+    print 'working on %s' % p['brcid']
+    container.append('\t'.join([p['brcid']] + [str(p[k]) if k in p else '0' for k in concept_labels]))
+
+
+def generate_result_in_one_iteration(cohort_name, study_analyzer, out_file,
+                                     sample_size, sample_out_file,
+                                     doc_to_brc_sql, brc_sql, anns_iter_sql, skip_term_sql, doc_content_sql,
+                                     db_conn_file):
+    """
+    generate result in one iteration over all annotations. this is supposed to be much faster when working on
+    large study concepts. But post-processing using rules not supported now
+    :param cohort_name:
+    :param study_analyzer:
+    :param out_file:
+    :param sample_size:
+    :param sample_out_file:
+    :param doc_to_brc_sql:
+    :param brc_sql:
+    :param anns_iter_sql:
+    :param skip_term_sql:
+    :param doc_content_sql:
+    :param db_conn_file:
+    :return:
+    """
+    # populate concept to anns maps
+    sc2anns = {}
+    for sc in study_analyzer.study_concepts:
+        sc2anns[sc.name] = []
+
+    # populate patient list
+    print 'populating patient list...'
+    patients = {}
+    rows_container = []
+    dutil.query_data(brc_sql.format(cohort_name), rows_container,
+                     dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+    for r in rows_container:
+        patients[r['brcid']] = {'brcid': r['brcid']}
+
+    # populate document id to patient id dictionary
+    print 'populating doc to patient map...'
+    rows_container = []
+    dutil.query_data(doc_to_brc_sql.format(cohort_name), rows_container,
+                     dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+    doc2brc = {}
+    for dp in rows_container:
+        doc2brc[dp['doc_id']] = dp['brcid']
+
+    # query annotations
+    print 'iterating annotations...'
+    rows_container = []
+    dutil.query_data(anns_iter_sql.format(**{'cohort_id': cohort_name,
+                                             'extra_constrains':
+                                                 ' \n '.join(
+                                                  [generate_skip_term_constrain(study_analyzer, skip_term_sql)]
+                                                  + [] if (study_analyzer.study_options is None or
+                                                           study_analyzer.study_options['extra_constrains'] is None)
+                                                  else study_analyzer.study_options['extra_constrains'])}),
+                     rows_container,
+                     dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+    for r in rows_container:
+        concept_id = r['inst_uri']
+        brcid = doc2brc[r['doc_id']] if r['doc_id'] in doc2brc else None
+        if brcid is None:
+            print 'doc %s not matched to a patient!!!' % r['doc_id']
+            continue
+        patient = patients[brcid] if brcid in patients else None
+        if patient is None:
+            print 'brc id %s not matched a patient!!!' % brcid
+            continue
+        # get matched study concepts
+        for sc in study_analyzer.study_concepts:
+            if concept_id in sc.concept_closure:
+                patient[sc.name] = (patient[sc.name] + 1) if sc.name in patient else 1
+                sc2anns[sc.name].append({'ann_id': r['ann_id'], 'doc_id': r['doc_id'], 'concept_id': concept_id,
+                                         'start': r['start_offset'], 'end': r['end_offset']})
+
+    # generate result table
+    print 'generate result table...'
+    concept_labels = sorted([k for k in sc2anns])
+    s = '\t'.join(['brcid'] + concept_labels) + '\n'
+    lines = []
+    utils.multi_thread_tasking([patients[pid] for pid in patients], 40, do_put_line,
+                               args=[concept_labels, lines])
+    s += '\n'.join(lines)
+    utils.save_string(s, out_file)
+
+    # generate sample annotations
+    term_to_docs = {}
+    for concept in sc2anns:
+        ann_ids = sc2anns[concept]
+        sample_ids = []
+        if len(ann_ids) <= sample_size:
+            sample_ids = ann_ids
+        else:
+            for i in xrange(sample_size):
+                index = random.randrange(len(ann_ids))
+                sample_ids.append(ann_ids[index])
+                del ann_ids[index]
+        term_to_docs[concept] = sample_ids
+
+    # query doc contents
+    print 'populating term to sampled anns...'
+    term_to_sampled = {}
+    for term in term_to_docs:
+        sample_ids = term_to_docs[term]
+        if len(sample_ids) <=0 :
+            continue
+        sample_doc_ids = ['\'' + s['doc_id'] + '\'' for s in sample_ids]
+        rows_container = []
+        dutil.query_data(doc_content_sql.format(','.join(sample_doc_ids)), rows_container,
+                         dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+        doc_to_content = {}
+        for r in rows_container:
+            doc_to_content[r['doc_id']] = r['TextContent']
+        term_sampled = []
+        for s in sample_ids:
+            term_sampled.append({'id': s['doc_id'],
+                                 'content': doc_to_content[s['doc_id']],
+                                 'annotations': [{'start': s['start'],
+                                                  'end': s['end'],
+                                                  'concept': s['concept_id']}]})
+        term_to_sampled[term] = term_sampled
+    utils.save_json_array(convert_encoding(term_to_sampled, 'cp1252', 'utf-8'), sample_out_file)
+
+
+def complete_sample_ann_data(key_anns, complete_sql, db_conn_file, container):
+    k = key_anns[0]
+    anns = key_anns[1]
+    for ann in anns:
+        rows_container = []
+        dutil.query_data(complete_sql.format(**{'doc_id': ann['id'],
+                                                'start': ann['annotations'][0]['start'],
+                                                'end': ann['annotations'][0]['end'],
+                                                'concept': ann['annotations'][0]['concept']}),
+                         rows_container,
+                         dbconn=dutil.get_db_connection_by_setting(db_conn_file))
+        if len(rows_container) > 0:
+            ann['annotations'][0]['string_orig'] = rows_container[0]['string_orig']
+            if 'action_trans' in rows_container[0]:
+                ann['annotations'][0]['confidence'] = rows_container[0]['action_trans']
+    container.append([k, anns])
+
+
+def complete_samples(sample_file, complete_sql, db_conn_file, out_file):
+    anns = utils.load_json_data(sample_file)
+    key_anns = []
+    for k in anns:
+        key_anns.append((k, anns[k]))
+    container = []
+    utils.multi_thread_tasking(key_anns, 40, complete_sample_ann_data,
+                               args=[complete_sql, db_conn_file, container])
+    results = {}
+    for r in container:
+        results[r[0]] = r[1]
+    utils.save_json_array(results, out_file)
+    print 'done'
+
 
 if __name__ == "__main__":
     # concepts = utils.load_json_data('./resources/Surgical_Procedures.json')
     # populate_patient_concept_table('dementia', concepts, 'dementia_cohorts.csv')
     # dump_doc_as_files('./hepc_data')
-    test_connection()
+    # complete_samples('./studies/karen/sample_docs.json',
+    #                  'select string_orig, action_trans from kconnect_annotations where cn_doc_id=\'{doc_id}\' and start_offset={start} and end_offset={end} and inst_uri=\'{concept}\'', './studies/karen/dbcnn_input.json', './studies/karen/sample_docs_completed.json')
+    # print preprocessing_text_befor_rule_execution('abc  '
+    #                                               '\n'
+    #                                               '\n'
+    #                                               'dea   adf dafsf')
+    study_analyzer = sa.StudyAnalyzer('aaa')
+    study_concept = sa.StudyConcept('depression', ['depression'])
+    study_concept.concept_closure = ["C0154409", "C0038050"]
+    study_analyzer.add_concept(study_concept)
+
+    folder = "./studies/COMOB_SD/"
+    ruler = AnnRuleExecutor()
+    rules = utils.load_json_data(join(folder, 'post_filter_rules.json'))
+    for r in rules:
+        ruler.add_filter_rule(r['offset'], r['regs'])
+
+    es_populate_patient_study_table_post_ruled(study_analyzer, "./out.txt", ruler, 20,
+                                               "./sample_out.txt", "./ruled.txt",
+                                               "./index_settings/sem_idx_setting.json")

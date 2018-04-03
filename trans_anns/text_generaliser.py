@@ -37,7 +37,10 @@ def doc_processing(nlp, doc_text, anns, doc_id):
                 m_anns.append(ann)
             idx += 1
         if len(m_anns) > 0:
-            matched_sent_anns.append({'sent': sent, 'sent_offset': pos, 'anns': m_anns})
+            # matched_sent_anns.append({'sent': sent, 'sent_offset': pos, 'anns': m_anns})
+            # create a separate instance for each annotation
+            for mn in m_anns:
+                matched_sent_anns.append({'sent': sent, 'sent_offset': pos, 'anns': [mn]})
             anns = [ann for ann in anns if ann not in m_anns]
         # print '%s-%s, %s: [%s]' % (s, e, doc_text.index(sent.text), sent.text)
     # print matched_sent_anns
@@ -384,7 +387,7 @@ if __name__ == "__main__":
     # sentence_parsing(u'Routine blood investigation and virology for Hep C done')
     reload(sys)
     sys.setdefaultencoding('cp1252')
-    working_folder = ""
+    working_folder = "/Users/honghan.wu/Documents/working/KCL/publications/actionable_trans"
     # 1. download texts from EHR
     # download_docs([],
     #               'select cn_doc_id, textcontent from SQLCRIS_User.Kconnect.working_docs where cn_doc_id in ({ids})',

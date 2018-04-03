@@ -1,4 +1,4 @@
-from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions, helpers
+from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions, helpers, TransportError
 from datetime import timedelta, datetime
 import utils
 
@@ -14,7 +14,7 @@ _page_size = 200
 class SemEHRES(object):
     def __init__(self, es_host, es_index, doc_type, concept_type, patient_type):
         self._host = es_host
-        self._es_instance = Elasticsearch([self._host])
+        self._es_instance = Elasticsearch([self._host], verify_certs=False)
         self._index = es_index
         self._doc_type = doc_type
         self._patient_type = patient_type
@@ -37,6 +37,54 @@ class SemEHRES(object):
             if offset >= total:
                 need_next_query = False
         return patients
+
+    def search_all(self, q, doc_type,
+                   query_type='qs',
+                   include_fields=None):
+        patients = []
+        need_next_query = True
+        offset = 0
+        while need_next_query:
+            query = {"match": {"_all": q}} if len(q) > 0 else {"match_all": {}}
+            if query_type == 'qs':
+                query = {"query_string": {"query": q}}
+            q_body = {"query": query,
+                      "from": offset,
+                      "size": _page_size}
+            if include_fields is None:
+                include_fields = ['a']
+            q_body['_source'] = {
+                "includes": include_fields
+            }
+            q_body['sort'] = '_doc'
+            print q_body
+            results = self._es_instance.search(self._index, doc_type, q_body)
+            total = results['hits']['total']
+            for p in results['hits']['hits']:
+                patients.append(p)
+            offset += len(results['hits']['hits'])
+            if offset >= total:
+                need_next_query = False
+        return patients
+
+    @property
+    def patient_type(self):
+        return self._patient_type
+
+    @property
+    def doc_type(self):
+        return self._doc_type
+
+    @property
+    def concept_type(self):
+        return self._concept_type
+
+    def search_by_scroll(self, q, doc_type, field='_all', collection_func=lambda d, c: c.append(d['_id'])):
+        print 'scrolling [%s]' % q
+        scroll_obj = self.scroll(q, doc_type, field=field, size=300)
+        container = []
+        utils.multi_thread_tasking_it(scroll_obj, 10, collection_func, args=[container])
+        return container
 
     def get_contexted_concepts(self, concept):
         results = self._es_instance.search(self._index, self._concept_type, {"query": {"match": {"_all": concept}},
@@ -64,7 +112,7 @@ class SemEHRES(object):
         cc_to_ctx = {}
         for t in concepts:
             cc_to_ctx.update(self.get_contexted_concepts(t))
-        print len(cc_to_ctx)
+        # print cc_to_ctx
         patients = self.search_patient(' '.join(concepts))
         results = []
         valid_docs = set()
@@ -107,12 +155,16 @@ class SemEHRES(object):
             query['_source'] = {
                 "includes": include_fields
             }
-        results = self._es_instance.search(self._index, entity, query)
+        print query
+        results = self._es_instance.search(index=self._index, doc_type=entity, body=query)
         return results['hits']['total'], results['hits']['hits']
 
-    def scroll(self, q, entity, size=100, include_fields=None, q_obj=None):
-        query = {"query": {"match": {"_all": q}},
+    def scroll(self, q, entity, query_type="qs", field='_all', size=100, include_fields=None, q_obj=None):
+        query = {"query": {"match": {field: q}},
                  "size": size}
+        if query_type == "qs":
+            query = {"query": {"query_string": {"query": q}},
+                     "size": size}
         if q_obj is not None:
             query = {
                 "query": q_obj,
@@ -122,6 +174,7 @@ class SemEHRES(object):
             query['_source'] = {
                 "includes": include_fields
             }
+        query['sort'] = '_doc'
         return helpers.scan(self._es_instance, query,
                             size=size, scroll='10m', index=self._index, doc_type=entity)
 
@@ -143,3 +196,19 @@ class SemEHRES(object):
             _es_instance = SemEHRES(es_host, es_index, es_doc_type, es_concept_type, es_patient_type)
         return _es_instance
 
+    @staticmethod
+    def get_instance_by_setting_file(setting_file_path):
+        setting = utils.load_json_data(setting_file_path)
+        return SemEHRES.get_instance_by_setting(setting['es_host'], setting['es_index'],
+                                                setting['es_doc_type'], setting['es_concept_type'],
+                                                setting['es_patient_type'])
+
+
+if __name__ == "__main__":
+    es = SemEHRES.get_instance_by_setting_file('../index_settings/sem_idx_setting.json')
+    # print es.get_doc_detail('1044334459', 'docs')
+    # print es.search('docs', 'ward')
+    try:
+        print es.search('eprdoc', 'ward')
+    except TransportError as terr:
+        print terr.info

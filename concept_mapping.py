@@ -2,7 +2,10 @@ import utils
 import json
 from umls_api.Authentication import Authentication
 import requests
-import json
+import sys
+import urllib2
+import urllib
+import traceback
 
 
 class UMLSAPI(object):
@@ -69,6 +72,35 @@ class UMLSAPI(object):
         # print content
         return json.loads(content)
 
+    def transitive_narrower(self, concept, processed_set=None, result_set=None):
+        """
+        get transitive narrower concepts of a given concept
+        :param concept:
+        :param processed_set:
+        :param result_set:
+        :return:
+        """
+        if result_set is None:
+            result_set = set([concept])
+        if processed_set is None:
+            processed_set = set()
+        if concept in processed_set:
+            return list(result_set)
+        print 'working on %s...' % concept
+        subconcepts = []
+        try:
+            subconcepts = self.get_narrower_concepts(concept)
+            subconcepts = [c[0] for c in subconcepts]
+            print '%s has %s children' % (concept, len(subconcepts))
+        except:
+            print 'error %s ' % sys.exc_info()[0]
+
+        result_set |= set(subconcepts)
+        processed_set.add(concept)
+        for c in subconcepts:
+            self.transitive_narrower(c, processed_set, result_set)
+        return list(result_set)
+
 
 def align_mapped_concepts(map_file, disorder_file):
     concept_map = utils.load_json_data(map_file)
@@ -82,18 +114,115 @@ def align_mapped_concepts(map_file, disorder_file):
     print json.dumps(exact_mapped)
 
 
+def get_umls_concept_detail(umls, cui):
+    return umls.get_object(UMLSAPI.api_url + '/content/current/CUI/%s/' % cui)
+
+
+def complete_tsv_concept_label(umls, tsv_file):
+    lines = []
+    for l in utils.read_text_file(tsv_file):
+        arr = l.split('\t')
+        print arr
+        arr.insert(1, get_umls_concept_detail(umls, arr[1])['result']['name'])
+        lines.append(arr)
+    print '\n'.join(['\t'.join(l) for l in lines])
+
+
+def get_umls_client_inst(umls_key_file):
+    """
+    create a umls client instance using the key stored in give file
+    :param umls_key_file: the text file containing UMLS API key
+    :return:
+    """
+    key = utils.read_text_file_as_string(umls_key_file)
+    print key
+    return UMLSAPI(key)
+
+
+def query_result(q, endpoint_url, key_file):
+    headers = {
+        "Accept": "application/sparql-results+json",
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+    response = utils.http_post_result(endpoint_url,
+                                      "apikey:" + utils.read_text_file_as_string(key_file) + "&query=" + q,
+                                      headers=headers)
+    print response
+    ret = json.loads(response)
+    return ret['results']['bindings']
+
+
+def query(q,apikey,epr,f='application/json'):
+    """Function that uses urllib/urllib2 to issue a SPARQL query.
+       By default it requests json as data format for the SPARQL resultset"""
+
+    try:
+        params = {'query': q, 'apikey': apikey}
+        params = urllib.urlencode(params)
+        opener = urllib2.build_opener(urllib2.HTTPHandler)
+        request = urllib2.Request(epr+'?'+params)
+        request.add_header('Accept', f)
+        request.get_method = lambda: 'GET'
+        url = opener.open(request)
+        return url.read()
+    except Exception, e:
+        traceback.print_exc(file=sys.stdout)
+        raise e
+
+
+def icd10_queries():
+    endpoint = 'http://sparql.bioontology.org/sparql/'
+    query_template = """
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT distinct ?umls, ?label
+FROM <http://bioportal.bioontology.org/ontologies/ICD10>
+WHERE {{
+  <http://purl.bioontology.org/ontology/ICD10/{}> <http://bioportal.bioontology.org/ontologies/umls/cui> ?umls;
+  <http://www.w3.org/2004/02/skos/core#prefLabel> ?label.
+  ?s <http://bioportal.bioontology.org/ontologies/umls/isRoot> true.
+}}
+    """
+    icd2umls = {}
+    for c in range(ord('A'), ord('Z')+1):
+        for i in xrange(0, 100):
+            icd = '%s%s' % (chr(c), '0' + str(i) if i <= 9 else str(i))
+            q = query_template.format(icd)
+            ret = json.loads(query(q, utils.read_text_file_as_string('./resources/HW_NCBO_KEY.txt'), endpoint))
+            ret = ret['results']['bindings']
+            if len(ret) > 0:
+                icd2umls[icd] = ret[0]['umls']['value']
+                print '%s\t%s\t%s' % (icd, ret[0]['umls']['value'], ret[0]['label']['value'])
+    print json.dumps(icd2umls)
+
+
+def get_concepts_names(umls, concepts):
+    c2label = {}
+    for c in concepts:
+        details = get_umls_concept_detail(umls, c)
+        c2label[c] = details['result']['name']
+        print '%s\t%s' % (c, c2label[c])
+    return c2label
+
+
 if __name__ == "__main__":
     # align_mapped_concepts('./resources/autoimmune-concepts.json', './resources/auto_immune_gazetteer.txt')
-    umls = UMLSAPI('148475b7-ad37-4e15-95a0-ff4d4060c132')
-    # rets = umls.match_term('Diabetes Mellitus')
+    umls = get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
+    # rets = umls.match_term('Holter monitor test')
     # cui = rets[0]['ui']
     # print cui
-    subconcepts = umls.get_narrower_concepts('C0023895')
-    print len(subconcepts), json.dumps(subconcepts)
-    next_scs = set([c[0] for c in subconcepts])
-    for sc in subconcepts:
-        local_scs = umls.get_narrower_concepts(sc[0])
-        next_scs |= set([c[0] for c in local_scs])
-        print len(local_scs)
-    print 'total concepts: %s' % len(next_scs), json.dumps(list(next_scs))
-    # print umls.get_object('https://uts-ws.nlm.nih.gov/rest/search/current?string=fracture')
+    # subconcepts = umls.transitive_narrower('C0019104', None, None)
+    # print len(subconcepts), json.dumps(subconcepts)
+    # next_scs = set([c[0] for c in subconcepts])
+    # for sc in subconcepts:
+    #     local_scs = umls.get_narrower_concepts(sc[0])
+    #     next_scs |= set([c[0] for c in local_scs])
+    #     print len(local_scs)
+    # print 'total concepts: %s' % len(next_scs), json.dumps(list(next_scs))
+    # print json.dumps(umls.get_object('https://uts-ws.nlm.nih.gov/rest/content/current/CUI/C0178298/relations'))
+    # print get_umls_concept_detail(umls, 'C0946252')
+    get_concepts_names(umls, utils.read_text_file('./studies/emma_violence/all_concepts.txt'))
+    # print get_umls_concept_detail(umls, 'C0020538')['result']['name']
+    # complete_tsv_concept_label(umls, './studies/IMPARTS/concepts_verified_chris.tsv')
+    # icd10_queries()

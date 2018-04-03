@@ -1,4 +1,5 @@
 {
+  "db_type": "mysql_socket",
   "driver": "{SQL Server Native Client 10.0}",
   "server": "x.x.x.x",
   "user": "",
@@ -6,5 +7,6 @@
   "database": "",
   "db_driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
   "db_url": "jdbc:sqlserver://x.x.x.x/",
+  "mysql_sock_file": "",
   "get_doc_sql_prefix": "select xxxx"
 }

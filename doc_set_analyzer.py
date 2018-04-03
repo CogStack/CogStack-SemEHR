@@ -7,13 +7,14 @@ from datetime import datetime
 import joblib as jl
 
 
-my_host = ''
+my_host = 'localhost'
 my_user = ''
 my_pwd = ''
 my_db = ''
 my_sock = ''
 
-db_connection = 'mysql'
+
+db_connection = 'sql'
 
 
 # get anns by doc set and concepts
@@ -30,14 +31,16 @@ doc_concept_sql = """
 # get anns by doc set and concepts
 doc_concept_sql_cohort = """
   select d.brcid, d.DateModified
-  from sqlcris_user.kconnect.kconnect_annotations a, gatedb_cris.dbo.gate d,  sqlcris_user.kconnect.cohorts c
+  from sqlcris_user.kconnect.kconnect_annotations a, GateDB_Cris.dbo.gate d,  sqlcris_user.kconnect.cohorts c
   where
   a.inst_uri in ({concepts})
   and a.CN_Doc_ID = d.CN_Doc_ID
   and a.experiencer = 'Patient' and a.negation='Affirmed' and a.temporality = 'Recent'
   and c.patient_group='{cohort}'
+  and d.brcid=c.brcid
   {extra_constrains}
 """
+
 
 # load all brcid, docid, date in one go
 patient_doc_date_sql = """
@@ -50,9 +53,8 @@ patient_doc_date_sql = """
 
 
 update_doc_date_sql = """
-  update working_docs set date='{date}' where cn_doc_id='{doc_id}'
+  update working_docs set datemodified='{date}' where cn_doc_id='{doc_id}'
 """
-
 
 def populate_episode_study_table(study_analyzer, episode_data, out_path, cohort):
     study_concepts = study_analyzer.study_concepts
@@ -63,8 +65,8 @@ def populate_episode_study_table(study_analyzer, episode_data, out_path, cohort)
         patient_date_tuples = []
         if len(sc.concept_closure) > 0:
             data_sql = doc_concept_sql_cohort.format(**{'concepts': concept_list,
-                                                        'cohort': cohort,
-                                                        'extra_constrains': ''})
+                                                     'cohort': cohort,
+                                                     'extra_constrains': ''})
             print data_sql
             dutil.query_data(data_sql, patient_date_tuples,
                              dbconn=dutil.get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock)
@@ -72,7 +74,7 @@ def populate_episode_study_table(study_analyzer, episode_data, out_path, cohort)
             # filter patient_date tuples using episode constraints
             for eps in episode_data:
                 for row in patient_date_tuples:
-                    if eps['brcid'] == row['brcid']:
+                    if eps['brcid'] == str(row['brcid']):
                         eps[sc.name] = {'win1': 0, 'win2': 0, 'win3': 0} if sc.name not in eps else eps[sc.name]
                         count_eps_win(eps, sc.name, row, 'win1')
                         count_eps_win(eps, sc.name, row, 'win2')
@@ -96,29 +98,29 @@ def populate_episode_study_table(study_analyzer, episode_data, out_path, cohort)
         s = '\t'.join(headers) + '\n'
         for r in rows:
             s += '\t'.join(r[w]) + '\n'
-        utils.save_string(s, out_path + '/eps' + w + '.tsv')
+        utils.save_string(s, out_path + '/weeks_eps' + w + '_control.tsv')
 
 
 def count_eps_win(eps, concept_name, row, win):
-    if eps[win]['s'] <= row['DateModified'] <= eps[win]['e']:
+    if eps[win]['s'] <= datetime.strptime(row['DateModified'], '%d/%m/%Y') <= eps[win]['e']:
         eps[concept_name][win] += 1
 
 
-def load_episode_data(file_path):
+def load_episode_data(file_path, date_format='%d/%m/%Y %H:%M'):
     lines = utils.read_text_file(file_path)
     eps = []
     for l in lines:
         arr = l.split('\t')
         eps.append({'brcid': arr[0],
-                    'win1': {'s': datetime.strptime(arr[1], '%d/%m/%Y %H:%M'), 'e': datetime.strptime(arr[2], '%d/%m/%Y %H:%M')},
-                    'win2': {'s': datetime.strptime(arr[3], '%d/%m/%Y %H:%M'), 'e': datetime.strptime(arr[4], '%d/%m/%Y %H:%M')},
-                    'win3': {'s': datetime.strptime(arr[5], '%d/%m/%Y %H:%M'), 'e': datetime.strptime(arr[6], '%d/%m/%Y %H:%M')}
+                    'win1': {'s': datetime.strptime(arr[1], date_format), 'e': datetime.strptime(arr[2], date_format)},
+                    'win2': {'s': datetime.strptime(arr[3], date_format), 'e': datetime.strptime(arr[4], date_format)},
+                    'win3': {'s': datetime.strptime(arr[5], date_format), 'e': datetime.strptime(arr[6], date_format)}
                     })
     return eps
 
 
-def study(folder, episode_file):
-    episodes = load_episode_data(episode_file)
+def study(folder, episode_file, cohort, date_format='%d/%m/%Y %H:%M'):
+    episodes = load_episode_data(episode_file, date_format=date_format)
     p, fn = split(folder)
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
@@ -163,7 +165,7 @@ def study(folder, episode_file):
         print json.dumps(list(c.concept_closure))
     print json.dumps(merged_mappings)
     print 'generating result table...'
-    populate_episode_study_table(sa, episodes, './resources')
+    populate_episode_study_table(sa, episodes, './resources', cohort)
     print 'done'
 
 
@@ -177,8 +179,9 @@ def dump_patient_doc_date_data(patient_groups, out_file):
 def update_doc_date(cnn_obj, data):
     sqls = []
     for r in data:
-        sqls.append(doc_concept_sql.format(**{'date': r['date'],
-                                              'doc_id': r['cn_doc_id']}))
+        if r['date'] is not None:
+            sqls.append(update_doc_date_sql.format(**{'date': r['date'],
+                                                  'doc_id': r['cn_doc_id']}))
     if len(sqls) > 0:
         cursor = cnn_obj['cursor']
         for sql in sqls:
@@ -202,5 +205,7 @@ def update_doc_dates(ser_file):
 
 if __name__ == "__main__":
     # study('./studies/clozapine', 'studies/clozapine/episodes.txt')
+    study('./studies/clozapine', 'studies/clozapine/control_episodes_weeks.tsv', 'unknown_clozapine_sep2017', '%Y-%m-%d %H:%M:%S')
     # dump_patient_doc_date_data('\'clozapine_4k\'', 'resource/clozapine_4k_doc_map.pickle')
-    update_doc_dates('resource/clozapine_4k_doc_map.pickle')
+    # update_doc_dates('resources/clozapine_4k_doc_map.pickle')
+

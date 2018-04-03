@@ -2,6 +2,10 @@ import json
 import utils
 from os.path import split
 
+"""
+this is a script for supporting glowing bear UI
+"""
+
 
 def load_tree_node_file(file_path, node_name=None):
     if node_name is None:

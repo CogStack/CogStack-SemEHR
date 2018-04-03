@@ -365,7 +365,9 @@ class CorpusPredictor(object):
         self._model = corpus_model
 
     def predcit(self, sentInst):
+        # print sentInst
         mini_comp_ptn, token_list = sentInst.get_minimal_component()
+        print mini_comp_ptn
         for mp in self._model:
             if mp['mini_comp_pattern'] == mini_comp_ptn:
                 if mp['all_accuracy'] >= _acc_high_threshold or mp['all_accuracy'] <= _acc_low_threshold:
@@ -546,12 +548,16 @@ class POSSentencePatternInst(SentencePatternInst):
         :param container:
         :return:
         """
-        for c in token.children:
-            if not POSSentencePatternInst.addable_indirect(c):
-                break
-            if c not in container:
-                container.append(c)
-                self.iter_get_children(c, container)
+        # 'iter on %s ' % token
+        try:
+            for c in token.children:
+                if not POSSentencePatternInst.addable_indirect(c):
+                    break
+                if c not in container:
+                    container.append(c)
+                    self.iter_get_children(c, container)
+        except Exception:
+            print '!!!getting children failed!!!!'
 
     @staticmethod
     def addable_indirect(token):
@@ -591,9 +597,7 @@ class POSSentencePatternInst(SentencePatternInst):
             print 'annotated token not found!! %s, %s' % (p[0], p[1])
             print self._raw_pattern
             return None, None
-        else:
-            # print 'anned token: %s(%s)' % (first_ann_token, first_ann_token.i)
-            # print 'children [%s]' % [t.text for t in first_ann_token.children]
+        else: 
             # token_comps = [first_ann_token]
             self.iter_get_children(first_ann_token, ann_tokens)
             parents = []
@@ -704,9 +708,13 @@ class POSSentencePatternInst(SentencePatternInst):
                 break
             verb_ptn = (last_token.pos_, last_token.i, last_token.text)
             negs = []
-            for c in last_token.children:
-                if c.dep_ == u'neg':
-                    negs.append((c.pos_, c.i, c.text))
+            try:
+                for c in last_token.children:
+                    if c.dep_ == u'neg':
+                        negs.append((c.pos_, c.i, c.text))
+            except Exception:
+                print '!!!reading children error!!!'
+                pass
             verb_ptn = list(verb_ptn)
             verb_ptn.append(negs)
             verb_ptn = tuple(verb_ptn)

@@ -45,12 +45,23 @@
   "new_docs":{
     "sql_query": "select docid from ...",
     "dbconn_setting_file": "..dbconn.json.."
- },
+  },
+  "action_trans":{
+    "cohort_name": "",
+    "dbconn_setting_file": "",
+    "sql_cohort_doc_template": "",
+    "sql_doc_anns_template": "",
+    "sql_doc_content_template": "",
+    "sql_action_trans_update_template": "",
+    "action_trans_model_file": ""
+  },
   "job":{
+    "load_docs": "no",
     "copy_docs": "no",
     "yodie": "yes",
     "semehr-concept": "no",
     "semehr-patients": "no",
+    "action_trans": "no",
     "job_id": "camcris",
     "job_status_file_path": "..semehr-runtime.."
   }

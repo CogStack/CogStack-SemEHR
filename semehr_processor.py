@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 from subprocess import Popen, STDOUT
 from entity_centric_es import EntityCentricES, do_index_100k_anns, do_index_100k_patients, JSONSerializerPython2
 from elasticsearch import Elasticsearch
+import cohortanalysis as cohort
 
 
 class ProcessSetting(object):
@@ -164,6 +165,19 @@ def set_sys_env(settings):
         os.environ['PATH'] += ':' + gcp_home
 
 
+def actionable_transparise(settings):
+    cohort_name = settings.get_attr(['action_trans', 'cohort_name'])
+    dbcnn_file = settings.get_attr(['action_trans', 'dbconn_setting_file'])
+    sql_cohort_doc = settings.get_attr(['action_trans', 'sql_cohort_doc_template'])
+    sql_doc_anns = settings.get_attr(['action_trans', 'sql_doc_anns_template'])
+    sql_doc_content = settings.get_attr(['action_trans', 'sql_doc_content_template'])
+    sql_action_trans_inert = settings.get_attr(['action_trans', 'sql_action_trans_update_template'])
+    action_trans_model_file = settings.get_attr(['action_trans', 'action_trans_model_file'])
+    cohort.action_transparentise(cohort_name, dbcnn_file,
+                                 sql_cohort_doc, sql_doc_anns, sql_doc_content, sql_action_trans_inert,
+                                 action_trans_model_file)
+
+
 def produce_yodie_config(settings):
     """
     generate bio-yodie configuration xml file
@@ -181,8 +195,9 @@ def produce_yodie_config(settings):
     report = ET.SubElement(batch, "report")
     report_file = '%s/%s.xml' % (settings.get_attr(['env', 'yodie_path']), task_id)
     report.set('file', report_file)
-    if os.path.isfile(report_file):
-        os.unlink(report_file)
+    if settings.get_attr(['yodie', 'retain_report']) != 'yes':
+        if os.path.isfile(report_file):
+            os.unlink(report_file)
 
     input = ET.SubElement(batch, "input")
     input.set('encoding', 'UTF-8')
@@ -236,6 +251,8 @@ def clear_folder(folder):
     :param folder:
     :return:
     """
+    if not os.path.exists(folder):
+        return
     for the_file in os.listdir(folder):
         file_path = os.path.join(folder, the_file)
         try:
@@ -302,10 +319,13 @@ def process_semehr(config_file):
     print 'using job status file %s' % job_file
     job_status = JobStatus(job_file)
     job_status.job_start()
-    sql_template = ps.get_attr(['new_docs', 'sql_query'])
-    print 'retrieving docs by using the template [%s]' % sql_template
-    data_rows = get_docs_for_processing(job_status, sql_template, ps.get_attr(['new_docs', 'dbconn_setting_file']))
-    print 'total docs num is %s' % len(data_rows)
+
+    data_rows = []
+    if ps.get_attr(['job', 'load_docs']) == 'yes':
+        sql_template = ps.get_attr(['new_docs', 'sql_query'])
+        print 'retrieving docs by using the template [%s]' % sql_template
+        data_rows = get_docs_for_processing(job_status, sql_template, ps.get_attr(['new_docs', 'dbconn_setting_file']))
+        print 'total docs num is %s' % len(data_rows)
 
     # try:
     if True:
@@ -371,13 +391,20 @@ def process_semehr(config_file):
                 exit(p.returncode)
 
         # 2. do SemEHR concept/entity indexing
-        patients = []
-        doc_to_patient = {}
-        for r in data_rows:
-            patients.append(str(r['patientid']))
-            doc_to_patient[str(r['docid'])] = str(r['patientid'])
-        patients = list(set(patients))
-        do_semehr_index(ps, patients, doc_to_patient)
+        if ps.get_attr(['job', 'semehr-concept']) == 'yes' or ps.get_attr(['job', 'semehr-patients']) == 'yes':
+            patients = []
+            doc_to_patient = {}
+            for r in data_rows:
+                patients.append(str(r['patientid']))
+                doc_to_patient[str(r['docid'])] = str(r['patientid'])
+            patients = list(set(patients))
+            do_semehr_index(ps, patients, doc_to_patient)
+
+        # 3. do SemEHR actionable transparency
+        if ps.get_attr(['job', 'action_trans']) == 'yes':
+            print 'doing transparency...'
+            actionable_transparise(settings=ps)
+
         job_status.set_status(True)
         job_status.save()
     # except Exception as e:
@@ -388,7 +415,7 @@ def process_semehr(config_file):
 
 if __name__ == "__main__":
     reload(sys)
-    sys.setdefaultencoding('utf-8')
+    sys.setdefaultencoding('cp1252')
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     if len(sys.argv) != 2:
         print 'the syntax is [python semehr_processor.py PROCESS_SETTINGS_FILE_PATH]'
