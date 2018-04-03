@@ -46,7 +46,7 @@ def doc_processing(nlp, doc_text, anns, doc_id):
         ptn = sp.POSSentencePatternInst(s['sent'], s['anns'])
         ptn.process()
         ptn_inst.append(ptn)
-        ptn_inst.doc_id = doc_id
+        ptn.doc_id = doc_id
         # print '>>%s: >>%s\n' % (ret['sent'], ret['pattern'])
     return ptn_inst
 
@@ -261,45 +261,106 @@ def word2vect_clustering(nlp, docs, cluster_prefix='cls', eps=3.0, min_samples=2
     return cls2docs
 
 
-def predict_exp(corpus_trans_file, ann_file):
+def predict_exp(corpus_trans_file, ann_file, cache_file, output_file):
     # initialise pattern instances from documents
-    # load labelled data
-    ann_lines = utils.read_text_file(ann_file)
-    prev_doc = None
-    anns = []
-    doc_anns = []
-    ptn_insts = []
-    doc_to_pt = {}
-    for ls in ann_lines:
-        l = ls.split('\t')
-        doc_id = l[1]
-        doc_to_pt[doc_id] = l[0]
-        if prev_doc != doc_id:
-            if prev_doc is not None:
-                if exists(join(working_folder, 'docs', '%s.txt' % prev_doc)):
-                    doc_anns.append((prev_doc, anns))
-            anns = []
-            prev_doc = doc_id
-        anns.append({'s': int(l[2]), 'e': int(l[3]), 'signed_label': l[4], 'gt_label': l[5]})
-    if prev_doc is not None:
-        if exists(join(working_folder, 'docs', '%s.txt' % prev_doc)):
-            doc_anns.append((prev_doc, anns))
-    # mutithreading do processing labelled docs
-    print 'processing docs...'
-    utils.multi_thread_tasking(doc_anns, 30, do_process_labelled_doc, args=[ptn_insts])
+    if not isfile(cache_file):
+        # load labelled data
+        ann_lines = utils.read_text_file(ann_file)
+        prev_doc = None
+        anns = []
+        doc_anns = []
+        ptn_insts = []
+        doc_to_pt = {}
+        for ls in ann_lines:
+            l = ls.split('\t')
+            doc_id = l[1]
+            doc_to_pt[doc_id] = l[0]
+            if prev_doc != doc_id:
+                if prev_doc is not None:
+                    if exists(join(working_folder, 'docs', '%s.txt' % prev_doc)):
+                        doc_anns.append((prev_doc, anns))
+                anns = []
+                prev_doc = doc_id
+            anns.append({'s': int(l[2]), 'e': int(l[3]), 'signed_label': l[4], 'gt_label': l[5]})
+        if prev_doc is not None:
+            if exists(join(working_folder, 'docs', '%s.txt' % prev_doc)):
+                doc_anns.append((prev_doc, anns))
+        # mutithreading do processing labelled docs
+        print 'processing docs...'
+        utils.multi_thread_tasking(doc_anns, 30, do_process_labelled_doc, args=[ptn_insts])
+        jl.dump({'insts': ptn_insts, 'doc_to_pt': doc_to_pt}, cache_file)
+    else:
+        cached = jl.load(cache_file)
+        ptn_insts = cached['insts']
+        doc_to_pt = cached['doc_to_pt']
 
     cp = sp.CorpusPredictor.load_corpus_model(corpus_trans_file)
     ret = []
     for inst in ptn_insts:
+        print 'predicting [%s]...' % inst.sentence
         acc = cp.predcit(inst)
-        print 'predicting [%s]... %s' % (inst.sentence, acc)
+        print 'accuracy: %s' % acc
         ann = inst.annotations[0]
-        ret.append((doc_to_pt[inst.doc_id], inst.doc_id, ann['s'], ann[1], ann['signed_label'], ann['gt_label'], acc))
+        ret.append((doc_to_pt[inst.doc_id], inst.doc_id, str(ann['s']), str(ann['e']),
+                    ann['signed_label'], ann['gt_label'], str(acc)))
     s = []
     for r in ret:
-        s.append('\t'.join(r))
-    print '\n'.join(s)
+        s.append(u'\t'.join(r))
+    print u'\n'.join(s)
+    utils.save_json_array(ret, output_file)
     return ret
+
+
+def produce_weka_output(predict_output_file, orig_features_file,
+                        merged_output_file, arrf_file,
+                        threshold=.70, mode='threshold'):
+    orig_data_lines = utils.read_text_file(orig_features_file)
+    ret = utils.load_json_data(predict_output_file)
+    ptn2anns = {}
+    for r in ret:
+        ptn = r[0]
+        if ptn not in ptn2anns:
+            ptn2anns[ptn] = {'posM':0, 'negM':0, 'hisM':0, 'otherM':0}
+        if mode == 'threshold':
+            if float(r[6]) >= threshold:
+                ptn2anns[ptn][r[4]] += 1
+        elif mode == 'weighted_sum':
+            ptn2anns[ptn][r[4]] += float(r[6])
+
+    rows = []
+    arrf_header = """@RELATION	hepc
+
+@ATTRIBUTE	Total_Mentions	NUMERIC
+@ATTRIBUTE	Positive_Mentions	NUMERIC
+@ATTRIBUTE	History_hypothetical_Mentions	NUMERIC
+@ATTRIBUTE	Negative_Mentions	NUMERIC
+@ATTRIBUTE	Other_Experiencers	NUMERIC
+@ATTRIBUTE	AT_Total_Mentions	NUMERIC
+@ATTRIBUTE	AT_Positive_Mentions	NUMERIC
+@ATTRIBUTE	AT_History_hypothetical_Mentions	NUMERIC
+@ATTRIBUTE	AT_Negative_Mentions	NUMERIC
+@ATTRIBUTE	AT_Other_Experiencers	NUMERIC
+@ATTRIBUTE	class	{positive,negative,unknown}
+
+
+@DATA
+"""
+    arrf_rows = []
+    for l in orig_data_lines:
+        arr = l.split('\t')
+        ptn = arr[0]
+        new_line = arr[:6] + \
+                   ([str(ptn2anns[ptn]['posM'] + ptn2anns[ptn]['negM'] + ptn2anns[ptn]['hisM'] + ptn2anns[ptn]['otherM']),
+                                str(ptn2anns[ptn]['posM']),
+                                str(ptn2anns[ptn]['hisM']),
+                                str(ptn2anns[ptn]['negM']),
+                                str(ptn2anns[ptn]['otherM'])] if ptn in ptn2anns else ['0','0','0','0','0']) + \
+                   [arr[6]]
+        rows.append(new_line)
+        arrf_rows.append(','.join(new_line[1:]))
+
+    utils.save_string(arrf_header + '\n'.join(arrf_rows), arrf_file)
+    utils.save_string('\n'.join(['\t'.join(r) for r in rows]), merged_output_file)
 
 
 if __name__ == "__main__":
@@ -330,9 +391,16 @@ if __name__ == "__main__":
     #               join(working_folder, "dbcnn.json"),
     #               join(working_folder, 'docs') )
     # 2. process doc
-    nlp = load_mode('en')
-    corpus_analyzer = process_labelled_docs(join(working_folder, 'labelled.txt'),
-                                            join(working_folder, 'cris_hepc_model_test.pickle'),
-                                            join(working_folder, 'cris_hepc_mini_comp_dict.pickle'))
+    # nlp = load_mode('en')
+    # corpus_analyzer = process_labelled_docs(join(working_folder, 'labelled.txt'),
+    #                                         join(working_folder, 'cris_hepc_model_test.pickle'),
+    #                                         join(working_folder, 'cris_hepc_mini_comp_dict.pickle'))
     # predict annotation accuracy
-    predict_exp(join(working_folder, 'cris_corpus_trans.json'), join(working_folder, 'VALIDATION_FOLDER'))
+    # predict_exp(join(working_folder, 'cris_corpus_trans.json'),
+    #             join(working_folder, 'validate_unknown_200hepc.txt'),
+    #             join(working_folder, 'validation_cache.pickle'),
+    #             join(working_folder, 'predicted_200hepc_output.json'))
+    produce_weka_output(join(working_folder, 'predicted_200hepc_output.json'),
+                        join(working_folder, 'orig_gt_labelled.txt'),
+                        join(working_folder, 'merged_hepc_features.json'),
+                        join(working_folder, 'merged_hepc.9.arff'), threshold=.9)
