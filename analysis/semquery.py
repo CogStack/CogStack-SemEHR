@@ -38,16 +38,27 @@ class SemEHRES(object):
                 need_next_query = False
         return patients
 
-    def search_all(self, q, doc_type):
+    def search_all(self, q, doc_type,
+                   query_type='qs',
+                   include_fields=None):
         patients = []
         need_next_query = True
         offset = 0
         while need_next_query:
             query = {"match": {"_all": q}} if len(q) > 0 else {"match_all": {}}
-            results = self._es_instance.search(self._index, doc_type, {"query": query,
-                                                                                 "from": offset,
-                                                                                 "size": _page_size,
-                                                                                 "sort": "_doc"})
+            if query_type == 'qs':
+                query = {"query_string": {"query": q}}
+            q_body = {"query": query,
+                      "from": offset,
+                      "size": _page_size}
+            if include_fields is None:
+                include_fields = ['a']
+            q_body['_source'] = {
+                "includes": include_fields
+            }
+            q_body['sort'] = '_doc'
+            print q_body
+            results = self._es_instance.search(self._index, doc_type, q_body)
             total = results['hits']['total']
             for p in results['hits']['hits']:
                 patients.append(p)
@@ -68,15 +79,11 @@ class SemEHRES(object):
     def concept_type(self):
         return self._concept_type
 
-    @staticmethod
-    def do_collect_ids(d, container):
-        container.append(d['_id'])
-
-    def search_by_scroll(self, q, doc_type, collection_func=do_collect_ids):
-        print q
-        scroll_obj = self.scroll(q, doc_type, size=300)
+    def search_by_scroll(self, q, doc_type, field='_all', collection_func=lambda d, c: c.append(d['_id'])):
+        print 'scrolling [%s]' % q
+        scroll_obj = self.scroll(q, doc_type, field=field, size=300)
         container = []
-        utils.multi_thread_tasking_it(scroll_obj, 1, collection_func, args=[container])
+        utils.multi_thread_tasking_it(scroll_obj, 10, collection_func, args=[container])
         return container
 
     def get_contexted_concepts(self, concept):
@@ -152,9 +159,12 @@ class SemEHRES(object):
         results = self._es_instance.search(index=self._index, doc_type=entity, body=query)
         return results['hits']['total'], results['hits']['hits']
 
-    def scroll(self, q, entity, size=100, include_fields=None, q_obj=None):
-        query = {"query": {"match": {"_all": q}},
+    def scroll(self, q, entity, query_type="qs", field='_all', size=100, include_fields=None, q_obj=None):
+        query = {"query": {"match": {field: q}},
                  "size": size}
+        if query_type == "qs":
+            query = {"query": {"query_string": {"query": q}},
+                     "size": size}
         if q_obj is not None:
             query = {
                 "query": q_obj,
