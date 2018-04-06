@@ -233,7 +233,9 @@ def get_one_iteration_sql_template(config_file):
             'skip_term_sql': root.find('skip_term_sql').text}
 
 
-def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance, do_one_iter=False, do_preprocessing=False):
+def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
+          do_one_iter=False, do_preprocessing=False,
+          rule_setting_file=None):
     p, fn = split(folder)
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
@@ -307,7 +309,10 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance, do_
     # sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
     # sa.gen_sample_docs(cohort_name, join(folder, 'sample_docs.json'))
     ruler = AnnRuleExecutor()
-    ruler.load_rule_config('./studies/rules/_default_rule_config.json')
+    if rule_setting_file is None:
+        ruler.load_rule_config('./studies/rules/_default_rule_config.json')
+    else:
+        ruler.load_rule_config(rule_setting_file)
     if do_one_iter:
         sa.gen_study_table_in_one_iteration(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'),
                                             sql_config_file, db_conn_file)
