@@ -11,7 +11,15 @@ class AnnRuleExecutor(object):
     def __init__(self):
         self._text_window = _text_window
         self._filter_rules = []
-        pass
+        self._skip_terms = []
+
+    @property
+    def skip_terms(self):
+        return self._skip_terms
+
+    @skip_terms.setter
+    def skip_terms(self, value):
+        self._skip_terms = value
 
     def add_filter_rule(self, token_offset, reg_strs):
         self._filter_rules.append({'offset': token_offset, 'regs': reg_strs})
@@ -48,6 +56,8 @@ class AnnRuleExecutor(object):
             for r in utils.load_json_data(join(r_path, rf)):
                 self.add_filter_rule(r['offset'], r['regs'])
             print '%s loaded' % rf
+        if 'skip_term_setting' in rule_config:
+            self.skip_terms = utils.load_json_data(rule_config['skip_term_setting'])
 
 
 if __name__ == "__main__":
