@@ -282,8 +282,6 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
     # compute disjoint concepts
     sa.generate_exclusive_concepts()
 
-    if isfile(join(folder, 'skip_terms.json')):
-        sa.skip_terms = utils.load_json_data(join(folder, 'skip_terms.json'))
     if isfile(join(folder, 'study_options.json')):
         sa.study_options = utils.load_json_data(join(folder, 'study_options.json'))
     merged_mappings = {}
@@ -313,6 +311,8 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
         ruler.load_rule_config('./studies/rules/_default_rule_config.json')
     else:
         ruler.load_rule_config(rule_setting_file)
+    if len(ruler.skip_terms) > 0:
+        sa.skip_terms = ruler.skip_terms
     if do_one_iter:
         sa.gen_study_table_in_one_iteration(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'),
                                             sql_config_file, db_conn_file)
