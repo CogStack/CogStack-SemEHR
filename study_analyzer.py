@@ -329,7 +329,7 @@ def run_study(folder_path):
         study(folder_path, r['cohort'], r['sql_config'], r['db_conn'],
               concept_mapping.get_umls_client_inst(r['umls_key']),
               do_preprocessing=r['do_preprocessing'],
-              rule_setting_file=r['rule_config'],
+              rule_setting_file=r['rule_setting_file'],
               do_one_iter=r['on_iter']
               )
     else:
