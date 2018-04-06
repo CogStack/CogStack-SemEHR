@@ -23,6 +23,8 @@
     ".*believe(s|d){0,1}(\\s)+.{0,15}",
     ".*ideas of having(\\s)+.{0,15}",
     ".*concerned about having(\\s)+.{0,15}",
+    ".*concerned(\\s)+.{0,70}",
+    ".*(asked|asking|ask|compliant|complian)(\\s)+.{0,70}",
     ".*thought(\\s)+.{0,15}",
     ".*worries about(\\s)+.{0,5}",
     ".*having(\\s)+.{0,5}",
@@ -37,8 +39,8 @@
     ".*check for(\\s)+.{0,20}",
     ".*lead to(\\s)+.{0,20}",
     ".*(likely to|may|maybe|could|potential for)\\s+(cause|causing)(\\s)+.{0,20}",
-
-    ".*predisposition to(\\s)+.{0,20}",
+    ".*could have(\\s)+[^\\.]{0,70}",
+    ".*(predisposition|prediposing)(\\s)+.{0,20}",
     ".*chances of(\\s)+.{0,20}",
   ]},
   {"offset": 1, "regs": [

@@ -1,0 +1,6 @@
+[
+  {"offset": -1, "regs": [
+    ".*(\\s)+related to.{0,20}",
+    ".*Ongoing physical health problems.{0,100}"
+  ]}
+]
