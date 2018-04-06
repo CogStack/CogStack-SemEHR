@@ -353,7 +353,8 @@ if __name__ == "__main__":
          './studies/prathiv/cluster_sql_config.xml',
          './studies/prathiv/dbcnn_input.json',
          concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt'),
-         do_preprocessing=True
+         do_preprocessing=True,
+         rule_setting_file='./studies/prathiv/pirathiv_rule_config.json'
          )
     #study('./studies/raquel_cardic/', 'depression',
     #      './studies/raquel_cardic/cluster_sql_config.xml',
