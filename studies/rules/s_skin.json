@@ -1,5 +1,5 @@
 [
   {"offset": -1, "regs": [
-    ".*Plantar(\\s)+"
+    ".*(Plantar|Planter)(\\s)+"
   ]}
 ]
