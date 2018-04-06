@@ -1,5 +1,6 @@
 import re
 import utils
+from os.path import join
 
 _text_window = 100
 _head_text_window_size = 200
