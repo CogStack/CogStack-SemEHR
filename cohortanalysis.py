@@ -662,4 +662,4 @@ def complete_samples(sample_file, complete_sql, db_conn_file, out_file):
 
 
 if __name__ == "__main__":
-    pass()
+    pass
