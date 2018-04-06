@@ -190,7 +190,8 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                                               'content': ann['TextContent'],
                                               'annotations': [{'start': ann['start_offset'],
                                                                'end': ann['end_offset'],
-                                                               'concept': ann['inst_uri']}],
+                                                               'concept': ann['inst_uri'],
+                                                               'string_orig': ann['string_orig'] if 'string_orig' in ann else ''}],
                                               'doc_table': ann['src_table'],
                                               'doc_col': ann['src_col']})
                 else:
@@ -216,7 +217,7 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     for p in patients:
         s += '\t'.join([p['brcid']] + [p[k] if k in p else '0' for k in concept_labels]) + '\n'
     utils.save_string(s, out_file)
-    utils.save_json_array(convert_encoding(term_to_docs, 'cp1252', 'utf-8'), sample_out_file)
+    utils.save_string('var sample_docs=' + json.dumps(convert_encoding(term_to_docs, 'cp1252', 'utf-8')), sample_out_file)
     utils.save_json_array(convert_encoding(ruled_anns, 'cp1252', 'utf-8'), ruled_ann_out_file)
     print 'done'
 
@@ -390,11 +391,7 @@ def action_transparentise(cohort_name, db_conn_file,
         batches.append(docs[i:i+batch_size])
     nlp = tstg.load_mode('en')
     corpus_predictor = tssp.CorpusPredictor.load_corpus_model(corpus_trans_file)
-    i = 1
     for batch in batches:
-        if i <= 1949:
-            i += 1
-            continue
         print 'working on %s/%s batch' % (i, len(batches))
         try:
             do_action_trans_docs(batch, 
@@ -563,7 +560,12 @@ def complete_sample_ann_data(key_anns, complete_sql, db_conn_file, container):
 
 
 def complete_samples(sample_file, complete_sql, db_conn_file, out_file):
-    anns = utils.load_json_data(sample_file)
+    ann_prefix = 'var sample_docs='
+    anns_str = utils.read_text_file_as_string(sample_file)
+    if anns_str.startswith(ann_prefix):
+        anns_str = anns_str[len(ann_prefix):]
+    anns = json.loads(anns_str)
+    # anns = utils.load_json_data(sample_file)
     key_anns = []
     for k in anns:
         key_anns.append((k, anns[k]))
@@ -573,17 +575,9 @@ def complete_samples(sample_file, complete_sql, db_conn_file, out_file):
     results = {}
     for r in container:
         results[r[0]] = r[1]
-    utils.save_json_array(results, out_file)
+    utils.save_string(ann_prefix + json.dumps(results), out_file)
     print 'done'
 
 
 if __name__ == "__main__":
-    # concepts = utils.load_json_data('./resources/Surgical_Procedures.json')
-    # populate_patient_concept_table('dementia', concepts, 'dementia_cohorts.csv')
-    # dump_doc_as_files('./hepc_data')
-    # complete_samples('./studies/karen/sample_docs.json',
-    #                  'select string_orig, action_trans from kconnect_annotations where cn_doc_id=\'{doc_id}\' and start_offset={start} and end_offset={end} and inst_uri=\'{concept}\'', './studies/karen/dbcnn_input.json', './studies/karen/sample_docs_completed.json')
-    print preprocessing_text_befor_rule_execution('abc  '
-                                                  '\n'
-                                                  '\n'
-                                                  'dea   adf dafsf')
+    pass()
