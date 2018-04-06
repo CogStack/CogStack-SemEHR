@@ -1,0 +1,9 @@
+{
+  "cohort": "addiction",
+  "sql_config": "./studies/skin_conditions/cluster_sql_config.xml",
+  "db_conn": "./studies/skin_conditions/dbcnn_input.json",
+  "umls_key": "./resources/HW_UMLS_KEY.txt",
+  "do_preprocessing": false,
+  "rule_setting_file": "./studies/skin_conditions/skin_rule_config.json",
+  "do_one_iter": false
+}

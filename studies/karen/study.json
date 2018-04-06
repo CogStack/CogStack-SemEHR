@@ -1,0 +1,9 @@
+{
+  "cohort": "karen_072017",
+  "sql_config": "./studies/karen/cluster_sql_config.xml",
+  "db_conn": "./studies/karen/dbcnn_input.json",
+  "umls_key": "./resources/HW_UMLS_KEY.txt",
+  "do_preprocessing": false,
+  "rule_setting_file": "./studies/rules/_default_rule_config.json",
+  "do_one_iter": false
+}
