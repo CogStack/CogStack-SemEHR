@@ -1,0 +1,35 @@
+[
+  {"offset": -1, "regs": [
+    ".*(\\s)+charity(\\s)+.{0,20}",
+    ".*(\\s)+consultant(\\s)+.{0,20}",
+    ".*telling people(\\s)+.{0,40}",
+    ".*such as(\\s)+.{0,40}",
+    ".*support worker(\\s)+.{0,20}",
+    ".*guideline(s){0,1}(\\s)+.{0,50}",
+    ".*(screening|test|testing|evaluating|screen).{0,30}",
+    ".*(society|association).{0,20}for.{0,20}",
+    ".*department.{0,40}",
+    ".*Old Adults(\\s)+.{0,10}",
+    ".*side effect of(\\s)+.{0,20}",
+    ".*monitor(ing){0,1}( for){0,1}(\\s)+.{0,20}",
+    ".*medicines information(\\s)+.{0,20}",
+    ".*formcheckbox(\\s)+.{0,40}",
+    ".*information on(\\s)+.{0,40}",
+    ".*e\\.g\\.(\\s)+.{0,40}"
+  ]},
+  {"offset": 1, "regs": [
+    "\\s+(society|organisation|unit)", "\\s+care", "[\\s\\n]+team", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}",
+    "\\s+help centre", "\\s+group", "\\s+health scare", "\\s+department",
+    "\\s+risk",
+    "\\s+nurse", "\\s+gene", "\\s+nurses", "\\s+doctor", "\\s+clinic", "\\s+association", "\\s+assessor", "\\s+surgery",
+    "\\s+ward", "\\s+interpreter", "\\s+date", "\\s+corner",
+    "\\s+.{0,20}centre", "\\s+urologist", "\\s+counselling", "\\s+counsellor", "\\s+markers", "\\s+rescource", "\\s+charity", "\\s+assessment", "\\s+specialist", "\\s+medicine", "\\s+scare",
+    "\\s+.{0,10}(guideline|guide)",
+    "\\s+[^\\r\\n\\.]{0,30}Adult(s){0,1}",
+    "\\s+[^\\r\\n\\.]{0,30}care home",
+    "\\s+(test|screen|pathway|blood screen)",
+    "\\s+football",
+    "\\s+.{0,50}formcheckbox",
+    "\\s{0,}/ss"
+  ]}
+]

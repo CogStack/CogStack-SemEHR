@@ -4,11 +4,13 @@ import json
 from os.path import join
 import ontotextapi as oi
 import random
-# from study_analyzer import StudyAnalyzer
+import study_analyzer as sa
 from ann_post_rules import AnnRuleExecutor
 import trans_anns.sentence_pattern as tssp
 import trans_anns.text_generaliser as tstg
 import re
+from analysis.semquery import SemEHRES
+import analysis.cohort_analysis_helper as chelper
 
 
 db_conn_type = 'mysql'
@@ -221,6 +223,86 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     utils.save_json_array(convert_encoding(ruled_anns, 'cp1252', 'utf-8'), ruled_ann_out_file)
     print 'done'
 
+
+def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_executor,
+                                               sample_size, sample_out_file, ruled_ann_out_file,
+                                               es_conn_file, text_preprocessing=False):
+    """
+    populate patient study result with post processing to remove unwanted mentions
+    :param cohort_name:
+    :param study_analyzer:
+    :param out_file:
+    :param rule_executor:
+    :param sample_size:
+    :param sample_out_file:
+    :return:
+    """
+    es = SemEHRES.get_instance_by_setting_file(es_conn_file)
+    pids = es.search_by_scroll("14479", es.patient_type)
+    patients = [{'brcid': p} for p in pids]
+    id2p = {}
+    for p in patients:
+        id2p[p['brcid']] = p
+    print patients
+    non_empty_concepts = []
+    study_concepts = study_analyzer.study_concepts
+    term_to_docs = {}
+    ruled_anns = []
+    for sc in study_concepts:
+        positive_doc_anns = []
+        sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
+        concept_list = ', '.join(['\'%s\'' % c for c in sc.concept_closure])
+        doc_anns = []
+        if len(sc.concept_closure) > 0:
+            chelper.query_doc_anns(es, concept_list, study_analyzer.skip_terms)
+
+        if len(doc_anns) > 0:
+            p_to_dfreq = {}
+            counted_docs = set()
+            for d in doc_anns:
+                doc = doc_anns[d]
+                p = doc['pid']
+                if d in counted_docs:
+                    continue
+                for ann in doc['anns']:
+                    ruled, rule = rule_executor.execute(doc['text'] if not text_preprocessing else
+                                                        preprocessing_text_befor_rule_execution(doc['text']),
+                                                        int(ann['s']),
+                                                        int(ann['e']))
+                    if not ruled:
+                        counted_docs.add(d)
+                        p_to_dfreq[p] = 1 if p not in p_to_dfreq else 1 + p_to_dfreq[p]
+                        positive_doc_anns.append({'id': d,
+                                                  'content': doc['text'],
+                                                  'annotations': [{'start': ann['s'],
+                                                                   'end': ann['e'],
+                                                                   'concept': ann['features']['inst']}]})
+                    else:
+                        ruled_anns.append({'p': p, 'd': d, 'ruled': rule})
+            if len(counted_docs) > 0:
+                non_empty_concepts.append(sc_key)
+                for p in p_to_dfreq:
+                    id2p[p][sc_key] = str(p_to_dfreq[p])
+
+                # save sample docs
+                if sample_size >= len(positive_doc_anns):
+                    term_to_docs[sc_key] = positive_doc_anns
+                else:
+                    sampled = []
+                    for i in xrange(sample_size):
+                        index = random.randrange(len(positive_doc_anns))
+                        sampled.append(positive_doc_anns[index])
+                        positive_doc_anns.pop(index)
+                    term_to_docs[sc_key] = sampled
+
+    concept_labels = sorted(non_empty_concepts)
+    s = '\t'.join(['brcid'] + concept_labels) + '\n'
+    for p in patients:
+        s += '\t'.join([p['brcid']] + [p[k] if k in p else '0' for k in concept_labels]) + '\n'
+    utils.save_string(s, out_file)
+    utils.save_json_array(convert_encoding(term_to_docs, 'cp1252', 'utf-8'), sample_out_file)
+    utils.save_json_array(convert_encoding(ruled_anns, 'cp1252', 'utf-8'), ruled_ann_out_file)
+    print 'done'
 
 def preprocessing_text_befor_rule_execution(t):
     return re.sub(r'\s{2,}', ' ', t)
