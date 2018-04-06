@@ -330,7 +330,7 @@ def run_study(folder_path):
               concept_mapping.get_umls_client_inst(r['umls_key']),
               do_preprocessing=r['do_preprocessing'],
               rule_setting_file=r['rule_setting_file'],
-              do_one_iter=r['on_iter']
+              do_one_iter=r['do_one_iter']
               )
     else:
         print 'study.json not found in the folder'
