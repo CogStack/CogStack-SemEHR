@@ -5,7 +5,8 @@
     "hypothetical_filters.json",
     "negation_filters.json",
     "not_mention_filters.json",
-    "other_experiencer_filters.json"
+    "other_experiencer_filters.json",
+    "s_skin.json"
   ],
   "skip_term_setting": "./studies/skin_conditions/skin_skip_terms.json"
 }
