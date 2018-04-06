@@ -307,9 +307,7 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance, do_
     # sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
     # sa.gen_sample_docs(cohort_name, join(folder, 'sample_docs.json'))
     ruler = AnnRuleExecutor()
-    rules = utils.load_json_data(join(folder, 'post_filter_rules.json'))
-    for r in rules:
-        ruler.add_filter_rule(r['offset'], r['regs'])
+    ruler.load_rule_config('./studies/rules/_default_rule_config.json')
     if do_one_iter:
         sa.gen_study_table_in_one_iteration(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'),
                                             sql_config_file, db_conn_file)
