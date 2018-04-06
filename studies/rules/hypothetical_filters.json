@@ -41,7 +41,7 @@
     ".*(likely to|may|maybe|could|potential for)\\s+(cause|causing)(\\s)+.{0,20}",
     ".*could have(\\s)+[^\\.]{0,70}",
     ".*(predisposition|prediposing)(\\s)+.{0,20}",
-    ".*chances of(\\s)+.{0,20}",
+    ".*chances of(\\s)+.{0,20}"
   ]},
   {"offset": 1, "regs": [
     "\\s+risk",
