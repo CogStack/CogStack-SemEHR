@@ -39,6 +39,15 @@ class AnnRuleExecutor(object):
                 break
         return filtered, matched
 
+    def load_rule_config(self, config_file):
+        rule_config = utils.load_json_data(config_file)
+        r_path = rule_config['rules_folder']
+        print 'loading rules from [%s]' % r_path
+        for rf in rule_config['active_rules']:
+            for r in utils.load_json_data(join(r_path, rf)):
+                self.add_filter_rule(r['offset'], r['regs'])
+            print '%s loaded' % rf
+
 
 if __name__ == "__main__":
     t = "\na close\n frined of hers died of cancer"
