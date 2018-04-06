@@ -1,7 +1,7 @@
 import re
 import utils
 
-_text_window = 60
+_text_window = 100
 _head_text_window_size = 200
 
 
