@@ -323,53 +323,23 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
     print 'done'
 
 
+def run_study(folder_path):
+    if isfile(join(folder_path, 'study.json')):
+        r = utils.load_json_data(join(folder_path, 'study.json'))
+        study(folder_path, r['cohort'], r['sql_config'], r['db_conn'],
+              concept_mapping.get_umls_client_inst(r['umls_key']),
+              do_preprocessing=r['do_preprocessing'],
+              rule_setting_file=r['rule_config'],
+              do_one_iter=r['on_iter']
+              )
+    else:
+        print 'study.json not found in the folder'
+
+
 if __name__ == "__main__":
     reload(sys)
     sys.setdefaultencoding('cp1252')
-    # study('./studies/slam_physical_health/', 'CC_physical_health')
-    # study('./studies/autoimmune.v2/', 'auto_immune',
-    #       './index_settings/query_config_cam.xml',
-    #       './index_settings/cam_dbconn.json'
-    #       )
-    # study('./studies/autoimmune', 'auto_immune',
-    #       './index_settings/query_config_cam.xml',
-    #       './index_settings/cam_dbconn.json')
-    # study('./studies/HCVpos', 'HCVpos_cohort')
-    # study('./studies/liver', 'auto_immune')
-    # study('./studies/hepc_unknown_200', 'hepc_unknown')
-    # study('./studies/karen', 'karen_2017')
-    # study('./studies/skin_conditions/', 'addiction',
-    #       './studies/skin_conditions/cluster_sql_config.xml',
-    #       './studies/skin_conditions/dbcnn_input.json',
-    #       concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
-    #       )
-    # study('./studies/COMOB_SD/', 'dyson',
-    #      './studies/COMOB_SD/cluster_sql_config.xml',
-    #      './studies/COMOB_SD/dbcnn_input.json',
-    #      concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt'),
-    #      do_preprocessing=True
-    #      )
-    study('./studies/prathiv/', 'pirathiv',
-         './studies/prathiv/cluster_sql_config.xml',
-         './studies/prathiv/dbcnn_input.json',
-         concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt'),
-         do_preprocessing=True
-         )
-    #study('./studies/raquel_cardic/', 'depression',
-    #      './studies/raquel_cardic/cluster_sql_config.xml',
-    #      './studies/raquel_cardic/dbcnn_input.json',
-    #      concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
-    #      )
-    # study('./studies/karen/', 'karen_072017',
-    #       './studies/karen/cluster_sql_config.xml',
-    #       './studies/karen/dbcnn_input.json',
-    #       concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
-    #       )
-    # study('./studies/raquel_cardic/', 'raquel_cardic',
-    #       './studies/raquel_cardic/one_iter_sql_config.xml',
-    #       './studies/raquel_cardic/dbcnn_input.json',
-    #       concept_mapping.get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
-    #       )
-
-
-
+    if len(sys.argv) != 2:
+        print 'the syntax is [python study_analyzer.py STUDY_DIR]'
+    else:
+        run_study(sys.argv[1])
