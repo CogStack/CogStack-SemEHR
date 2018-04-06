@@ -38,7 +38,11 @@ class AnnRuleExecutor(object):
             if r['offset'] == 0:
                 s_compare = text[:_head_text_window_size]
             s_compare = s_compare.replace('\n', ' ')
-            reg_p = re.compile('|'.join(r['regs']), re.IGNORECASE)
+            try:
+                reg_p = re.compile('|'.join(r['regs']), re.IGNORECASE)
+            except Exception:
+                print 'regs error: [%s]' % r['regs']
+                exit(1)
             # print 'matching %s on %s' % (reg_p, s_compare)
             m = reg_p.match(s_compare)
             if m is not None:
