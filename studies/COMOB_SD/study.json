@@ -1,0 +1,9 @@
+{
+  "cohort": "dyson",
+  "sql_config": "./studies/COMOB_SD/cluster_sql_config.xml",
+  "db_conn": "./studies/COMOB_SD/dbcnn_input.json",
+  "umls_key": "./resources/HW_UMLS_KEY.txt",
+  "do_preprocessing": true,
+  "rule_setting_file": "./studies/rules/_default_rule_config.json",
+  "do_one_iter": false
+}
