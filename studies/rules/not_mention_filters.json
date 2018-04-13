@@ -9,14 +9,21 @@
     ".*(screening|test|testing|evaluating|screen).{0,30}",
     ".*(society|association).{0,20}for.{0,20}",
     ".*department.{0,40}",
-    ".*Old Adults(\\s)+.{0,10}",
+    ".*Old(er){0,1} Adults(\\s)+.{0,10}",
     ".*side effect of(\\s)+.{0,20}",
     ".*monitor(ing){0,1}( for){0,1}(\\s)+.{0,20}",
     ".*medicines information(\\s)+.{0,20}",
     ".*formcheckbox(\\s)+.{0,40}",
     ".*information on(\\s)+.{0,40}",
     ".*e\\.g\\.(\\s)+.{0,40}",
-    ".*the word(\\s)+.{0,10}"
+    ".*the word(\\s)+.{0,10}",
+    ".*risk (of|for)(\\s)+.{0,70}",
+    ".*erroneous(\\s)+.{0,30}",
+    ".*should you receive(\\s)+.{0,50}",
+    ".*(Does the client|Is there a family history)(\\s)+.{0,20}",
+    ".*MHOA and(\\s)+.{0,20}",
+    ".*Croydon CMHTs MHOA &(\\s)+.{0,20}",
+    ".*Bloods taken for.{0,90}"
   ]},
   {"offset": 1, "regs": [
     "\\s+(society|organisation|unit)", "\\s+care", "[\\s\\n]+team", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}",
@@ -31,6 +38,9 @@
     "\\s+(test|screen|pathway|blood screen)",
     "\\s+football",
     "\\s+.{0,50}formcheckbox",
+    "\\s+.{0,5}yes(\\s|/)+no",
+    "\\s+.{0,5}bloods to be done",
+    "\\s+.{0,15}hair",
     "\\s{0,}/ss"
   ]}
 ]

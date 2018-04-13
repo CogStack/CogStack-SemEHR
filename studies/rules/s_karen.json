@@ -1,0 +1,24 @@
+[
+  {"offset": -1, "regs": [
+    ".*in secondary prevention for(\\s)+",
+    ".*Framingham(\\s)+.{0,10}",
+    ".*need a letter confirming(\\s)+.{0,50}",
+    ".*folate\\, Ferritin, TFTs\\, prolactin\\,.{0,20}",
+    ".*Mg\\, Prol\\, B12/Folate\\, HIV\\,.{0,20}",
+    ".*(pull|close)\\s+.{0,10}",
+    ".*(make)\\s+(her|him).{0,20}",
+    ".*Montreal Cognitive Assessment\\s+"
+  ]},
+  {"offset": 1, "regs": [
+    "\\s+.{0,5}booster",
+    "\\s+.{0,15}(vaccinat)",
+    "\\s+.{0,15}Honour\\-Based Violence",
+    "\\s+to the t shirt ownership",
+    "\\s+treatment of .{1,2}UTI",
+    "\\s+trial"
+  ]},
+  {"offset": 0, "regs": [
+    "Solace Advocacy & Support Service",
+    "FACE Overview Assessment"
+  ]}
+]
