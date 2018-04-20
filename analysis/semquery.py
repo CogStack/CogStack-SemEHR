@@ -79,9 +79,9 @@ class SemEHRES(object):
     def concept_type(self):
         return self._concept_type
 
-    def search_by_scroll(self, q, doc_type, field='_all', collection_func=lambda d, c: c.append(d['_id'])):
+    def search_by_scroll(self, q, doc_type, field='_all', include_fields=None, collection_func=lambda d, c: c.append(d['_id'])):
         print 'scrolling [%s]' % q
-        scroll_obj = self.scroll(q, doc_type, field=field, size=300)
+        scroll_obj = self.scroll(q, doc_type, field=field, size=300, include_fields=include_fields)
         container = []
         utils.multi_thread_tasking_it(scroll_obj, 10, collection_func, args=[container])
         return container
@@ -139,7 +139,7 @@ class SemEHRES(object):
     def get_doc_detail(self, doc_id, doc_type=None):
         doc_type = self._doc_type if doc_type is None else doc_type
         try:
-            es_doc = self._es_instance.get(self._index, doc_id, doc_type=doc_type)
+            es_doc = self._es_instance.get(index=self._index, id=doc_id, doc_type=doc_type)
             if es_doc is not None:
                 return es_doc['_source']
             else:
@@ -159,7 +159,7 @@ class SemEHRES(object):
         results = self._es_instance.search(index=self._index, doc_type=entity, body=query)
         return results['hits']['total'], results['hits']['hits']
 
-    def scroll(self, q, entity, query_type="qs", field='_all', size=100, include_fields=None, q_obj=None):
+    def scroll(self, q, entity, query_type="qs", field='_all', size=500, include_fields=None, q_obj=None):
         query = {"query": {"match": {field: q}},
                  "size": size}
         if query_type == "qs":
@@ -170,13 +170,15 @@ class SemEHRES(object):
                 "query": q_obj,
                 "size": size
             }
-        if include_fields is not None:
-            query['_source'] = {
-                "includes": include_fields
-            }
+        if include_fields is None:
+            include_fields = ['a']
+        query['_source'] = {
+            "includes": include_fields
+        }
         query['sort'] = '_doc'
+        print 'scroll query is [%s]' % query
         return helpers.scan(self._es_instance, query,
-                            size=size, scroll='10m', index=self._index, doc_type=entity)
+                            size=size, scroll='10m', index=self._index, doc_type=entity, request_timeout=300)
 
     def index_med_profile(self, doc_type, data, patient_id):
         self._es_instance.index(index=self._index, doc_type=doc_type, body=data, id=str(patient_id), timeout='30s')
@@ -209,6 +211,6 @@ if __name__ == "__main__":
     # print es.get_doc_detail('1044334459', 'docs')
     # print es.search('docs', 'ward')
     try:
-        print es.search('eprdoc', 'ward')
+        print es.search_all('ward', 'patient')
     except TransportError as terr:
         print terr.info
