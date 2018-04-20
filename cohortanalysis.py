@@ -238,12 +238,12 @@ def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_ex
     :return:
     """
     es = SemEHRES.get_instance_by_setting_file(es_conn_file)
-    pids = es.search_by_scroll("14479", es.patient_type)
+    pids = es.search_by_scroll("*", es.patient_type)
     patients = [{'brcid': p} for p in pids]
     id2p = {}
     for p in patients:
         id2p[p['brcid']] = p
-    print patients
+    print 'total patients is %s' % len(patients)
     non_empty_concepts = []
     study_concepts = study_analyzer.study_concepts
     term_to_docs = {}
@@ -251,10 +251,10 @@ def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_ex
     for sc in study_concepts:
         positive_doc_anns = []
         sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
-        concept_list = ', '.join(['\'%s\'' % c for c in sc.concept_closure])
+        print 'working on %s' % sc_key
         doc_anns = []
         if len(sc.concept_closure) > 0:
-            chelper.query_doc_anns(es, concept_list, study_analyzer.skip_terms)
+            doc_anns = chelper.query_doc_anns(es, sc.concept_closure, study_analyzer.skip_terms)
 
         if len(doc_anns) > 0:
             p_to_dfreq = {}
@@ -276,7 +276,7 @@ def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_ex
                                                   'content': doc['text'],
                                                   'annotations': [{'start': ann['s'],
                                                                    'end': ann['e'],
-                                                                   'concept': ann['features']['inst']}]})
+                                                                   'concept': ann['inst']}]})
                     else:
                         ruled_anns.append({'p': p, 'd': d, 'ruled': rule})
             if len(counted_docs) > 0:
@@ -304,6 +304,7 @@ def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_ex
     utils.save_json_array(convert_encoding(ruled_anns, 'cp1252', 'utf-8'), ruled_ann_out_file)
     print 'done'
 
+
 def preprocessing_text_befor_rule_execution(t):
     return re.sub(r'\s{2,}', ' ', t)
 
@@ -315,7 +316,7 @@ def convert_encoding(dic_obj, orig, target):
         ret = []
         for itm in dic_obj:
             ret.append(convert_encoding(itm, orig, target))
-        return ret        
+        return ret
     elif isinstance(dic_obj, dict):
         for k in dic_obj:
             dic_obj[k] = convert_encoding(dic_obj[k], orig, target)
@@ -661,5 +662,23 @@ def complete_samples(sample_file, complete_sql, db_conn_file, out_file):
     print 'done'
 
 
+def test_es_analysis():
+    study_analyzer = sa.StudyAnalyzer('aaa')
+    study_concept = sa.StudyConcept('depression', ['depression'])
+    study_analyzer.skip_terms = ['Recurrent major depressive episodes']
+    study_concept.concept_closure = ["C0154409", "C0038050"]
+    study_analyzer.add_concept(study_concept)
+
+    folder = "./studies/COMOB_SD/"
+    ruler = AnnRuleExecutor()
+    rules = utils.load_json_data(join(folder, 'post_filter_rules.json'))
+    for r in rules:
+        ruler.add_filter_rule(r['offset'], r['regs'])
+
+    es_populate_patient_study_table_post_ruled(study_analyzer, "./out.txt", ruler, 20,
+                                               "./sample_out.txt", "./ruled.txt",
+                                               "./index_settings/sem_idx_setting.json")
+
+
 if __name__ == "__main__":
-    pass
+    test_es_analysis()
