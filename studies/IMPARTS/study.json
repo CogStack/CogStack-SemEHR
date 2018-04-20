@@ -5,5 +5,6 @@
   "umls_key": "./resources/HW_UMLS_KEY.txt",
   "do_preprocessing": true,
   "rule_setting_file": "./studies/IMPARTS/imparts_rule_config.json",
-  "do_one_iter": false
+  "do_one_iter": false,
+  "sem_idx_setting_file": ""
 }
