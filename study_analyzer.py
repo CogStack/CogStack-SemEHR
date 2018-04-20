@@ -8,6 +8,7 @@ from ann_post_rules import AnnRuleExecutor
 import sys
 import xml.etree.ElementTree as ET
 import concept_mapping
+import urllib3
 
 
 class StudyConcept(object):
@@ -351,6 +352,7 @@ def run_study(folder_path):
 if __name__ == "__main__":
     reload(sys)
     sys.setdefaultencoding('cp1252')
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     if len(sys.argv) != 2:
         print 'the syntax is [python study_analyzer.py STUDY_DIR]'
     else:
