@@ -218,8 +218,8 @@ class StudyAnalyzer(object):
 
     def gen_study_table_with_rules_es(self, cohort_name, out_file, sample_out_file, ruler, ruled_out_file,
                                       sem_idx_setting_file):
-        cohort.es_populate_patient_study_table_post_ruled(cohort_name, self, out_file, ruler, 20,
-                                                       sample_out_file, ruled_out_file, sem_idx_setting_file)
+        cohort.es_populate_patient_study_table_post_ruled(self, out_file, ruler, 20,
+                                                          sample_out_file, ruled_out_file, sem_idx_setting_file)
 
 
 def get_sql_template(config_file):
