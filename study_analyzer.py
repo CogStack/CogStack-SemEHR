@@ -216,6 +216,11 @@ class StudyAnalyzer(object):
                                                 sql_setting['doc_content_sql'],
                                                 db_conn_file)
 
+    def gen_study_table_with_rules_es(self, cohort_name, out_file, sample_out_file, ruler, ruled_out_file,
+                                      sem_idx_setting_file):
+        cohort.es_populate_patient_study_table_post_ruled(cohort_name, self, out_file, ruler, 20,
+                                                       sample_out_file, ruled_out_file, sem_idx_setting_file)
+
 
 def get_sql_template(config_file):
     root = ET.parse(config_file).getroot()
@@ -235,7 +240,7 @@ def get_one_iteration_sql_template(config_file):
 
 def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
           do_one_iter=False, do_preprocessing=False,
-          rule_setting_file=None):
+          rule_setting_file=None, sem_idx_setting_file=None):
     p, fn = split(folder)
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
@@ -317,9 +322,15 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
         sa.gen_study_table_in_one_iteration(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'),
                                             sql_config_file, db_conn_file)
     else:
-        sa.gen_study_table_with_rules(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.js'), ruler,
-                                      join(folder, 'ruled_anns.json'), sql_config_file, db_conn_file,
-                                      text_preprocessing=do_preprocessing)
+        if sem_idx_setting_file is None:
+            sa.gen_study_table_with_rules(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.js'), ruler,
+                                          join(folder, 'ruled_anns.json'), sql_config_file, db_conn_file,
+                                          text_preprocessing=do_preprocessing)
+        else:
+            sa.gen_study_table_with_rules_es(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.js'),
+                                             ruler,
+                                             join(folder, 'ruled_anns.json'),
+                                             sem_idx_setting_file)
     print 'done'
 
 
@@ -330,7 +341,8 @@ def run_study(folder_path):
               concept_mapping.get_umls_client_inst(r['umls_key']),
               do_preprocessing=r['do_preprocessing'],
               rule_setting_file=r['rule_setting_file'],
-              do_one_iter=r['do_one_iter']
+              do_one_iter=r['do_one_iter'],
+              sem_idx_setting_file=None if 'sem_idx_setting_file' not in r else r['sem_idx_setting_file']
               )
     else:
         print 'study.json not found in the folder'
