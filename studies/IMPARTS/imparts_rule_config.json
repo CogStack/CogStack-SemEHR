@@ -1,0 +1,10 @@
+{
+  "rules_folder": "./studies/rules/",
+  "active_rules": [
+    "hypothetical_filters.json",
+    "negation_filters.json",
+    "not_mention_filters.json",
+    "other_experiencer_filters.json"
+  ],
+  "skip_term_setting": "./studies/rules/general_cris_skip_terms.json"
+}
