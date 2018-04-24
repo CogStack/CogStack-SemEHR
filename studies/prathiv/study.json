@@ -5,5 +5,6 @@
   "umls_key": "./resources/HW_UMLS_KEY.txt",
   "do_preprocessing": true,
   "rule_setting_file": "./studies/prathiv/pirathiv_rule_config.json",
-  "do_one_iter": false
+  "do_one_iter": false,
+  "concept_filter_file": "./studies/prathiv/working_concepts.json["
 }
