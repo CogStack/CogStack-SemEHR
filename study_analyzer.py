@@ -171,6 +171,13 @@ class StudyAnalyzer(object):
             if sc.name == concept_name:
                 self.study_concepts.remove(sc)
 
+    def retain_study_concepts(self, concept_names):
+        retained = []
+        for sc in self.study_concepts:
+            if sc.name in concept_names:
+                retained.append(sc)
+        self.study_concepts = retained
+
     def export_mapping_in_json(self):
         mapping = {}
         for c in self._study_concepts:
@@ -295,8 +302,7 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
     if concept_filter_file is not None:
         print 'before removal, the concept length is: %s' % len(sa.study_concepts)
         concept_names = utils.load_json_data(concept_filter_file)
-        for sc_name in concept_names:
-            sa.remove_study_concept_by_name(sc_name)
+        sa.retain_study_concepts(concept_names)
         print 'after removal: %s' % len(sa.study_concepts)
 
     # compute disjoint concepts
