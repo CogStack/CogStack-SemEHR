@@ -166,6 +166,11 @@ class StudyAnalyzer(object):
         for sc in self.study_concepts:
             print '%s %s' % (sc.name, len(sc.concept_closure))
 
+    def remove_study_concept_by_name(self, concept_name):
+        for sc in self.study_concepts:
+            if sc.name == concept_name:
+                self.study_concepts.remove(sc)
+
     def export_mapping_in_json(self):
         mapping = {}
         for c in self._study_concepts:
@@ -241,7 +246,8 @@ def get_one_iteration_sql_template(config_file):
 
 def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
           do_one_iter=False, do_preprocessing=False,
-          rule_setting_file=None, sem_idx_setting_file=None):
+          rule_setting_file=None, sem_idx_setting_file=None,
+          concept_filter_file=None):
     p, fn = split(folder)
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
@@ -285,6 +291,14 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
             sa.study_concepts = scs
             sa.serialise(join(folder, 'study_analyzer.pickle'))
 
+    # get filtered concepts only, if filter exists
+    if concept_filter_file is not None:
+        print 'before removal, the concept length is: %s' % len(sa.study_concepts)
+        concept_names = utils.load_json_data(concept_filter_file)
+        for sc_name in concept_names:
+            sa.remove_study_concept_by_name(sc_name)
+        print 'after removal: %s' % len(sa.study_concepts)
+
     # compute disjoint concepts
     sa.generate_exclusive_concepts()
 
@@ -306,7 +320,7 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
         # print c.name, c.term_to_concept, c.concept_closure
         # print json.dumps(list(c.concept_closure))
     print 'print merged mappings...'
-    print json.dumps(merged_mappings)
+    # print json.dumps(merged_mappings)
     print len(study_concept_list)
     utils.save_string('\n'.join(study_concept_list), join(folder, 'all_concepts.txt'))
     print 'generating result table...'
@@ -343,7 +357,8 @@ def run_study(folder_path):
               do_preprocessing=r['do_preprocessing'],
               rule_setting_file=r['rule_setting_file'],
               do_one_iter=r['do_one_iter'],
-              sem_idx_setting_file=None if 'sem_idx_setting_file' not in r else r['sem_idx_setting_file']
+              sem_idx_setting_file=None if 'sem_idx_setting_file' not in r else r['sem_idx_setting_file'],
+              concept_filter_file=None if 'concept_filter_file' not in r else r['concept_filter_file']
               )
     else:
         print 'study.json not found in the folder'
