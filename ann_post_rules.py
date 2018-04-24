@@ -91,6 +91,10 @@ class AnnRuleExecutor(object):
             for r in utils.load_json_data(join(r_path, rf)):
                 self.add_filter_rule(r['offset'], r['regs'])
             print '%s loaded' % rf
+        if 'osf_rules' in rule_config:
+            for osf in rule_config['osf_rules']:
+                self.add_original_string_filters(utils.load_json_data(join(r_path, osf)))
+                print 'original string filters from [%s] loaded' % osf
         if 'skip_term_setting' in rule_config:
             self.skip_terms = utils.load_json_data(rule_config['skip_term_setting'])
 
@@ -109,8 +113,9 @@ def test_filter_rules():
 def test_osf_rules():
     t = "ADAD-A"
     e = AnnRuleExecutor()
-    rules = utils.load_json_data('./studies/rules/osf_acroynm_filters.json')
-    e.add_original_string_filters(rules)
+    e.load_rule_config('./studies/prathiv/pirathiv_rule_config.json')
+    # rules = utils.load_json_data('./studies/rules/osf_acroynm_filters.json')
+    # e.add_original_string_filters(rules)
     print e.execute_original_string_rules(t)
 
 
