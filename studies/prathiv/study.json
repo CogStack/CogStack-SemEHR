@@ -6,5 +6,5 @@
   "do_preprocessing": true,
   "rule_setting_file": "./studies/prathiv/pirathiv_rule_config.json",
   "do_one_iter": false,
-  "concept_filter_file": "./studies/prathiv/working_concepts.json["
+  "concept_filter_file": "./studies/prathiv/working_concepts.json"
 }
