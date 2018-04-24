@@ -8,5 +8,8 @@
     "other_experiencer_filters.json",
     "s_pirathiv.json"
   ],
+  "osf_rules":[
+    "osf_acroynm_filters.json"
+  ],
   "skip_term_setting": "./studies/rules/general_cris_skip_terms.json"
 }
