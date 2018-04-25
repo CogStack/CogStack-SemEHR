@@ -1,0 +1,3 @@
+[
+  "(a|another)\\s+.{0,50}cold\\s{0,}(\\.|\\,|that|which|from|because|and)"
+]

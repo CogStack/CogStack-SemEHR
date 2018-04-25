@@ -29,6 +29,7 @@
     "\\s+(society|organisation|unit)", "\\s+care", "[\\s\\n]+team", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}",
     "\\s+help centre", "\\s+group", "\\s+health scare", "\\s+department",
     "\\s+risk",
+    "\\s+as to intervention",
     "\\s+nurse", "\\s+gene", "\\s+nurses", "\\s+doctor", "\\s+clinic", "\\s+association", "\\s+assessor", "\\s+surgery",
     "\\s+ward", "\\s+interpreter", "\\s+date", "\\s+corner",
     "\\s+.{0,20}centre", "\\s+urologist", "\\s+counselling", "\\s+counsellor", "\\s+markers", "\\s+rescource", "\\s+charity", "\\s+assessment", "\\s+specialist", "\\s+medicine", "\\s+scare",
