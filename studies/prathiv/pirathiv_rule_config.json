@@ -8,5 +8,5 @@
     "other_experiencer_filters.json",
     "s_pirathiv.json"
   ],
-  "skip_term_setting": "./studies/rules/general_cris_skip_terms.json"
+  "skip_term_setting": "./studies/rules/pirathiv_skip_terms.json"
 }
