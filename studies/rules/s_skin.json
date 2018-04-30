@@ -7,8 +7,9 @@
     "\\s+like\\s+.*",
     "\\s{0,1}\\,\\s+sharing equipment\\)",
     "\\s+the kettle.*",
-    "\\s+down to(\\s|\\:)+.*",
+    "\\s+(down|in) to(\\s|\\:)+.*",
     "\\s+over\\s+.*",
+    "\\s+into\\s+.*",
     "\\s+up meat\\s+.*",
     "\\s+it\\s+.*"
   ]}
