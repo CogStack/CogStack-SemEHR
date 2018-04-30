@@ -18,6 +18,7 @@
     ".*ix|investigation of(\\s)+.{0,10}",
     ".*(\\s)+\\?",
     ".*look up(\\s)+.{0,10}",
+    ".*look for(\\s)+.{0,50}",
     ".*potential(\\s)+.{0,5}",
     ".*in case(\\s)+.{0,15}",
     ".*in (the ){0,1}event of(\\s)+.{0,15}",
@@ -35,7 +36,7 @@
     ".*checking(\\s)+.{0,5}",
     ".*going to have(\\s)+.{0,5}",
     ".*like(\\s)+.{0,5}",
-    ".*(screening|test|testing|evaluating|screen).{0,30}",
+    ".*(screening|test|testing|evaluating|screen|investigation).{0,50}",
     ".*caution\\s+[^\\.]{0,20}\\s+with(\\s)+.{0,20}",
     ".*predictive value for(\\s)+.{0,10}",
     ".*rumination(s){0,1}(\\s)+.{0,1}",
@@ -46,7 +47,8 @@
     ".*(predisposition|prediposing)(\\s)+.{0,20}",
     ".*chances of(\\s)+.{0,20}",
     ".*attempt to(\\s)+.{0,20}",
-    ".*wanted (her|him) to(\\s)+.{0,20}"
+    ".*wanted (her|him) to(\\s)+.{0,20}",
+    ".*particular neuroleptic drugs in view of the increased incidence of(\\s)+.{0,20}"
   ]},
   {"offset": 1, "regs": [
     "\\s+risk",

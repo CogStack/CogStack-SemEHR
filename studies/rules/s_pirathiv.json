@@ -1,6 +1,11 @@
 [
   {"offset": -1, "regs": [
     ".*(\\s)+related to.{0,20}",
-    ".*Ongoing physical health problems.{0,100}"
+    ".*Ongoing physical health problems.{0,100}",
+    ".*PNC\\s+",
+    ".*would include\\s+(\\:){0,1}.{0,100}"
+  ]},
+  {"offset": 1, "regs": [
+    "\\s+/visually impaired\\?"
   ]}
 ]

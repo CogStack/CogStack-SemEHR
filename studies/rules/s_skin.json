@@ -1,5 +1,11 @@
 [
   {"offset": -1, "regs": [
-    ".*(Plantar|Planter)(\\s)+"
+    ".*(Plantar|Planter)(\\s)+",
+    "\\(groin\\, neck\\, infections\\,\\s+"
+  ]},
+  {"offset": 1, "regs": [
+    "\\s+like\\s+.*",
+    "\\s{0,1}\\,\\s+sharing equipment\\)",
+    "\\s+the kettle.*"
   ]}
 ]

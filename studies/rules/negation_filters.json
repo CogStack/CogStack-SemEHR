@@ -5,7 +5,8 @@
     ".*(\\s)+non\\s+",
     ".*no evidence.{0,70}",
     ".*never[^\\.;,\\n\\r]{0,30}",
-    ".*(\\s)+rule(d){0,1}\\s+out\\s+.{0,15}"
+    ".*(\\s)+rule(d){0,1}\\s+out\\s+.{0,15}",
+    "No reports of\\s+.{0,50}"
   ]
   },
   {"offset": 1, "regs": [
