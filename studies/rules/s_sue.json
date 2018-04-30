@@ -1,5 +1,9 @@
 [
   {"offset": 1, "regs": [
-    "\\s+eat well.*"
+    "\\s+eat well.*",
+    "\\|\\_\\|.*"
+  ]},
+  {"offset": -1, "regs": [
+    "\\s+Hypo/.*"
   ]}
 ]

@@ -16,6 +16,7 @@
     ".*formcheckbox(\\s)+.{0,40}",
     ".*information on(\\s)+.{0,40}",
     ".*e\\.g\\.(\\s)+.{0,40}",
+    ".*for example(\\s)+.{0,70}",
     ".*the word(\\s)+.{0,10}",
     ".*risk (of|for)(\\s)+.{0,70}",
     ".*erroneous(\\s)+.{0,30}",
@@ -31,7 +32,8 @@
     "Anti-hypertensive\\s+\\(\\s+Dizziness / syncope\\s+.{0,70}",
     "which tends to be sedation/ may\\s+.{0,70}",
     "risk versus the benefits of\\s+.{0,70}",
-    "Lower target values desirable in\\s+.{0,50}"
+    "Lower target values desirable in\\s+.{0,50}",
+    "should be obtained. In particular:.{0,70}"
   ]},
   {"offset": 1, "regs": [
     "\\s+(society|organisation|unit)", "\\s+care", "[\\s\\n]+team", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}",
@@ -53,6 +55,9 @@
     "\\s{0,}/ss",
     "\\s{0,}\\: YES NO",
     "\\s+etc\\.",
-    "\\s+(her|him)\\s+"
+    "\\s+(her|him)\\s+",
+    "\\s+medication(s){0,1}",
+    "\\s+.{0,10}arms\\s+",
+    "\\s+rehab\\s+"
   ]}
 ]
