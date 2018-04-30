@@ -26,7 +26,7 @@
     ".*ideas of having(\\s)+.{0,15}",
     ".*concerned about having(\\s)+.{0,15}",
     ".*concerned(\\s)+.{0,70}",
-    ".*(asked|asking|ask|compliant|complian|question|questioned|query|querying)(\\s)+.{0,70}",
+    ".*(asked|asking|ask|compliant|complian|complain|Complaining|question|questioned|query|querying)(\\s)+.{0,70}",
     ".*thought(\\s)+.{0,15}",
     ".*worries about(\\s)+.{0,5}",
     ".*afraid of(\\s)+.{0,20}",
