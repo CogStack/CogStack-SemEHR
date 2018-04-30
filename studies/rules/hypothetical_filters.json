@@ -48,7 +48,8 @@
     ".*chances of(\\s)+.{0,20}",
     ".*attempt to(\\s)+.{0,20}",
     ".*wanted (her|him) to(\\s)+.{0,20}",
-    ".*particular neuroleptic drugs in view of the increased incidence of(\\s)+.{0,20}"
+    ".*particular neuroleptic drugs in view of the increased incidence of(\\s)+.{0,20}",
+    ".*vulnerable to(\\s)+.{0,20}"
   ]},
   {"offset": 1, "regs": [
     "\\s+risk",

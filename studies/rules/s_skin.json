@@ -6,6 +6,7 @@
   {"offset": 1, "regs": [
     "\\s+like\\s+.*",
     "\\s{0,1}\\,\\s+sharing equipment\\)",
-    "\\s+the kettle.*"
+    "\\s+the kettle.*",
+    "\\s+down to\\s+.*"
   ]}
 ]
