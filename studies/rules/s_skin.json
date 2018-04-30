@@ -9,6 +9,7 @@
     "\\s+the kettle.*",
     "\\s+down to\\s+.*",
     "\\s+over\\s+.*",
-    "\\s+up meat\\s+.*"
+    "\\s+up meat\\s+.*",
+    "\\s+it\\s+.*"
   ]}
 ]
