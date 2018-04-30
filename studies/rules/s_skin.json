@@ -7,6 +7,8 @@
     "\\s+like\\s+.*",
     "\\s{0,1}\\,\\s+sharing equipment\\)",
     "\\s+the kettle.*",
-    "\\s+down to\\s+.*"
+    "\\s+down to\\s+.*",
+    "\\s+over\\s+.*",
+    "\\s+up meat\\s+.*"
   ]}
 ]
