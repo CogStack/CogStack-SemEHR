@@ -7,8 +7,9 @@
     ".*suggestive of(\\s)+.{0,10}",
     ".*fearful of(\\s)+.{0,20}",
     ".*perceive .{1,20} as(\\s)+.{0,20}",
-    ".*risk(s){0,1} (of|for)(\\s)+.{0,20}",
+    ".*risk(s){0,1} (of|for)(\\s)+.{0,70}",
     ".*risks.{0,20}",
+    " risk score.{0,50}",
     ".*turn to(\\s)+.{0,5}",
     ".*possibl(y|e)(\\s)+.{0,20}",
     ".*Probable\\s+",
@@ -57,6 +58,7 @@
   {"offset": 1, "regs": [
     "\\s+risk",
     "\\s+[^\\.,;\\n\\r]{0,30}\\?\\s+",
-    "\\s+.{0,10}unlikely"
+    "\\s+.{0,10}unlikely",
+    ".*\\s+bloods to be done.{0,20}"
   ]}
 ]
