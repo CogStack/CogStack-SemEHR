@@ -4,6 +4,6 @@
   "db_conn": "./studies/karen/dbcnn_input.json",
   "umls_key": "./resources/HW_UMLS_KEY.txt",
   "do_preprocessing": false,
-  "rule_setting_file": "./studies/rules/_default_rule_config.json",
+  "rule_setting_file": "./studies/karen/karen_rule_config.json",
   "do_one_iter": false
 }
