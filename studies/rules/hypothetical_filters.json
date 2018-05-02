@@ -53,7 +53,8 @@
     ".*wanted (her|him) to(\\s)+.{0,20}",
     ".*particular neuroleptic drugs in view of the increased incidence of(\\s)+.{0,20}",
     ".*(vulnerable|prone) to(\\s)+.{0,20}",
-    ".*\\s+alleged(\\s)+.{0,20}"
+    ".*\\s+alleged(\\s)+.{0,20}",
+    ".*\\s+heading towards(\\s)+.{0,60}"
   ]},
   {"offset": 1, "regs": [
     "\\s+risk",
