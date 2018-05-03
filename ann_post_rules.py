@@ -22,8 +22,10 @@ class AnnRuleExecutor(object):
     def skip_terms(self, value):
         self._skip_terms = value
 
-    def add_filter_rule(self, token_offset, reg_strs, case_sensitive=False):
-        self._filter_rules.append({'offset': token_offset, 'regs': reg_strs, 'case_sensitive': case_sensitive})
+    def add_filter_rule(self, token_offset, reg_strs, case_sensitive=False, rule_name='unnamed'):
+        self._filter_rules.append({'offset': token_offset, 'regs': reg_strs,
+                                   'case_sensitive': case_sensitive,
+                                   'rule_name': rule_name})
 
     def execute(self, text, ann_start, ann_end):
         s_before = text[max(ann_start - self._text_window, 0):ann_start]
@@ -51,7 +53,7 @@ class AnnRuleExecutor(object):
             m = reg_p.match(s_compare)
             if m is not None:
                 # print m.group(0)
-                matched.append([m.group(0), r['regs']])
+                matched.append([m.group(0), r['rule_name']])
                 filtered = True
                 break
         return filtered, matched
@@ -89,7 +91,7 @@ class AnnRuleExecutor(object):
         print 'loading rules from [%s]' % r_path
         for rf in rule_config['active_rules']:
             for r in utils.load_json_data(join(r_path, rf)):
-                self.add_filter_rule(r['offset'], r['regs'])
+                self.add_filter_rule(r['offset'], r['regs'], rule_name=rf)
             print '%s loaded' % rf
         if 'osf_rules' in rule_config:
             for osf in rule_config['osf_rules']:
@@ -100,14 +102,17 @@ class AnnRuleExecutor(object):
 
 
 def test_filter_rules():
-    t = "\na close\n frined of hers died of cancer"
-    t = "aaa has No evidence of cancer"
+    t = """abc |_| asdf a
+    """
     e = AnnRuleExecutor()
-    rules = utils.load_json_data('./studies/rules/negation_filters.json')
-    for r in rules:
-        print r
-        e.add_filter_rule(r['offset'], r['regs'], case_sensitive=True if 'case' in r and r['case'] is True else False)
-    print e.execute(t, 24, 30)
+    # e.add_filter_rule(1, [r'.{0,5}\s+yes'], case_sensitive=False)
+    e.load_rule_config('./studies/karen/karen_rule_config.json')
+    # rules = utils.load_json_data('./studies/rules/negation_filters.json')
+    # for r in rules:
+    #     print r
+    #     e.add_filter_rule(r['offset'], r['regs'], case_sensitive=True if 'case' in r and r['case'] is True else False)
+    print 'workting on [%s]' % t
+    print e.execute(t, 0, 3)
 
 
 def test_osf_rules():
@@ -120,4 +125,4 @@ def test_osf_rules():
 
 
 if __name__ == "__main__":
-    test_osf_rules()
+    test_filter_rules()
