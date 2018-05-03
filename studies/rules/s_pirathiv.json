@@ -3,9 +3,11 @@
     ".*(\\s)+related to.{0,20}",
     ".*Ongoing physical health problems.{0,100}",
     ".*PNC\\s+",
+    "stopped\\s.{0,30}",
     ".*would include\\s+(\\:){0,1}.{0,100}"
   ]},
   {"offset": 1, "regs": [
-    "\\s+/visually impaired\\?"
+    "\\s+/visually impaired\\?",
+    "\\s+officer"
   ]}
 ]
