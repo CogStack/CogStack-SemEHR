@@ -99,7 +99,7 @@ class TPDBConn(object):
         return t
 
 
-def complement_feedback_data(feed_back_file):
+def complement_feedback_data(feed_back_file, tp_conf_file):
     # read feed_back_file - the dump of feedback from DB
     # in the format like:
     # 6336	d123_s1581_e1589	kate_skin_201805	posM	30/04/18 20:52
@@ -121,8 +121,37 @@ def complement_feedback_data(feed_back_file):
             annotator_to_anns[annotator_id] = []
         annotator_to_anns[annotator_id].append(a)
 
+    # initialise tp instance
+    tp = TPDBConn(tp_conf_file)
     for a in annotator_to_anns:
         print '%s with %s anns' % (a, len(annotator_to_anns[a]))
+        detail = tp.query_details_by_doc_ids(a, list(set([da['doc_id'] for da in annotator_to_anns[a]])))
+        # process anns, populate doc->[anns] start_offset->ann
+        d2anns = {}
+        for ar in detail['doc_anns']:
+            if ar['doc_id'] not in d2anns:
+                d2anns[ar['doc_id']] = {}
+            offset_to_ann = d2anns[ar['doc_id']]
+            offset_to_ann[str(ar['start_offset'])] = ar
+
+        # process doc to ann dict
+        d2pts = {}
+        for dp in detail['doc_pts']:
+            d2pts[dp['doc_id']] = dp['patient_id']
+
+        for labeled in annotator_to_anns[a]:
+            if labeled['doc_id'] in d2anns:
+                if str(labeled['start_offset']) in d2anns[labeled['doc_id']]:
+                    labeled.update(d2anns[labeled['doc_id']][str(labeled['start_offset'])])
+                else:
+                    print '!!annotations [%s] not in found doc ann list' % labeled
+            else:
+                print '!!%s doc annotations not found' % labeled['doc_id']
+            if labeled['doc_id'] in d2pts:
+                labeled['patient_id'] = d2pts[labeled['doc_id']]
+            else:
+                print '!!%s doc patient id not found for %s' % labeled['doc_id']
+
     print 'total annotation iterations is [%s]' % len(annotator_to_anns)
 
 
