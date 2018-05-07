@@ -1,6 +1,7 @@
 import utils
 import sqldbutils as dutil
 import re
+import sys
 
 
 class TPDBConn(object):
@@ -73,10 +74,12 @@ class TPDBConn(object):
             raise Exception('annotator [%s] is not recognised' % annotator_id)
         # query anns for doc ids
         doc_ids_str = ','.join(["'" + d + "'" for d in doc_ids])
-        doc_anns = self.query_data(self.ann_query_template, {"doc_ids": doc_ids_str})
+        doc_anns = self.query_data(self.ann_query_template, {"doc_ids": doc_ids_str,
+                                                             "ann_table": table_settings['ann']})
 
         # query patient ids for doc ids
-        doc_pts = self.query_data(self.doc_patient_id_query_template, {"doc_ids": doc_ids_str})
+        doc_pts = self.query_data(self.doc_patient_id_query_template, {"doc_ids": doc_ids_str,
+                                                                       "doc_table": table_settings['doc_pt']})
         return {"doc_anns": doc_anns, "doc_pts": doc_pts}
 
     def get_matched_tables(self, annotator_id):
@@ -99,7 +102,7 @@ class TPDBConn(object):
         return t
 
 
-def complement_feedback_data(feed_back_file, tp_conf_file):
+def complement_feedback_data(feed_back_file, tp_conf_file, completed_file_output):
     # read feed_back_file - the dump of feedback from DB
     # in the format like:
     # 6336	d123_s1581_e1589	kate_skin_201805	posM	30/04/18 20:52
@@ -153,7 +156,15 @@ def complement_feedback_data(feed_back_file, tp_conf_file):
                 print '!!%s doc patient id not found for %s' % labeled['doc_id']
 
     print 'total annotation iterations is [%s]' % len(annotator_to_anns)
+    s = ''
+    for a in annotator_to_anns:
+        row = '\t'
+        s += [ann[k] for k in ann for ann in annotator_to_anns[a]]
+    s = '\n'.join([[r[k] for k in r for r in labeled]])
 
 
 if __name__ == "__main__":
-    complement_feedback_data('..../eval_results_052018.csv')
+    if len(sys.argv) != 4:
+        print 'the syntax is [python tp_hlper.py ANN_DUMP_FILE TP_CONFIGURATION_FILE OUTPUT_FILE]'
+    else:
+        complement_feedback_data(sys.argv[1], sys.argv[2], sys.argv[3])
