@@ -97,8 +97,9 @@ class TPDBConn(object):
         map = utils.load_json_data(conf_file)
         t = TPDBConn()
         t.db_conn_file = map['db_conn_file']
-        t.ann_tables = map['ann_tables']
+        t.ant_to_tables = map['ant_table_map']
         t.ann_query_template = map['ann_sql_template']
+        t.doc_patient_id_query_template = map['doc_patient_id_sql_template']
         return t
 
 
