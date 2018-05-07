@@ -125,7 +125,7 @@ def complement_feedback_data(feed_back_file, tp_conf_file, completed_file_output
         annotator_to_anns[annotator_id].append(a)
 
     # initialise tp instance
-    tp = TPDBConn(tp_conf_file)
+    tp = TPDBConn.get_instance(tp_conf_file)
     for a in annotator_to_anns:
         print '%s with %s anns' % (a, len(annotator_to_anns[a]))
         detail = tp.query_details_by_doc_ids(a, list(set([da['doc_id'] for da in annotator_to_anns[a]])))
