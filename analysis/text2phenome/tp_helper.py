@@ -170,6 +170,8 @@ def complement_feedback_data(feed_back_file, tp_conf_file, completed_file_output
 
 
 if __name__ == "__main__":
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
     if len(sys.argv) != 4:
         print 'the syntax is [python tp_hlper.py ANN_DUMP_FILE TP_CONFIGURATION_FILE OUTPUT_FILE]'
     else:
