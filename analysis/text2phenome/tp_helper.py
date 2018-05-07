@@ -167,7 +167,7 @@ def complement_feedback_data(feed_back_file, tp_conf_file, completed_file_output
         for ann in annotator_to_anns[a]:
             if len(titles) == 0:
                 titles = sorted([k for k in ann])
-            lines.append('\t'.join([str(ann[k] if k in ann else '-']) for k in titles]))
+            lines.append('\t'.join([str(ann[k] if k in ann else '-') for k in titles]))
     utils.save_string('\n'.join(titles) + '\n' + '\n'.join(lines), completed_file_output)
     print 'all done'
 
