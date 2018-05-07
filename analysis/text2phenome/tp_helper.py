@@ -164,7 +164,7 @@ def complement_feedback_data(feed_back_file, tp_conf_file, completed_file_output
     lines = []
     for a in annotator_to_anns:
         for ann in annotator_to_anns[a]:
-            lines.append('\t'.join([ann[k] for k in ann]))
+            lines.append('\t'.join([str(ann[k]) for k in ann]))
     utils.save_string('\n'.join(lines), completed_file_output)
     print 'all done'
 
