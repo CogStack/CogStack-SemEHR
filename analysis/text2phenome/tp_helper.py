@@ -154,11 +154,11 @@ def complement_feedback_data(feed_back_file, tp_conf_file, completed_file_output
                 else:
                     print '!!annotations [%s] not in found doc ann list' % labeled
             else:
-                print '!!%s doc annotations not found' % labeled['doc_id']
+                print '!!%s doc annotations not found for %s' % (labeled['doc_id'], a)
             if labeled['doc_id'] in d2pts:
                 labeled['patient_id'] = d2pts[labeled['doc_id']]
             else:
-                print '!!%s doc patient id not found for %s' % labeled['doc_id']
+                print '!!doc patient id not found for %s' % labeled['doc_id']
 
     print 'total annotation iterations is [%s]' % len(annotator_to_anns)
     s = ''
