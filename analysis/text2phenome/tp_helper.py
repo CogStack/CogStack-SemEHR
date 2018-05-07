@@ -161,11 +161,14 @@ def complement_feedback_data(feed_back_file, tp_conf_file, completed_file_output
                 print '!!doc patient id not found for %s' % labeled['doc_id']
 
     print 'total annotation iterations is [%s]' % len(annotator_to_anns)
+    titles = []
     lines = []
     for a in annotator_to_anns:
         for ann in annotator_to_anns[a]:
-            lines.append('\t'.join([str(ann[k]) for k in ann]))
-    utils.save_string('\n'.join(lines), completed_file_output)
+            if len(titles) == 0:
+                titles = sorted([k for k in ann])
+            lines.append('\t'.join([str(ann[k]) for k in titles]))
+    utils.save_string('\n'.join(titles) + '\n' + '\n'.join(lines), completed_file_output)
     print 'all done'
 
 
