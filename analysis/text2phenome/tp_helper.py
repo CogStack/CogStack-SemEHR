@@ -54,7 +54,7 @@ class TPDBConn(object):
 
     def query_data(self, query_template, q_obj):
         rows_container = []
-        dutil.query_data(query_template.format(q_obj), rows_container,
+        dutil.query_data(query_template.format(**q_obj), rows_container,
                          dbconn=dutil.get_db_connection_by_setting(self.db_conn_file))
         return rows_container
 
@@ -71,7 +71,9 @@ class TPDBConn(object):
         """
         table_settings = self.get_matched_tables(annotator_id)
         if table_settings is None:
-            raise Exception('annotator [%s] is not recognised' % annotator_id)
+            # raise Exception('annotator [%s] is not recognised' % annotator_id)
+            print 'annotator [%s] is not recognised' % annotator_id
+            return None
         # query anns for doc ids
         doc_ids_str = ','.join(["'" + d + "'" for d in doc_ids])
         doc_anns = self.query_data(self.ann_query_template, {"doc_ids": doc_ids_str,
@@ -130,6 +132,8 @@ def complement_feedback_data(feed_back_file, tp_conf_file, completed_file_output
     for a in annotator_to_anns:
         print '%s with %s anns' % (a, len(annotator_to_anns[a]))
         detail = tp.query_details_by_doc_ids(a, list(set([da['doc_id'] for da in annotator_to_anns[a]])))
+        if detail is None:
+            continue
         # process anns, populate doc->[anns] start_offset->ann
         d2anns = {}
         for ar in detail['doc_anns']:
