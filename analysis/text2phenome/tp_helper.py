@@ -123,10 +123,11 @@ class TPDBConn(object):
 def extract_study_phenotypes(study_folder, output_file):
     all_phenotype_concepts = []
     for f in listdir(study_folder):
-        if isdir(f):
-            print f
-            if isfile(join(f, 'study_analyzer.pickle')):
-                sa = StudyAnalyzer.deserialise(join(f, 'study_analyzer.pickle'))
+        folder = join(study_folder, f)
+        if isdir(folder):
+            print 'inspecting %s ...' % study_folder
+            if isfile(join(folder, 'study_analyzer.pickle')):
+                sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
                 for c in sa.study_concepts:
                     for t in c.term_to_concept:
                         all_phenotype_concepts.append({"phenotype": t, "concepts": c.term_to_concept[t]})
