@@ -139,8 +139,9 @@ def extract_study_phenotypes(study_folder, output_file, exclude_filter=None):
                     else:
                         all_phenotype_concepts[c.name] = {"phenotype": c.name,
                                                           "concepts": list(c.concept_closure),
-                                                          "subtypes": [{(t, c.term_to_concept[t]['mapped'])
-                                                                        for t in c.term_to_concept}],
+                                                          "subtypes": [{"phenotype": t,
+                                                                        "concept": c.term_to_concept[t]['mapped']}
+                                                                       for t in c.term_to_concept],
                                                           "freq": 1}
                     # for t in c.term_to_concept:
                     #     if t in all_phenotype_concepts:
