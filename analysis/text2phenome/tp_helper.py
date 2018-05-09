@@ -141,7 +141,8 @@ def extract_study_phenotypes(study_folder, output_file, exclude_filter=None):
                             all_phenotype_concepts[t] = {"phenotype": t,
                                                          "concepts": [c.term_to_concept[t]['mapped']]
                                                          if c.term_to_concept[t]['closure'] == 0 else
-                                                         list(c.concept_closure),
+                                                         list(set(list(c.concept_closure) +
+                                                                  [c.term_to_concept[t]['mapped']])),
                                                          "freq": 1}
     print 'total phenotypes %s' % len(all_phenotype_concepts)
     if len(all_phenotype_concepts) > 0:
