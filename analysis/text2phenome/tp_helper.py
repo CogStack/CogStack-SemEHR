@@ -136,7 +136,7 @@ def extract_study_phenotypes(study_folder, output_file, exclude_filter=None):
                 for c in sa.study_concepts:
                     for t in c.term_to_concept:
                         if t in all_phenotype_concepts:
-                            all_phenotype_concepts['freq'] = all_phenotype_concepts['freq'] + 1
+                            all_phenotype_concepts[t]['freq'] = all_phenotype_concepts[t]['freq'] + 1
                         else:
                             all_phenotype_concepts[t] = {"phenotype": t,
                                                          "concepts": [c.term_to_concept[t]['mapped']]
