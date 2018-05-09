@@ -121,7 +121,7 @@ class TPDBConn(object):
 
 def extract_study_phenotypes(study_folder, output_file, exclude_filter=None):
     reg_p = re.compile(exclude_filter) if exclude_filter is not None else None
-    all_phenotype_concepts = []
+    all_phenotype_concepts = {}
     for f in listdir(study_folder):
         if reg_p is not None:
             m = reg_p.match(f)
@@ -135,10 +135,14 @@ def extract_study_phenotypes(study_folder, output_file, exclude_filter=None):
                 sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
                 for c in sa.study_concepts:
                     for t in c.term_to_concept:
-                        all_phenotype_concepts.append({"phenotype": t,
-                                                       "concepts": [c.term_to_concept[t]['mapped']]
-                                                       if c.term_to_concept[t]['closure'] == 0 else
-                                                       list(c.concept_closure)})
+                        if t in all_phenotype_concepts:
+                            all_phenotype_concepts['freq'] = all_phenotype_concepts['freq'] + 1
+                        else:
+                            all_phenotype_concepts.append({"phenotype": t,
+                                                           "concepts": [c.term_to_concept[t]['mapped']]
+                                                           if c.term_to_concept[t]['closure'] == 0 else
+                                                           list(c.concept_closure),
+                                                           "freq": 1})
     print 'total phenotypes %s' % len(all_phenotype_concepts)
     if len(all_phenotype_concepts) > 0:
         utils.save_json_array(all_phenotype_concepts, output_file)
