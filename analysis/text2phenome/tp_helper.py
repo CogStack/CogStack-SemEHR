@@ -2,7 +2,6 @@ import utils
 import sqldbutils as dutil
 import re
 import sys
-import joblib as jl
 from os.path import isfile, join, split, isdir
 from os import listdir
 from study_analyzer import StudyAnalyzer, StudyConcept
@@ -120,9 +119,15 @@ class TPDBConn(object):
         return t
 
 
-def extract_study_phenotypes(study_folder, output_file):
+def extract_study_phenotypes(study_folder, output_file, exclude_filter=None):
+    reg_p = re.compile(exclude_filter) if exclude_filter is not None else None
     all_phenotype_concepts = []
     for f in listdir(study_folder):
+        if reg_p is not None:
+            m = reg_p.match(f)
+            if m is not None:
+                print '%s matched [%s], skipped' % (f, m)
+                continue
         folder = join(study_folder, f)
         if isdir(folder):
             print 'inspecting %s ...' % folder
@@ -221,7 +226,8 @@ python tp_helper.py -e STUDIES_FOLDER OUTPUT_FILE
         print instruction_msg
     elif sys.argv[1] == '-c' and len(sys.argv) == 5:
         complement_feedback_data(sys.argv[2], sys.argv[3], sys.argv[4])
-    elif sys.argv[1] == '-e' and len(sys.argv) == 4:
-        extract_study_phenotypes(sys.argv[2], sys.argv[3])
+    elif sys.argv[1] == '-e' and 4 <= len(sys.argv) <= 5:
+        extract_study_phenotypes(sys.argv[2], sys.argv[3],
+                                 exclude_filter=sys.argv[4] if len(sys.argv) == 5 else None)
     else:
         print instruction_msg
