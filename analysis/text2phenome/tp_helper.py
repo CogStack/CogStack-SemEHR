@@ -134,16 +134,22 @@ def extract_study_phenotypes(study_folder, output_file, exclude_filter=None):
             if isfile(join(folder, 'study_analyzer.pickle')):
                 sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
                 for c in sa.study_concepts:
-                    for t in c.term_to_concept:
-                        if t in all_phenotype_concepts:
-                            all_phenotype_concepts[t]['freq'] = all_phenotype_concepts[t]['freq'] + 1
-                        else:
-                            all_phenotype_concepts[t] = {"phenotype": t,
-                                                         "concepts": [c.term_to_concept[t]['mapped']]
-                                                         if c.term_to_concept[t]['closure'] == 0 else
-                                                         list(set(list(c.concept_closure) +
-                                                                  [c.term_to_concept[t]['mapped']])),
-                                                         "freq": 1}
+                    if c.name in all_phenotype_concepts:
+                        all_phenotype_concepts[c.name]['freq'] = all_phenotype_concepts[c.name]['freq'] + 1
+                    else:
+                        all_phenotype_concepts[c.name] = {"phenotype": c.name,
+                                                          "concepts": list(c.concept_closure),
+                                                          "freq": 1}
+                    # for t in c.term_to_concept:
+                    #     if t in all_phenotype_concepts:
+                    #         all_phenotype_concepts[t]['freq'] = all_phenotype_concepts[t]['freq'] + 1
+                    #     else:
+                    #         all_phenotype_concepts[t] = {"phenotype": t,
+                    #                                      "concepts": [c.term_to_concept[t]['mapped']]
+                    #                                      if c.term_to_concept[t]['closure'] == 0 else
+                    #                                      list(set(list(c.concept_closure) +
+                    #                                               [c.term_to_concept[t]['mapped']])),
+                    #                                      "freq": 1}
     print 'total phenotypes %s' % len(all_phenotype_concepts)
     if len(all_phenotype_concepts) > 0:
         utils.save_json_array(all_phenotype_concepts, output_file)
