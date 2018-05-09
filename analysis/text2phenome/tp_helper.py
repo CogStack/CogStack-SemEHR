@@ -138,11 +138,11 @@ def extract_study_phenotypes(study_folder, output_file, exclude_filter=None):
                         if t in all_phenotype_concepts:
                             all_phenotype_concepts['freq'] = all_phenotype_concepts['freq'] + 1
                         else:
-                            all_phenotype_concepts.append({"phenotype": t,
-                                                           "concepts": [c.term_to_concept[t]['mapped']]
-                                                           if c.term_to_concept[t]['closure'] == 0 else
-                                                           list(c.concept_closure),
-                                                           "freq": 1})
+                            all_phenotype_concepts[t] = {"phenotype": t,
+                                                         "concepts": [c.term_to_concept[t]['mapped']]
+                                                         if c.term_to_concept[t]['closure'] == 0 else
+                                                         list(c.concept_closure),
+                                                         "freq": 1}
     print 'total phenotypes %s' % len(all_phenotype_concepts)
     if len(all_phenotype_concepts) > 0:
         utils.save_json_array(all_phenotype_concepts, output_file)
