@@ -135,7 +135,9 @@ def extract_study_phenotypes(study_folder, output_file, exclude_filter=None):
                 sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
                 for c in sa.study_concepts:
                     for t in c.term_to_concept:
-                        all_phenotype_concepts.append({"phenotype": t, "concepts": c.term_to_concept[t]})
+                        all_phenotype_concepts.append({"phenotype": t,
+                                                       "concepts": list(set(
+                                                           [c.term_to_concept[t].mapped] + c.concept_closure))})
     print 'total phenotypes %s' % len(all_phenotype_concepts)
     if len(all_phenotype_concepts) > 0:
         utils.save_json_array(all_phenotype_concepts, output_file)
