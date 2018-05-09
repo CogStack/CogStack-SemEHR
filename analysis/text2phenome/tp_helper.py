@@ -125,7 +125,7 @@ def extract_study_phenotypes(study_folder, output_file):
     for f in listdir(study_folder):
         folder = join(study_folder, f)
         if isdir(folder):
-            print 'inspecting %s ...' % study_folder
+            print 'inspecting %s ...' % folder
             if isfile(join(folder, 'study_analyzer.pickle')):
                 sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
                 for c in sa.study_concepts:
