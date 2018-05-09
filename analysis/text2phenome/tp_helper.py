@@ -2,6 +2,10 @@ import utils
 import sqldbutils as dutil
 import re
 import sys
+import joblib as jl
+from os.path import isfile, join, split, isdir
+from os import listdir
+from study_analyzer import StudyAnalyzer, StudyConcept
 
 
 class TPDBConn(object):
@@ -85,6 +89,12 @@ class TPDBConn(object):
         return {"doc_anns": doc_anns, "doc_pts": doc_pts}
 
     def get_matched_tables(self, annotator_id):
+        """
+        match annotator to relevant tables - each annotator id was assigned for its relevant research studies, of which
+        the data was stored in designated tables
+        :param annotator_id:
+        :return:
+        """
         s_compare = annotator_id
         for ant_ptn in self.ant_to_tables:
             reg_p = re.compile(ant_ptn)
@@ -96,6 +106,11 @@ class TPDBConn(object):
 
     @staticmethod
     def get_instance(conf_file):
+        """
+        create an instance based on the information given in the configuration file
+        :param conf_file:
+        :return:
+        """
         map = utils.load_json_data(conf_file)
         t = TPDBConn()
         t.db_conn_file = map['db_conn_file']
@@ -103,6 +118,24 @@ class TPDBConn(object):
         t.ann_query_template = map['ann_sql_template']
         t.doc_patient_id_query_template = map['doc_patient_id_sql_template']
         return t
+
+
+def extract_study_phenotypes(study_folder, output_file):
+    all_phenotype_concepts = []
+    for f in listdir(study_folder):
+        if isdir(f):
+            print f
+            if isfile(join(f, 'study_analyzer.pickle')):
+                sa = StudyAnalyzer.deserialise(join(f, 'study_analyzer.pickle'))
+                for c in sa.study_concepts:
+                    for t in c.term_to_concept:
+                        all_phenotype_concepts.append({"phenotype": t, "concepts": c.term_to_concept[t]})
+    print 'total phenotypes %s' % len(all_phenotype_concepts)
+    if len(all_phenotype_concepts) > 0:
+        utils.save_json_array(all_phenotype_concepts, output_file)
+        print 'saved to %s' % output_file
+    else:
+        print 'no data found'
 
 
 def complement_feedback_data(feed_back_file, tp_conf_file, completed_file_output):
@@ -175,7 +208,19 @@ def complement_feedback_data(feed_back_file, tp_conf_file, completed_file_output
 if __name__ == "__main__":
     reload(sys)
     sys.setdefaultencoding('utf-8')
-    if len(sys.argv) != 4:
-        print 'the syntax is [python tp_hlper.py ANN_DUMP_FILE TP_CONFIGURATION_FILE OUTPUT_FILE]'
+    instruction_msg = """print instruction_msg
+the syntax one of the following. 
+#1. complete feedback dumps with annotation details
+python tp_helper.py -c ANN_DUMP_FILE TP_CONFIGURATION_FILE OUTPUT_FILE
+
+#2. extract phenotype definitions as sets of UMLS concepts
+python tp_helper.py -e STUDIES_FOLDER OUTPUT_FILE
+        """
+    if len(sys.argv) < 4:
+        print instruction_msg
+    elif sys.argv[1] == '-c' and len(sys.argv) == 5:
+        complement_feedback_data(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif sys.argv[1] == '-e' and len(sys.argv) == 4:
+        extract_study_phenotypes(sys.argv[2], sys.argv[3])
     else:
-        complement_feedback_data(sys.argv[1], sys.argv[2], sys.argv[3])
+        print instruction_msg
