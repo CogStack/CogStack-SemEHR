@@ -1,6 +1,7 @@
 import utils
 from os.path import isfile, join
-
+from os import listdir
+import re
 
 def populate_concept_level_performance(complete_validation_file, c_map_file):
     if isfile(c_map_file):
@@ -65,5 +66,24 @@ def do_phenotype_analysis(phenotype_result_file, c_map_file, output_folder):
     utils.save_string('\n'.join(rows), join(output_folder, 'phenotype_performance.tsv'))
 
 
+def add_concept_level_freqs(data_folder, c_map_file):
+    reg_p = re.compile(".*annotations\\.csv")
+    c_map = utils.load_json_data(c_map_file)
+    for f in listdir(data_folder):
+        if reg_p is not None:
+            m = reg_p.match(f)
+            if m is not None:
+                lines = utils.read_text_file(join(data_folder, f))
+                for l in lines:
+                    arr = l.split('\t')
+                    if arr[0] not in c_map:
+                        continue
+                    if 'freq' not in c_map[arr[0]]:
+                        c_map[arr[0]]['freq'] = 0
+                    c_map[arr[0]]['freq'] += int(arr[1])
+    utils.save_json_array(c_map, c_map_file)
+
+
 if __name__ == "__main__":
-    do_phenotype_analysis('./data/phenotype_def_with_validation.json', './data/c_map_file.json', './data/pstats/')
+    # do_phenotype_analysis('./data/phenotype_def_with_validation.json', './data/c_map_file.json', './data/pstats/')
+    add_concept_level_freqs('./data/', './data/c_map_file.json')
