@@ -155,6 +155,7 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     study_concepts = study_analyzer.study_concepts
     term_to_docs = {}
     ruled_anns = []
+    positive_dumps = []
     for sc in study_concepts:
         positive_doc_anns = []
         sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
@@ -202,6 +203,10 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                                                   'doc_col': ann['src_col']})
                 if ruled:
                     ruled_anns.append({'p': p, 'd': d, 'ruled': rule})
+                else:
+                    positive_dumps.append({'p': p, 'd': d, 's': ann['start_offset'],
+                                           'e': ann['end_offset'],
+                                           'c': ann['inst_uri']})
             if len(counted_docs) > 0:
                 non_empty_concepts.append(sc_key)
                 for p in p_to_dfreq:
@@ -225,6 +230,7 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     utils.save_string(s, out_file)
     utils.save_string('var sample_docs=' + json.dumps(convert_encoding(term_to_docs, 'cp1252', 'utf-8')), sample_out_file)
     utils.save_json_array(convert_encoding(ruled_anns, 'cp1252', 'utf-8'), ruled_ann_out_file)
+    utils.save_json_array(positive_dumps, out_file + "_json")
     print 'done'
 
 
