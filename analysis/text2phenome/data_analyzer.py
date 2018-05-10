@@ -1,5 +1,5 @@
 import utils
-from os.path import isfile
+from os.path import isfile, join
 
 
 def populate_concept_level_performance(complete_validation_file, c_map_file):
@@ -45,7 +45,25 @@ def populate_phenotype_validation_results(phenotype_def_file,
     print 'done'
 
 
-if __name__ == "__main__":
-    populate_phenotype_validation_results('./data/phenotype_defs.json',
-                                          './data/complete_validat.tsv',
+def do_phenotype_result():
+    populate_phenotype_validation_results('./data/phenotype_def_file',
+                                          './data/compelete_validat_file',
                                           './data/c_map_file.json', './data/phenotype_def_with_validation.json')
+
+
+def do_phenotype_analysis(phenotype_result_file, c_map_file, output_folder):
+    c_map = utils.load_json_data(c_map_file)
+    p_map = utils.load_json_data(phenotype_result_file)
+    # extract performances of phenotypes
+    headers = ["posM", "hisM", "negM", "otherM", "wrongM"]
+    rows = ['\t'.join(headers)]
+    for p in p_map:
+        v = p_map[p]['validation']
+        if v is None:
+            continue
+        rows.append('\t'.join([v[h] if h in v else '-' for h in headers]))
+    utils.save_string('\n'.join(rows), join(output_folder, 'phenotype_performance.tsv'))
+
+
+if __name__ == "__main__":
+    pass
