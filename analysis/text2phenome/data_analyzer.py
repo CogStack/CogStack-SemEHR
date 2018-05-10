@@ -73,6 +73,7 @@ def add_concept_level_freqs(data_folder, c_map_file):
         if reg_p is not None:
             m = reg_p.match(f)
             if m is not None:
+                print '%s matched, reading...' % f
                 lines = utils.read_text_file(join(data_folder, f))
                 for l in lines:
                     arr = l.split('\t')
@@ -84,6 +85,50 @@ def add_concept_level_freqs(data_folder, c_map_file):
     utils.save_json_array(c_map, c_map_file)
 
 
+def output_phenotypes(phenotype_file, phenotype_performance, c_map_file, output_file):
+    p = utils.load_json_data(phenotype_file)
+    c_map = utils.load_json_data(c_map_file)
+    new_p = {}
+    p_lines = utils.read_text_file(phenotype_performance)
+    for l in p_lines[1:]:
+        arr = l.split('\t')
+        new_p[arr[0]] = p[arr[0]]
+        pt = new_p[arr[0]]
+        concepts = pt['concepts']
+        pt['concepts'] = {}
+        pt['prevalence'] = 0
+        for c in concepts:
+            pt['concepts'][c] = 0 if c not in c_map else c_map[c]['freq']
+            pt['prevalence'] += pt['concepts'][c]
+    utils.save_json_array(new_p, output_file)
+    print 'new data saved to %s' % output_file
+
+
+def phenotype_prevalence(phenotype_with_prev, output_file):
+    pd = utils.load_json_data(phenotype_with_prev)
+    utils.save_string('\n'.join(['\t'.join([p, str(pd[p]['prevalence']), str(len(pd[p]['concepts']))]) for p in pd]),
+                      output_file)
+
+
+def output_single_phenotype_detail(pprevalence_file, phenotype, output_file):
+    pp = utils.load_json_data(pprevalence_file)
+    p = pp[phenotype]
+    rows = []
+    rows.append('\t'.join(['total', str(p['prevalence'])]))
+    for sp in p['subtypes']:
+        rows.append('\t'.join([sp['phenotype'], str(p['concepts'][sp['concept']])]))
+    for c in p['concepts']:
+        rows.append('\t'.join([c, str(p['concepts'][c])]))
+    utils.save_string('\n'.join(rows), output_file)
+    print '% result saved to %s' % (phenotype, output_file)
+
+
 if __name__ == "__main__":
     # do_phenotype_analysis('./data/phenotype_def_with_validation.json', './data/c_map_file.json', './data/pstats/')
-    add_concept_level_freqs('./data/', './data/c_map_file.json')
+    # add_concept_level_freqs('./data/', './data/c_map_file.json')
+    # output_phenotypes('./data/phenotype_def_with_validation.json',
+    #                   './data/pstats/phenotype_performance.tsv',
+    #                   './data/c_map_file.json',
+    #                   './data/phenotype_with_prevlence.json')
+    # phenotype_prevalence('./data/phenotype_with_prevlence.json', './data/pprevalence.tsv')
+    output_single_phenotype_detail('./data/phenotype_with_prevlence.json', 'Cerebrovascular Disease', './data/Cerebrovascular_Disease.tsv')
