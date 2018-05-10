@@ -56,14 +56,14 @@ def do_phenotype_analysis(phenotype_result_file, c_map_file, output_folder):
     p_map = utils.load_json_data(phenotype_result_file)
     # extract performances of phenotypes
     headers = ["posM", "hisM", "negM", "otherM", "wrongM"]
-    rows = ['\t'.join(headers)]
+    rows = ['\t'.join(["phenotype"] + headers)]
     for p in p_map:
         v = p_map[p]['validation']
-        if v is None:
+        if v is None or len(v) == 0:
             continue
-        rows.append('\t'.join([v[h] if h in v else '-' for h in headers]))
+        rows.append('\t'.join([p] + [str(v[h]) if h in v else '0' for h in headers]))
     utils.save_string('\n'.join(rows), join(output_folder, 'phenotype_performance.tsv'))
 
 
 if __name__ == "__main__":
-    pass
+    do_phenotype_analysis('./data/phenotype_def_with_validation.json', './data/c_map_file.json', './data/pstats/')
