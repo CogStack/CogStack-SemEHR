@@ -34,9 +34,15 @@ def collect_patient_docs(po, es, concepts, skip_terms, container):
     container.append(doc_anns)
 
 
-def query_doc_anns(es, concepts, skip_terms):
+def query_doc_anns(es, concepts, skip_terms, retained_patients_filter=None):
     patients = es.search_by_scroll(" ".join(concepts), es.patient_type, collection_func=lambda d, c: c.append(d))
     print '%s patients matched' % len(patients)
+    if retained_patients_filter is not None:
+        retained = []
+        for po in patients:
+            if po['_id'] in retained_patients_filter:
+                retained.append(po)
+        patients = retained
     doc_anns = {}
     container = []
     utils.multi_thread_tasking(patients, 40, collect_patient_docs,

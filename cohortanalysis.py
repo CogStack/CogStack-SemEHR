@@ -236,7 +236,8 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
 
 def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_executor,
                                                sample_size, sample_out_file, ruled_ann_out_file,
-                                               es_conn_file, text_preprocessing=False):
+                                               es_conn_file, text_preprocessing=False,
+                                               retained_patients_filter=None):
     """
     populate patient study result with post processing to remove unwanted mentions
     :param cohort_name:
@@ -264,7 +265,8 @@ def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_ex
         print 'working on %s' % sc_key
         doc_anns = []
         if len(sc.concept_closure) > 0:
-            doc_anns = chelper.query_doc_anns(es, sc.concept_closure, study_analyzer.skip_terms)
+            doc_anns = chelper.query_doc_anns(es, sc.concept_closure, study_analyzer.skip_terms,
+                                              retained_patients_filter=retained_patients_filter)
 
         if len(doc_anns) > 0:
             p_to_dfreq = {}

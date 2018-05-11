@@ -230,9 +230,10 @@ class StudyAnalyzer(object):
                                                 db_conn_file)
 
     def gen_study_table_with_rules_es(self, cohort_name, out_file, sample_out_file, ruler, ruled_out_file,
-                                      sem_idx_setting_file):
+                                      sem_idx_setting_file, retained_patients_filter):
         cohort.es_populate_patient_study_table_post_ruled(self, out_file, ruler, 20,
-                                                          sample_out_file, ruled_out_file, sem_idx_setting_file)
+                                                          sample_out_file, ruled_out_file, sem_idx_setting_file,
+                                                          retained_patients_filter=retained_patients_filter)
 
 
 def get_sql_template(config_file):
@@ -254,7 +255,8 @@ def get_one_iteration_sql_template(config_file):
 def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
           do_one_iter=False, do_preprocessing=False,
           rule_setting_file=None, sem_idx_setting_file=None,
-          concept_filter_file=None):
+          concept_filter_file=None,
+          retained_patients_filter=None):
     p, fn = split(folder)
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
@@ -351,20 +353,30 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
             sa.gen_study_table_with_rules_es(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.js'),
                                              ruler,
                                              join(folder, 'ruled_anns.json'),
-                                             sem_idx_setting_file)
+                                             sem_idx_setting_file,
+                                             retained_patients_filter)
     print 'done'
 
 
 def run_study(folder_path):
     if isfile(join(folder_path, 'study.json')):
         r = utils.load_json_data(join(folder_path, 'study.json'))
+        retained_patients = None
+        if 'query_patients_file' in r:
+            retained_patients = []
+            lines = utils.read_text_file(r['query_patients_file'])
+            for l in lines:
+                arr = l.split('\t')
+                retained_patients.append(arr[0])
+
         study(folder_path, r['cohort'], r['sql_config'], r['db_conn'],
               concept_mapping.get_umls_client_inst(r['umls_key']),
               do_preprocessing=r['do_preprocessing'],
               rule_setting_file=r['rule_setting_file'],
               do_one_iter=r['do_one_iter'],
               sem_idx_setting_file=None if 'sem_idx_setting_file' not in r else r['sem_idx_setting_file'],
-              concept_filter_file=None if 'concept_filter_file' not in r else r['concept_filter_file']
+              concept_filter_file=None if 'concept_filter_file' not in r else r['concept_filter_file'],
+              retained_patients_filter=retained_patients
               )
     else:
         print 'study.json not found in the folder'
