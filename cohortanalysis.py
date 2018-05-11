@@ -248,8 +248,8 @@ def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_ex
     :param sample_out_file:
     :return:
     """
+    es = SemEHRES.get_instance_by_setting_file(es_conn_file)
     if retained_patients_filter is None:
-        es = SemEHRES.get_instance_by_setting_file(es_conn_file)
         pids = es.search_by_scroll("*", es.patient_type)
     else:
         pids = retained_patients_filter
