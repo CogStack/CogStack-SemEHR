@@ -184,12 +184,6 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                 if d in counted_docs:
                     continue
                 ruled = False
-                if 'experiencer' in ann:
-                    if ann['experiencer'].lower() != 'patient' or \
-                            ann['temporality'].lower() != 'recent' or \
-                            ann['negation'].lower() != 'affirmed':
-                        ruled = True
-                        rule = '\t'.join(['CTX', ann['experiencer'], ann['temporality'], ann['negation']])
                 if not ruled:
                     if 'string_orig' in ann and ann['string_orig'].lower() in skip_terms_list:
                         ruled = True
@@ -203,22 +197,29 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                                                         preprocessing_text_befor_rule_execution(ann['TextContent']),
                                                         int(ann['start_offset']),
                                                         int(ann['end_offset']))
-                    if not ruled:
-                        counted_docs.add(d)
-                        p_to_dfreq[p] = 1 if p not in p_to_dfreq else 1 + p_to_dfreq[p]
-                        positive_doc_anns.append({'id': ann['CN_Doc_ID'],
-                                                  'content': ann['TextContent'],
-                                                  'annotations': [{'start': ann['start_offset'],
-                                                                   'end': ann['end_offset'],
-                                                                   'concept': ann['inst_uri'],
-                                                                   'string_orig': ann['string_orig'] if 'string_orig' in ann else ''}],
-                                                  'doc_table': ann['src_table'],
-                                                  'doc_col': ann['src_col']})
+                if not ruled:
+                    if 'experiencer' in ann:
+                        if ann['experiencer'].lower() != 'patient' or \
+                                ann['temporality'].lower() != 'recent' or \
+                                ann['negation'].lower() != 'affirmed':
+                            ruled = True
+                            rule = '\t'.join(['CTX', ann['experiencer'], ann['temporality'], ann['negation']])
                 if ruled:
                     ruled_anns.append({'p': p, 'd': d, 'ruled': rule, 's': ann['start_offset'],
                                            'e': ann['end_offset'],
                                            'c': ann['inst_uri']})
                 else:
+                    counted_docs.add(d)
+                    p_to_dfreq[p] = 1 if p not in p_to_dfreq else 1 + p_to_dfreq[p]
+                    positive_doc_anns.append({'id': ann['CN_Doc_ID'],
+                                              'content': ann['TextContent'],
+                                              'annotations': [{'start': ann['start_offset'],
+                                                               'end': ann['end_offset'],
+                                                               'concept': ann['inst_uri'],
+                                                               'string_orig': ann[
+                                                                   'string_orig'] if 'string_orig' in ann else ''}],
+                                              'doc_table': ann['src_table'],
+                                              'doc_col': ann['src_col']})
                     positive_dumps.append({'p': p, 'd': d, 's': ann['start_offset'],
                                            'e': ann['end_offset'],
                                            'c': ann['inst_uri']})
