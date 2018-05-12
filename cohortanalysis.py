@@ -156,6 +156,7 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     term_to_docs = {}
     ruled_anns = []
     positive_dumps = []
+    skip_terms_list = [t.lower() for t in rule_executor.skip_terms]
     for sc in study_concepts:
         positive_doc_anns = []
         sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
@@ -189,9 +190,10 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                             ann['negation'].lower() != 'affirmed':
                         ruled = True
                         rule = '\t'.join(['CTX', ann['experiencer'], ann['temporality'], ann['negation']])
-                if 'string_orig' in ann and ann['string_orig'] in rule_executor.skip_terms:
-                    ruled = True
-                    rule = '\t'.join(['SKT', ann['string_orig']])
+                if not ruled:
+                    if 'string_orig' in ann and ann['string_orig'].lower() in skip_terms_list:
+                        ruled = True
+                        rule = '\t'.join(['SKT', ann['string_orig']])
                 if not ruled:
                     ruled, rule = rule_executor.execute_original_string_rules(
                         ann['string_orig'] if 'string_orig' in ann
