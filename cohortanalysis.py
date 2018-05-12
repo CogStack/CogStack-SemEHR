@@ -202,7 +202,9 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                                                   'doc_table': ann['src_table'],
                                                   'doc_col': ann['src_col']})
                 if ruled:
-                    ruled_anns.append({'p': p, 'd': d, 'ruled': rule})
+                    ruled_anns.append({'p': p, 'd': d, 'ruled': rule, 's': ann['start_offset'],
+                                           'e': ann['end_offset'],
+                                           'c': ann['inst_uri']})
                 else:
                     positive_dumps.append({'p': p, 'd': d, 's': ann['start_offset'],
                                            'e': ann['end_offset'],
