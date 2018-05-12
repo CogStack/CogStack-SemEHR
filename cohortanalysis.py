@@ -182,9 +182,20 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                 d = ann['CN_Doc_ID']
                 if d in counted_docs:
                     continue
-                ruled, rule = rule_executor.execute_original_string_rules(
-                    ann['string_orig'] if 'string_orig' in ann
-                    else ann['TextContent'][int(ann['start_offset']):int(ann['end_offset'])])
+                ruled = False
+                if 'experiencer' in ann:
+                    if ann['experiencer'].lower() != 'patient' or \
+                            ann['temporality'].lower() != 'recent' or \
+                            ann['negation'].lower() != 'affirmed':
+                        ruled = True
+                        rule = '\t'.join(['CTX', ann['experiencer'], ann['temporality'], ann['negation']])
+                if 'string_orig' in ann and ann['string_orig'] in rule_executor.skip_terms:
+                    ruled = True
+                    rule = '\t'.join(['SKT', ann['string_orig']])
+                if not ruled:
+                    ruled, rule = rule_executor.execute_original_string_rules(
+                        ann['string_orig'] if 'string_orig' in ann
+                        else ann['TextContent'][int(ann['start_offset']):int(ann['end_offset'])])
                 if not ruled:
                     ruled, rule = rule_executor.execute(ann['TextContent'] if not text_preprocessing else
                                                         preprocessing_text_befor_rule_execution(ann['TextContent']),
