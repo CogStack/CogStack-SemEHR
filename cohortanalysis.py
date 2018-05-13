@@ -184,30 +184,43 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                 if d in counted_docs:
                     continue
                 ruled = False
+                case_instance = ''
                 if not ruled:
+                    # skip term rules
                     if 'string_orig' in ann and ann['string_orig'].lower() in skip_terms_list:
                         ruled = True
-                        rule = '\t'.join(['SKT', ann['string_orig']])
+                        rule = 'skip-term'
+                        case_instance = ann['string_orig']
                 if not ruled:
-                    ruled, rule = rule_executor.execute_original_string_rules(
+                    # string orign rules - not used now
+                    ruled, case_instance = rule_executor.execute_original_string_rules(
                         ann['string_orig'] if 'string_orig' in ann
                         else ann['TextContent'][int(ann['start_offset']):int(ann['end_offset'])])
+                    rule = 'original-string-rule'
                 if not ruled:
-                    ruled, rule = rule_executor.execute(ann['TextContent'] if not text_preprocessing else
-                                                        preprocessing_text_befor_rule_execution(ann['TextContent']),
-                                                        int(ann['start_offset']),
-                                                        int(ann['end_offset']))
+                    # post processing rules
+                    ruled, case_instance, rule = \
+                        rule_executor.execute(ann['TextContent'] if not text_preprocessing else
+                                              preprocessing_text_befor_rule_execution(ann['TextContent']),
+                                              int(ann['start_offset']),
+                                              int(ann['end_offset']))
+                    rule = 'semehr ' + rule
                 if not ruled:
+                    # bio-yodie labels
                     if 'experiencer' in ann:
                         if ann['experiencer'].lower() != 'patient' or \
                                 ann['temporality'].lower() != 'recent' or \
                                 ann['negation'].lower() != 'affirmed':
                             ruled = True
-                            rule = '\t'.join(['CTX', ann['experiencer'], ann['temporality'], ann['negation']])
+                            case_instance = '\t'.join([ann['experiencer'], ann['temporality'], ann['negation']])
+                            rule = 'yodie'
                 if ruled:
                     ruled_anns.append({'p': p, 'd': d, 'ruled': rule, 's': ann['start_offset'],
-                                           'e': ann['end_offset'],
-                                           'c': ann['inst_uri']})
+                                       'e': ann['end_offset'],
+                                       'c': ann['inst_uri'],
+                                       'case-instance': case_instance,
+                                       'string_orig': ann['string_orig']
+                                       })
                 else:
                     counted_docs.add(d)
                     p_to_dfreq[p] = 1 if p not in p_to_dfreq else 1 + p_to_dfreq[p]
@@ -222,7 +235,8 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                                               'doc_col': ann['src_col']})
                     positive_dumps.append({'p': p, 'd': d, 's': ann['start_offset'],
                                            'e': ann['end_offset'],
-                                           'c': ann['inst_uri']})
+                                           'c': ann['inst_uri'],
+                                           'string_orig': ann['string_orig']})
             if len(counted_docs) > 0:
                 non_empty_concepts.append(sc_key)
                 for p in p_to_dfreq:

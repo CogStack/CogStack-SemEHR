@@ -36,6 +36,7 @@ class AnnRuleExecutor(object):
         # print tokens_end
         filtered = False
         matched = []
+        rule_name = ''
         for r in self._filter_rules:
             s_compare = s_end if r['offset'] > 0 else s_before
             if r['offset'] == 0:
@@ -53,10 +54,11 @@ class AnnRuleExecutor(object):
             m = reg_p.match(s_compare)
             if m is not None:
                 # print m.group(0)
-                matched.append([m.group(0), r['rule_name']])
+                matched.append(m.group(0))
+                rule_name = r['rule_name']
                 filtered = True
                 break
-        return filtered, matched
+        return filtered, matched, rule_name
 
     def add_original_string_filters(self, regs):
         self._osf_rules += regs
