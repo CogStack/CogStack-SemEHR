@@ -358,9 +358,10 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
     print 'done'
 
 
-def run_study(folder_path):
-    if isfile(join(folder_path, 'study.json')):
-        r = utils.load_json_data(join(folder_path, 'study.json'))
+def run_study(folder_path, no_sql_filter=None):
+    study_config = 'study.json' if no_sql_filter is None else 'study_no_filter.json'
+    if isfile(join(folder_path, study_config)):
+        r = utils.load_json_data(join(folder_path, study_config))
         retained_patients = None
         if 'query_patients_file' in r:
             retained_patients = []
@@ -386,7 +387,7 @@ if __name__ == "__main__":
     reload(sys)
     sys.setdefaultencoding('cp1252')
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-    if len(sys.argv) != 2:
-        print 'the syntax is [python study_analyzer.py STUDY_DIR]'
+    if 2 < len(sys.argv) > 3:
+        print 'the syntax is [python study_analyzer.py STUDY_DIR [-no-sql-filter]]'
     else:
-        run_study(sys.argv[1])
+        run_study(sys.argv[1], no_sql_filter=None if len(sys.argv) == 2 else 'yes')
