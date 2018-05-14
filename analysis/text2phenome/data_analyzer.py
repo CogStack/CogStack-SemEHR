@@ -123,6 +123,31 @@ def output_single_phenotype_detail(pprevalence_file, phenotype, output_file):
     print '% result saved to %s' % (phenotype, output_file)
 
 
+def patient_level_analysis(complete_anns_file, output_file):
+    lines = utils.read_text_file(complete_anns_file)
+    pos_condition2patients = {}
+    patient2conditions = {}
+    positive_labels = ['posM', 'hisM']
+    indexable_labels = ['posM', 'hisM', 'negM']
+    for l in lines:
+        arr = l.split('\t')
+        label = arr[2]
+        condition = arr[3]
+        pid = arr[8]
+        if label in positive_labels:
+            pos_condition2patients[condition] = [pid] if condition not in pos_condition2patients else \
+                pos_condition2patients[condition] + [pid]
+        if label in indexable_labels:
+            pd = patient2conditions[pid] if pid in patient2conditions else {}
+            patient2conditions[pid] = pd
+            if label in pd:
+                pd[label].append(condition)
+                pd[label] = list(set(pd[label]))
+            else:
+                pd[label] = [condition]
+    utils.save_json_array({'p2c': patient2conditions, 'c2p': pos_condition2patients}, output_file)
+
+
 if __name__ == "__main__":
     # do_phenotype_analysis('./data/phenotype_def_with_validation.json', './data/c_map_file.json', './data/pstats/')
     # add_concept_level_freqs('./data/', './data/c_map_file.json')
@@ -131,4 +156,6 @@ if __name__ == "__main__":
     #                   './data/c_map_file.json',
     #                   './data/phenotype_with_prevlence.json')
     # phenotype_prevalence('./data/phenotype_with_prevlence.json', './data/pprevalence.tsv')
-    output_single_phenotype_detail('./data/phenotype_with_prevlence.json', 'Cerebrovascular Disease', './data/Cerebrovascular_Disease.tsv')
+    # output_single_phenotype_detail('./data/phenotype_with_prevlence.json', 'Cerebrovascular Disease', './data/Cerebrovascular_Disease.tsv')
+    patient_level_analysis('/Users/honghan.wu/Documents/UoE/working_papers/text2phenome/completed_anns.tsv',
+                           '/Users/honghan.wu/Documents/UoE/working_papers/text2phenome/condition_patient_dicts.json')
