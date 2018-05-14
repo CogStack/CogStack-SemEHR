@@ -25,7 +25,7 @@
     }
 
     function loadApprovedData(){
-        qbb.inf.getDisorderMappings("", function(s){
+        qbb.inf.getDisorderConceptMappings("", function(s){
             // console.log(s);
             approved = $.parseJSON(s);
             renderDisorders();
@@ -137,7 +137,7 @@
             $("div[disorder=\"" + selection + "\"] .clsApproved").html(getApproveSymbol(selection));
             var so = {};
             so[selection] = approved[selection];
-            qbb.inf.saveDisOrderMapping($.toJSON(so), function(s){
+            qbb.inf.saveNewMappings($.toJSON(so), function(s){
                 if (s != "ok"){
                     alert("saving action failed. please contact Honghan <honghan.wu@kcl.ac.uk>");
                 }
@@ -149,6 +149,44 @@
 //            alert($('#objView').attr('data'));
         });
     }
+
+    function exportMapped(){
+        var ret = {};
+        var probD = [];
+        for(var d in exact_map){
+            if (approved[d] && approved[d] == "correct"){
+                var myRegexp = /\(([^()]*)\)/g;
+                var match = myRegexp.exec(d);
+                var generalDisease = match[1];
+                if (generalDisease){
+                    if (generalDisease in ret){
+                        ret[generalDisease]['concepts'].push(exact_map[d]['mapped']);
+                        ret[generalDisease]['concepts'] = Array.from(new Set(ret[generalDisease]['concepts']));
+                    }else{
+                        ret[generalDisease] = {'tc': exact_map[d], 'concepts': [exact_map[d]['mapped']]}
+                    }
+                }else{
+                    probD.push(d);
+                }
+            }
+        }
+        if (probD.length > 0){
+            alert('some issues with the parsing - ' + $.toJSON(probD));
+            return;
+        }
+        console.log(ret);
+        var w = window.open();
+        $(w.document.body).html($.toJSON(ret));
+    }
+
+    function testSelfSignedSSLUrl(){
+        $( "#sslTestDiv" ).load( "http://honghan.info/semehr_ws/api", function( response, status, xhr ) {
+            if (status == "error"){
+                alert('error!');
+            }
+        });
+    }
+
 	$(document).ready(function(){
         var params = getUrlVars();
         if (params['new']){
@@ -156,6 +194,13 @@
         }else{
             loadApprovedData();
         }
+
+        $('#btnExport').click(function(){
+            exportMapped();
+        });
+
+
+        testSelfSignedSSLUrl();
 	})
 
 })(this.jQuery)

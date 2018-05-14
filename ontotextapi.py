@@ -162,9 +162,9 @@ def match_term_to_concept(term):
 def main():
     # generate_all_queries()
     # get_all_instances('./resources/all_insts.csv')
-    print get_concept_label('C0018799')
+    print get_concept_label('C0038454')
 
 if __name__ == "__main__":
     # main()
-    print get_transitive_subconcepts('C0599685')
-    # print match_term_to_concept('hepatitis a')
+    # print get_transitive_subconcepts('C0021099')
+    print match_term_to_concept('Violence')

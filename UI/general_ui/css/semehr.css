@@ -373,3 +373,8 @@ h1.sumHeading{
 .sumMTMatched{
     border: solid 1px #dd5555;
 }
+
+.patientId{
+   color: transparent !important;;
+   text-shadow: 0 0 8px rgba(0,0,0,0.5);
+}

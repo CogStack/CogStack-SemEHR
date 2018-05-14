@@ -4,6 +4,7 @@ import time
 import utils
 import numpy as np
 from sklearn.model_selection import KFold
+import shutil
 
 
 BATCH_SIZE = 80
@@ -17,8 +18,8 @@ TYPED_ANNS = ['posM', 'negM', 'hisM', 'otherM']
 ANN_TOKEN = 'UMLS_CONCEPT_LABEL'
 USE_TWO_CLASSES = True
 DATASET_SPLIT = .9
-number_of_layers = 2
-EPOCH_SIZE = 15
+number_of_layers = 1
+EPOCH_SIZE = 5
 
 
 class AnnAssessor(object):
@@ -133,19 +134,19 @@ class AssessorTrainer(object):
         self._offset = cur_end - s
         return batch_data, batch_labels
 
-    def k_fold_read_data(self, batch_size=BATCH_SIZE, folds=10, epoch=1):
+    def k_fold_read_data(self, batch_size=BATCH_SIZE, folds=10, epoch=EPOCH_SIZE):
         X = np.array(self._data)
         Y = np.array(self._labels)
         kf = KFold(folds)
         for train_index, test_index in kf.split(self._data):
             train_len = len(train_index) // batch_size + (1 if len(train_index) % batch_size != 0 else 0)
             for epoch_idx in xrange(epoch):
-                print('epoch %s ...' % epoch)
+                print('epoch %s ...' % epoch_idx)
                 for idx in xrange(train_len):
                     yield X[train_index[idx * batch_size : (idx + 1) * batch_size]], \
                           Y[train_index[idx * batch_size : (idx + 1) * batch_size]], \
-                          X[test_index], Y[test_index]
-
+                          None, None
+            yield None, None, X[test_index], Y[test_index]
 
     def init_bidir_graph(self):
         label_size = 2 if USE_TWO_CLASSES else len(self._typed_anns)
@@ -156,29 +157,37 @@ class AssessorTrainer(object):
         oh_seq = tf.one_hot(x - 1, len(self.vocabulary))
         print('vocab size: %s' % len(self.vocabulary))
 
-        cell_fw = tf.contrib.rnn.GRUCell(self.hidden_size)
-        stacked_fw = tf.contrib.rnn.MultiRNNCell([tf.contrib.rnn.GRUCell(self.hidden_size) for _ in range(number_of_layers)],
-                                                 state_is_tuple=False)
-        cell_bw = tf.contrib.rnn.GRUCell(self.hidden_size)
-        stacked_bw = tf.contrib.rnn.MultiRNNCell([tf.contrib.rnn.GRUCell(self.hidden_size) for _ in range(number_of_layers)],
-                                                 state_is_tuple=False)
-        # in_state_fw = tf.placeholder_with_default(
-        #     cell_fw.zero_state(tf.shape(oh_seq)[0], tf.float32), [None, self.hidden_size])
-        # in_state_bw = tf.placeholder_with_default(
-        #     cell_bw.zero_state(tf.shape(oh_seq)[0], tf.float32), [None, self.hidden_size])
-        in_state_fw = tf.placeholder_with_default(
-            stacked_fw.zero_state(tf.shape(oh_seq)[0], tf.float32), [None, self.hidden_size * number_of_layers])
-        in_state_bw = tf.placeholder_with_default(
-            stacked_bw.zero_state(tf.shape(oh_seq)[0], tf.float32), [None, self.hidden_size * number_of_layers])
         # this line to calculate the real length of seq
         # all seq are padded to be of the same length which is NUM_STEPS
         length = tf.reduce_sum(tf.reduce_max(tf.sign(oh_seq), 2), 1)
         length = tf.cast(length, tf.int32)
-        outputs, out_states = tf.nn.bidirectional_dynamic_rnn(stacked_fw, stacked_bw, oh_seq,
-                                                              sequence_length=length,
-                                                              # dtype=tf.float32)
-                                                              initial_state_fw=in_state_fw,
-                                                              initial_state_bw=in_state_bw)
+
+        if number_of_layers > 1:
+            stacked_fw = tf.contrib.rnn.MultiRNNCell([tf.contrib.rnn.GRUCell(self.hidden_size) for _ in range(number_of_layers)],
+                                                     state_is_tuple=False)
+            stacked_bw = tf.contrib.rnn.MultiRNNCell([tf.contrib.rnn.GRUCell(self.hidden_size) for _ in range(number_of_layers)],
+                                                     state_is_tuple=False)
+            in_state_fw = tf.placeholder_with_default(
+                stacked_fw.zero_state(tf.shape(oh_seq)[0], tf.float32), [None, self.hidden_size * number_of_layers])
+            in_state_bw = tf.placeholder_with_default(
+                stacked_bw.zero_state(tf.shape(oh_seq)[0], tf.float32), [None, self.hidden_size * number_of_layers])
+            outputs, out_states = tf.nn.bidirectional_dynamic_rnn(stacked_fw, stacked_bw, oh_seq,
+                                                                  sequence_length=length,
+                                                                  # dtype=tf.float32)
+                                                                  initial_state_fw=in_state_fw,
+                                                                  initial_state_bw=in_state_bw)
+        else:
+            cell_fw = tf.contrib.rnn.GRUCell(self.hidden_size)
+            cell_bw = tf.contrib.rnn.GRUCell(self.hidden_size)
+            in_state_fw = tf.placeholder_with_default(
+                cell_fw.zero_state(tf.shape(oh_seq)[0], tf.float32), [None, self.hidden_size])
+            in_state_bw = tf.placeholder_with_default(
+                cell_bw.zero_state(tf.shape(oh_seq)[0], tf.float32), [None, self.hidden_size])
+            outputs, out_states = tf.nn.bidirectional_dynamic_rnn(cell_fw, cell_bw , oh_seq,
+                                                                  sequence_length=length,
+                                                                  # dtype=tf.float32)
+                                                                  initial_state_fw=in_state_fw,
+                                                                  initial_state_bw=in_state_bw)
         output_fw, output_bw = outputs
         outputs = tf.concat([output_fw, output_bw], -1)
 
@@ -218,25 +227,61 @@ class AssessorTrainer(object):
             sess.run(tf.global_variables_initializer())
 
             chk_path = 'checkpoints/' + self.model_name
-            if not os.path.exists(chk_path):
+            if os.path.exists(chk_path):
+                shutil.rmtree(chk_path)
                 os.makedirs(chk_path)
-            ckpt = tf.train.get_checkpoint_state(os.path.dirname(chk_path + '/checkpoint'))
-            if ckpt and ckpt.model_checkpoint_path:
-                saver.restore(sess, ckpt.model_checkpoint_path)
+            else:
+                os.makedirs(chk_path)
+            # ckpt = tf.train.get_checkpoint_state(os.path.dirname(chk_path + '/checkpoint'))
+            # if ckpt and ckpt.model_checkpoint_path:
+            #     saver.restore(sess, ckpt.model_checkpoint_path)
 
             iteration = global_step.eval()
-            for ep in xrange(EPOCH_SIZE):
-                print('epoch %s...' % ep)
-                self.reset_read_offset()
-                data_batch, label_batch = self.read_bidirectional_data()
-                while data_batch is not None:
-                    batch_loss, _ = sess.run([loss, optimizer], {x: data_batch, y: label_batch})
+            fold_idx = 0
+            for train_x, train_y, test_x, test_y in at.k_fold_read_data():
+                if train_x is not None:
+                    batch_loss, _ = sess.run([loss, optimizer], {x: train_x, y: train_y})
                     if (iteration + 1) % SKIP_STEP == 0:
                         print('\tLoss {}. Time {}'.format(batch_loss, time.time() - start))
                         start = time.time()
                         saver.save(sess, chk_path + '/rnn', iteration)
                     iteration += 1
-                    data_batch, label_batch = self.read_bidirectional_data()
+                elif test_x is not None:
+                    print '\n\ntesting on [%s] items' % len(test_x)
+                    self.test_Data(sess, logits, x, y, test_x, test_y, fold_idx)
+                    fold_idx += 1
+                    if os.path.exists(chk_path):
+                        shutil.rmtree(chk_path)
+                        os.makedirs(chk_path)
+                    else:
+                        os.makedirs(chk_path)
+                    sess.run(tf.global_variables_initializer())
+
+    def test_Data(self, sess, logits, x, y, test_x, test_y, fold_idx):
+        n_correct = 0
+        n_total = 0
+        n_pos_correct = 0
+        n_pos_total = 0
+        output = ''
+        for idx in xrange(len(test_x)):
+            p, c = sess.run([tf.nn.softmax(logits), y], {x: test_x[idx:idx+1], y: test_y[idx:idx+1]})
+            predicted = np.argmax(p)
+            correct_label = np.argmax(c)
+            if predicted == correct_label:
+                n_correct += 1
+            line = '%s\t%s\t%s\t%s\t%s' % (n_total, predicted, correct_label,
+                                          '%.2f' % p.tolist()[0][predicted],
+                                          '\t'.join(['%.2f' % p for p in p.tolist()[0]]))
+            print(line)
+            output += line + '\n'
+            n_total += 1
+            if correct_label == 0:
+                n_pos_total += 1
+                if correct_label == predicted:
+                    n_pos_correct += 1
+        utils.save_string(output, './output/weighted_fold_%s.txt' % fold_idx)
+        print 'accuracy: %s' % (1.0 * n_correct / n_total)
+        print 'pos recall: %s' % (1.0 * n_pos_correct / n_pos_total)
 
     def test_bidir(self):
         x, y, oh_seq, logits, loss, _, out_state = self.init_bidir_graph()
@@ -285,5 +330,3 @@ if __name__ == "__main__":
     at.process_data()
     at.train_bidir()
     # at.test_bidir()
-    for train_x, train_y, test_x, test_y in at.k_fold_read_data():
-        print len(train_x), len(test_x)

@@ -5,11 +5,11 @@
 
     var __es_need_login = false;
     var _es_client = null;
-    var __es_server_url = "http://localhost:9200";
-    var __es_index = "hepcpos_300"; //epr_documents_bioyodie
+    var __es_server_url = "http://10.200.102.23:9200";
+    var __es_index = "mimic"; //epr_documents_bioyodie
     var __es_type = "patient"; //semantic_anns
     var __es_concept_type = "ctx_concept";
-    var __es_fulltext_index = "hepcpos_300";
+    var __es_fulltext_index = "mimic";
     var __es_fulltext_type = "eprdoc";
     var _display_attrs = ["src_table", "fulltext"];
     var _full_text_attr = 'fulltext';
@@ -17,7 +17,7 @@
 
     var _pageNum = 0;
     var _pageSize = 1;
-    var _entityPageSize = 10000;
+    var _entityPageSize = 20;
     var _resultSize = 0;
     var _queryObj = null;
     var _currentDocMentions = null;
@@ -205,9 +205,13 @@
                     toFilter = toFilter.concat(hepcunknown_100);
                 }
                 var filtered = [];
-                for (var i=0;i<hits.length;i++){
-                    if ($.inArray(hits[i]['_id'], toFilter)>=0){
-                        filtered.push(hits[i]);
+                if (toFilter.length == 0){
+                    filtered = hits;
+                }else{
+                    for (var i=0;i<hits.length;i++){
+                        if ($.inArray(hits[i]['_id'], toFilter)>=0){
+                            filtered.push(hits[i]);
+                        }
                     }
                 }
 
@@ -688,7 +692,7 @@
             for (var idx in hos){
                 new_str += text.substring(prev_pos, hos[idx]["s"]) +
                     "<em>" + text.substring(hos[idx]["s"], hos[idx]["e"]) + 
-                    "<span class='feedback' id='d" + docId + "_s" + hos[idx]["s"] + "_e" + hos[idx]["e"] + "'> <button class='fbBtn posM'>posM</button> <button class='fbBtn hisM'>hisM</button> <button class='fbBtn negM'>negM</button> <button class='fbBtn otherM'>otherM</button></span>" + 
+                    "<span class='feedback' id='d" + docId + "_s" + hos[idx]["s"] + "_e" + hos[idx]["e"] + "'> <button class='fbBtn posM' annType='posM'>positive mention</button> <button class='fbBtn hisM' annType='hisM'>history/hypothetical mention</button> <button class='fbBtn negM' annType='negM'>negated mention</button> <button class='fbBtn otherM' annType='otherM'>other experiencer</button> <button class='fbBtn wrongM' annType='wrongM'>Incorrect</button></span>" +
                     "</em>";
                 prev_pos = hos[idx]["e"];
                 if (snippet)
@@ -752,12 +756,14 @@
         $('#results').html(s)
 
         for(var k in _user_feedback){
-            $('#' + k + ' .' + _user_feedback[k]).addClass('fbed');
+            console.log(k + ' - ' + _user_feedback[k]);
+            if (_user_feedback[k].indexOf("/") < 0)
+                $('#' + k + ' .' + _user_feedback[k]).addClass('fbed');
         }
         $('.fbBtn').click(function(){
             var annId = $(this).parent().attr('id');
             var data = {};
-            var sel = $(this).html();
+            var sel = $(this).attr('annType');
             data[annId] = sel;
             qbb.inf.saveEvalResult($.toJSON(data), _invitationId, function(s){
                 if(s == 'true'){

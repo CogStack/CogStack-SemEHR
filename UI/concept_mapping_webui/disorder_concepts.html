@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>autoimmune disorder mapped to UMLS concepts</title>
+    <title>disorder mapped to UMLS concepts</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="js/libs/jquery.json-2.3.js"></script>
     <script src="js/exact_map.js?v=2"></script>
@@ -42,14 +42,23 @@
         background: #d98f34;
     }
     #lldConcept{margin:20px;text-align: center;}
+    #btnExport{
+        cursor: pointer;
+        padding: 5px;
+        font-style: italic;
+        color: blue;
+        text-decoration: underline;
+    }
 </style>
 <body>
-<h2>Autoimmune Disorder List</h2>
+<h2>Disorder List</h2>
 <div>(click a disorder to show the mapped concept detail and approval buttons)</div>
+<span id="btnExport">export mapped</span>
 <div id="disoderList">
 reading mappings...
 </div>
 <div id="ctrlPanel"></div>
 <div id="lldConcept"></div>
+<div id="sslTestDiv"></div>
 </body>
 </html>

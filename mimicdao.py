@@ -7,7 +7,7 @@ import datetime
 import json
 
 # db connection string
-db_cnn_str = "dbname='mimic' user='mimic' password='' host='localhost'"
+db_cnn_str = "dbname='mimic' user='mimic' password='123321!a' host='10.200.100.216'"
 
 # query templates
 # patient cohort by diagnosis template
@@ -60,7 +60,7 @@ mimic_doc_by_row_id = """
 
 # get distinct patient ids
 mimic_patient_ids = """
- select distinct subject_id from patient
+ select distinct subject_id from mimiciii.patients
 """
 
 # get doc type
@@ -73,6 +73,16 @@ mimic_doc_shift_date = """
  select row_id, chartdate, chartdate::date - 365 * 200 thedate from mimiciii.noteevents
 """
 
+# get discharge summary for a patient
+mimic_doc_discharge_summary = """
+ select row_id from mimiciii.noteevents where subject_id='{patient_id}' and category='Discharge summary' order by chartdate desc limit 1
+"""
+
+# get patient lab events
+mimic_patient_labevents = """
+ select e.value, i.label from mimiciii.labevents e left join mimiciii.d_labitems i on e.itemid=i.itemid where subject_id='{patient_id}' 
+"""
+
 # create db connection
 def get_db_connection():
     db_conn = psycopg2.connect(db_cnn_str)
@@ -82,6 +92,8 @@ def get_db_connection():
 
 # release connection resources
 def release_db_connection(cnn_obj):
+    cnn_obj['cursor'].close()
+    cnn_obj['db_conn'].commit()
     cnn_obj['db_conn'].close()
 
 
@@ -160,8 +172,23 @@ def get_doc_dates():
     query_data(mimic_doc_shift_date, docs)
     return docs
 
+
+def get_summary_doc_by_patient(patient_id):
+    docs = []
+    query_data(mimic_doc_discharge_summary.format(**{'patient_id': patient_id}), docs)
+    return docs
+
+
+def get_patient_labevents(patient_id):
+    docs = []
+    query_data(mimic_patient_labevents.format(**{'patient_id': patient_id}), docs)
+    l2v = {}
+    for e in docs:
+        l2v[e['label']] = l2v[e['label']] + [e['value']] if e['label'] in l2v else [e['value']]
+    return l2v
+
 if __name__ == "__main__":
     # adms = get_admissions('99592')
     # print '#admissions with diagnose of severe sepsis {}'.format(len(adms))
     # print json.dumps(get_labevents_by_admission(adms[0]['hadm_id']))
-    print get_mimic_doc_by_id(1549038)
+    print get_patient_labevents('212')

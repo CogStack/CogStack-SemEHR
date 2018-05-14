@@ -11,7 +11,7 @@ if (typeof semehr == "undefined"){
         semehr.MedProfile = {
             headerPattern: /^([^\n\:]+)\:.*$/img,
             normalisePattern: /^\d\.\s+.*/ig,
-            numberPattern: /(\d+%)|(\d+[,\.\/]*\d+)/,
+            numberPattern: /[^\*\d]+((\d+%)|(\d+[,\.\/]*\d+))/,
             sectsWithMeasures: ["Vital Signs", "Hospital course", "Hospital Discharge Studies", "pertinent results",
                 "Hospital Discharge Physical"],
             annTypeNeedMeasures: ["Tissue", "Laboratory Procedure", "Pharmacologic Substance", "Health Care Activity"],

@@ -108,7 +108,8 @@ def merge_and_output(dir_path, cohort, default_results='hepc_results.json'):
     utils.save_string(s, './valid_doc_files/merged_output_liverdiseases.tsv')
     print 'output generated'
 
-if __name__ == "__main__":
+
+def liver_disease_run():
     ps, p2time, d2time = read_patient_time_windows('.')
     pids = utils.read_text_file('./valid_doc_files/hcv_full_cohort.csv')
     ps = pids
@@ -117,13 +118,25 @@ if __name__ == "__main__":
                           "C0238065", "C0085605", "C0524610", "C0015696", "C0341439", "C0348754", "C0023890"]
                          , 'liver_diseases', ps, d2time)
     # query_hepc_results(['C0019196', 'C2148557', 'C0220847'], 'hepc', ps, p2time, d2time)
-    #query_hepc_results(['C1382829', 'C1128545', 'C0035525'], 'RIBAVIRIN', ps, p2time, d2time)
-    #query_hepc_results(['C0982327','C0907160','C0279030','C0021747','C2599808','C0021734','C0002199','C3165060'],
+    # query_hepc_results(['C1382829', 'C1128545', 'C0035525'], 'RIBAVIRIN', ps, p2time, d2time)
+    # query_hepc_results(['C0982327','C0907160','C0279030','C0021747','C2599808','C0021734','C0002199','C3165060'],
     #                   'PEGINTERFERON ALPHA', ps, p2time, d2time)
-    #query_hepc_results(['C2976303'], 'SOFOSBUVIR', ps, p2time, d2time)
-    #query_hepc_results(['C3252090'], 'DACLATASVIR', ps, p2time, d2time)
-    #query_hepc_results(['C3851350'], 'LEDIPASVIR', ps, p2time, d2time)
-    #query_hepc_results(['C0992889','C0939237','C0292818','C2741195','C1676707'], 'RITONAVIR', ps, p2time, d2time)
-    #query_hepc_results(['C1738934'], 'BOCEPREVIR', ps, p2time, d2time)
-    #query_hepc_results(['c1876229'], 'TELAPREVIR', ps, p2time, d2time)
+    # query_hepc_results(['C2976303'], 'SOFOSBUVIR', ps, p2time, d2time)
+    # query_hepc_results(['C3252090'], 'DACLATASVIR', ps, p2time, d2time)
+    # query_hepc_results(['C3851350'], 'LEDIPASVIR', ps, p2time, d2time)
+    # query_hepc_results(['C0992889','C0939237','C0292818','C2741195','C1676707'], 'RITONAVIR', ps, p2time, d2time)
+    # query_hepc_results(['C1738934'], 'BOCEPREVIR', ps, p2time, d2time)
+    # query_hepc_results(['c1876229'], 'TELAPREVIR', ps, p2time, d2time)
     merge_and_output('./addiction_res/', pids, 'liver_diseases_results.json')
+
+
+def test_query():
+    concepts = ["C0588006"]
+    es = SemEHRES.get_instance_by_setting_file('../index_settings/sem_idx_setting.json')
+    results, docs = es.summary_patients_by_concepts(concepts)
+    print json.dumps(results)
+    print json.dumps(docs)
+
+
+if __name__ == "__main__":
+    test_query()

@@ -123,29 +123,87 @@ def output_single_phenotype_detail(pprevalence_file, phenotype, output_file):
     print '% result saved to %s' % (phenotype, output_file)
 
 
-def patient_level_analysis(complete_anns_file, output_file):
-    lines = utils.read_text_file(complete_anns_file)
-    pos_condition2patients = {}
-    patient2conditions = {}
-    positive_labels = ['posM', 'hisM']
-    indexable_labels = ['posM', 'hisM', 'negM']
-    for l in lines:
-        arr = l.split('\t')
-        label = arr[2]
-        condition = arr[3]
-        pid = arr[8]
-        if label in positive_labels:
-            pos_condition2patients[condition] = [pid] if condition not in pos_condition2patients else \
-                pos_condition2patients[condition] + [pid]
-        if label in indexable_labels:
-            pd = patient2conditions[pid] if pid in patient2conditions else {}
-            patient2conditions[pid] = pd
-            if label in pd:
-                pd[label].append(condition)
-                pd[label] = list(set(pd[label]))
-            else:
-                pd[label] = [condition]
-    utils.save_json_array({'p2c': patient2conditions, 'c2p': pos_condition2patients}, output_file)
+def increase_freq_on_dict(c_group, c, t, id):
+    c_obj = c_group[c] if c in c_group else {}
+    c_group[c] = c_obj
+    if 'unique_ids' not in c_obj:
+        c_obj['unique_ids'] = set()
+    unique_ids = c_obj['unique_ids']
+    if id in unique_ids:
+        return
+    unique_ids.add(id)
+    c_obj[t] = 1 if t not in c_obj else (c_obj[t] + 1)
+
+
+def dump_mention_detail(studies_folder, include_study_pattern, dump_tsv_file, dump_concept_file):
+    reg_p = re.compile(include_study_pattern)
+    rows = ['\t'.join(['concept', 'pt', 'doc', 's', 'e', 'label', 'ruled'])]
+    c_group = {}
+    for f in listdir(studies_folder):
+        m = reg_p.match(f)
+        if m is not None:
+            ruled_file = join(studies_folder, f, 'ruled_anns.json')
+            if isfile(ruled_file):
+                # {"p": "pid", "s": 3356, "e": 3365, "d": "did", "case-instance": [xxx"],
+                # "c": "C0000833", "string_orig": "abscesses",
+                # "ruled": "semehr hypothetical_filters.json"}
+                ruleds = utils.load_json_data(ruled_file)
+                for r in ruleds:
+                    rows.append('\t'.join([r['c'], r['p'], r['d'], str(r['s']), str(r['e']), r['string_orig'], r['ruled']]))
+                    increase_freq_on_dict(c_group, r['c'], r['ruled'], '-'.join([r['d'], str(r['s']), str(r['e'])]))
+            pos_file = join(studies_folder, f, 'result.csv_json')
+            if isfile(pos_file):
+                # {"c": "C0000833", "e": 467, "d": "52773120", "string_orig": "abscess", "p": "10110421", "s": 460}
+                poses = utils.load_json_data(pos_file)
+                for r in poses:
+                    rows.append('\t'.join([r['c'], r['p'], r['d'], str(r['s']), str(r['e']), r['string_orig'], '']))
+                    increase_freq_on_dict(c_group, r['c'], 'pos', '-'.join([r['d'], str(r['s']), str(r['e'])]))
+
+    rule_headers = ['semehr negation_filters.json',
+                    'semehr hypothetical_filters.json',
+                    'semehr not_mention_filters.json',
+                    'semehr other_experiencer_filters.json',
+                    'semehr cris_document_filters.json',
+                    'skip-term',
+                    'semehr s_skin.json',
+                    'semehr s_karen.json',
+                    'yodie',
+                    'pos']
+    c_rows = ['\t'.join(['concept'] + rule_headers)]
+    for c in c_group:
+        co = c_group[c]
+        c_rows.append('\t'.join([c] + [str(co[h]) if h in co else '0' for h in rule_headers]))
+    utils.save_string('\n'.join(rows), dump_tsv_file)
+    utils.save_string('\n'.join(c_rows), dump_concept_file)
+    print 'dumped to  %s' % dump_tsv_file
+
+
+def phenotype_counting(phenotype_def, concept_level_results, output_file):
+    pd = utils.load_json_data(phenotype_def)
+    npd = {}
+    cd = utils.read_text_file(concept_level_results)
+    c_headers = cd[0].split('\t')
+    headers = [h for h in c_headers[2:len(c_headers) - 1]]
+    for r in cd[1:]:
+        arr = r.split('\t')
+        c = arr[0]
+        num_mention = arr[12]
+        for p in pd:
+            if c in pd[p]['concepts']:
+                po = npd[p] if p in npd else {'freq':0, 'p': p,
+                                              'num_concepts': len(pd[p]['concepts'])}
+                npd[p] = po
+                po['freq'] += int(num_mention)
+                for idx in xrange(2, len(arr) - 1):
+                    h = headers[idx-2]
+                    po[h] = int(arr[idx]) if h not in po else (int(arr[idx]) + int(po[h]))
+
+    rows = ['\t'.join(['phenotype', 'num concepts'] + headers + ['prevalence'])]
+    for p in npd:
+        po = npd[p]
+        rows.append('\t'.join([p, str(po['num_concepts'])] + [str(po[h]) for h in headers] + [str(po['freq'])]))
+    utils.save_string('\n'.join(rows), output_file)
+
 
 
 if __name__ == "__main__":
@@ -157,5 +215,8 @@ if __name__ == "__main__":
     #                   './data/phenotype_with_prevlence.json')
     # phenotype_prevalence('./data/phenotype_with_prevlence.json', './data/pprevalence.tsv')
     # output_single_phenotype_detail('./data/phenotype_with_prevlence.json', 'Cerebrovascular Disease', './data/Cerebrovascular_Disease.tsv')
-    patient_level_analysis('/Users/honghan.wu/Documents/UoE/working_papers/text2phenome/completed_anns.tsv',
-                           '/Users/honghan.wu/Documents/UoE/working_papers/text2phenome/condition_patient_dicts.json')
+    # dump_mention_detail('../../studies', r'skin.*|COMOB.*|karen.*',
+    #                     './data/mention_dumps.tsv',
+    #                     './data/concept_typed_dumps.tsv')
+    phenotype_counting('./data/phenotype_defs.json', './data/concept_level_results.tsv',
+                       './data/phenotype_prev.tsv')
