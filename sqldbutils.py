@@ -1,6 +1,6 @@
 import utils as imutil
-import pyodbc
-import MySQLdb
+# import pyodbc
+# import MySQLdb
 
 
 #SQL db setting

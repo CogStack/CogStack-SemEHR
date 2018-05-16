@@ -209,7 +209,7 @@ def get_concepts_names(umls, concepts):
 if __name__ == "__main__":
     # align_mapped_concepts('./resources/autoimmune-concepts.json', './resources/auto_immune_gazetteer.txt')
     umls = get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
-    # rets = umls.match_term('Holter monitor test')
+    # rets = umls.match_term('Double bypass operation')
     # cui = rets[0]['ui']
     # print cui
     # subconcepts = umls.transitive_narrower('C0019104', None, None)
@@ -222,7 +222,7 @@ if __name__ == "__main__":
     # print 'total concepts: %s' % len(next_scs), json.dumps(list(next_scs))
     # print json.dumps(umls.get_object('https://uts-ws.nlm.nih.gov/rest/content/current/CUI/C0178298/relations'))
     # print get_umls_concept_detail(umls, 'C0946252')
-    get_concepts_names(umls, utils.read_text_file('./studies/emma_violence/all_concepts.txt'))
+    get_concepts_names(umls, utils.read_text_file('./resources/text-phenotype-all-concepts.txt'))
     # print get_umls_concept_detail(umls, 'C0020538')['result']['name']
     # complete_tsv_concept_label(umls, './studies/IMPARTS/concepts_verified_chris.tsv')
     # icd10_queries()

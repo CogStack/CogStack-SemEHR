@@ -156,7 +156,8 @@ if (typeof semehr == "undefined"){
                             anns.push(
                                 {'start': secObj.anns[j].startNode.offset - secObj.start,
                                     'end': secObj.anns[j].endNode.offset - secObj.start,
-                                    'type': secObj.anns[j].features.PREF + ' (' + secObj.anns[j].features.STY + ')'
+                                    'type': secObj.anns[j].features.PREF + ' (' + secObj.anns[j].features.STY + ' | ' +
+                                    secObj.anns[j].features.inst + ')'
                                 });
                         }
 

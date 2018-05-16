@@ -6,7 +6,8 @@ if (typeof qbb == "undefined"){
 	if(typeof qbb.inf == "undefined") {
 
 		qbb.inf = {
-			service_url: "http://54.218.95.198:8080/fbrain/api",
+			service_url: "http://honghan.info/semehr_ws/api",
+            study_name: "karen",
 
 			saveDisOrderMapping: function(map, searchCB){
 				var apiName = "saveDisOrderMapping";
@@ -18,10 +19,11 @@ if (typeof qbb == "undefined"){
 			},
 
             saveNewMappings: function(map, searchCB){
-                var apiName = "saveNewMappings";
+                var apiName = "saveNewMappingsByName";
                 var sendObject={
                     r:apiName,
-                    map: map
+                    map: map,
+                    name: qbb.inf.study_name
                 };
                 qbb.inf.callAPI(sendObject, searchCB);
             },
@@ -30,16 +32,18 @@ if (typeof qbb == "undefined"){
 				var apiName = "getDisorderMappings";
 				var sendObject={
 						r:apiName,
-						url: url
+						url: url//,
+                                                //name: qbb.inf.study_name
 				};
 				qbb.inf.callAPI(sendObject, searchCB);
 			},
 
             getDisorderConceptMappings: function(url, searchCB){
-                var apiName = "getDisorderConceptMappings";
+                var apiName = "getDisorderConceptMappingsByName";
                 var sendObject={
                     r:apiName,
-                    url: url
+                    url: url,
+                    name: qbb.inf.study_name
                 };
                 qbb.inf.callAPI(sendObject, searchCB);
             },

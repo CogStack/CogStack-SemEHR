@@ -104,5 +104,10 @@
     "WATERLOW PRESSURE ULCER RISK CALCULATOR",
     "LONDON NEEDS ASSESSMENT",
     "Criminal Justice Mental Health Service"
+    ]},
+   {"offset": 1, "regs": [
+    "\\s+.{0,20}booster",
+    "\\s+.{0,20}honour-based violence",
+    "\\s+.{0,20}vaccination"
     ]}
 ]

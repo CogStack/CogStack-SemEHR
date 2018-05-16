@@ -5,6 +5,7 @@ import re
 import sqldbutils as dutil
 
 
+
 def populate_concept_level_performance(complete_validation_file, c_map_file):
     if isfile(c_map_file):
         return utils.load_json_data(c_map_file)
@@ -123,6 +124,31 @@ def output_single_phenotype_detail(pprevalence_file, phenotype, output_file):
         rows.append('\t'.join([c, str(p['concepts'][c])]))
     utils.save_string('\n'.join(rows), output_file)
     print '% result saved to %s' % (phenotype, output_file)
+
+
+def patient_level_analysis(complete_anns_file, output_file):
+    lines = utils.read_text_file(complete_anns_file)
+    pos_condition2patients = {}
+    patient2conditions = {}
+    positive_labels = ['posM', 'hisM']
+    indexable_labels = ['posM', 'hisM', 'negM']
+    for l in lines:
+        arr = l.split('\t')
+        label = arr[2]
+        condition = arr[3]
+        pid = arr[8]
+        if label in positive_labels:
+            pos_condition2patients[condition] = [pid] if condition not in pos_condition2patients else \
+                pos_condition2patients[condition] + [pid]
+        if label in indexable_labels:
+            pd = patient2conditions[pid] if pid in patient2conditions else {}
+            patient2conditions[pid] = pd
+            if label in pd:
+                pd[label].append(condition)
+                pd[label] = list(set(pd[label]))
+            else:
+                pd[label] = [condition]
+    utils.save_json_array({'p2c': patient2conditions, 'c2p': pos_condition2patients}, output_file)
 
 
 def increase_freq_on_dict(c_group, c, t, id):
@@ -248,4 +274,12 @@ if __name__ == "__main__":
     #                     './data/concept_typed_dumps.tsv')
     # phenotype_counting('./data/phenotype_defs.json', './data/concept_level_results.tsv',
     #                    './data/phenotype_prev.tsv')
-    load_phenotype_def_into_db()
+    # load_phenotype_def_into_db()
+    # patient_level_analysis('/Users/honghan.wu/Documents/UoE/working_papers/text2phenome/completed_anns.tsv',
+    #                        '/Users/honghan.wu/Documents/UoE/working_papers/text2phenome/condition_patient_dicts.json')
+    # dump_mention_detail('../../studies', r'skin.*|COMOB.*|karen.*',
+    #                     './data/mention_dumps.tsv',
+    #                     './data/concept_typed_dumps.tsv')
+    phenotype_counting('./data/phenotype_defs.json', './data/concept_level_results.tsv',
+                       './data/phenotype_prev.tsv')
+
