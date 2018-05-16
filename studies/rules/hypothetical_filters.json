@@ -1,7 +1,7 @@
 [
   {"offset": -1, "regs": [
     ".*(\\s)+would have(\\s)+.{0,10}",
-    ".*(mean(s){0,1}|worried|threaten|clear|cleared|felt|anxious|feeling|feels|think|thinking|thinks|discussed|convinced|worries|worreis|concern|concerns|inkling)(\\s)+.{0,50}",
+    ".*(mean(s){0,1}|worried|threaten|clear|cleared|felt|anxious|feeling|feels|think|thinking|thinks|discussed|discussing|convinced|worries|worreis|concern|concerns|inkling)(\\s)+.{0,50}",
     ".*danger of having(\\s)+.{0,20}",
     ".*unsure whether(\\s)+.{0,40}",
     ".*suggestive of(\\s)+.{0,10}",
@@ -18,7 +18,7 @@
     ".*telling people(\\s)+.{0,40}",
     ".*such as(\\s)+.{0,40}",
     ".*would be(\\s)+.{0,5}",
-    ".*(may|might|could|would|will) (have|be|get|indicate|cause)(\\s)+.{0,15}",
+    ".*(may|might|could|would|will) (have|be|get|indicate|cause)(\\s)+.{0,45}",
     ".*ix|investigation of(\\s)+.{0,10}",
     ".*(\\s)+\\?",
     ".*look up(\\s)+.{0,10}",
@@ -55,7 +55,8 @@
     ".*particular neuroleptic drugs in view of the increased incidence of(\\s)+.{0,20}",
     ".*(vulnerable|prone) to(\\s)+.{0,20}",
     ".*\\s+alleged(\\s)+.{0,20}",
-    ".*\\s+heading towards(\\s)+.{0,60}"
+    ".*\\s+heading towards(\\s)+.{0,60}",
+    ".*told about.{0,30}"
   ]},
   {"offset": 1, "regs": [
     "\\s+risk",
