@@ -27,7 +27,28 @@ class AnnRuleExecutor(object):
                                    'case_sensitive': case_sensitive,
                                    'rule_name': rule_name})
 
-    def execute(self, text, ann_start, ann_end):
+    @staticmethod
+    def relocate_annotation_pos(t, s, e, string_orig):
+        if t[s:e] == string_orig:
+            return [s, e]
+        candidates = []
+        ito = re.finditer(r'[\s\.;\,\?\!\:\/$^](' + string_orig + r')[\s\.;\,\?\!\:\/$^]',
+                    t, re.IGNORECASE)
+        for mo in ito:
+            # print mo.start(1), mo.end(1), mo.group(1)
+            candidates.append({'dis': abs(s - mo.start(1)), 's': mo.start(1), 'e': mo.end(1), 'matched': mo.group(1)})
+        if len(candidates) == 0:
+            return [s, e]
+        candidates.sort(cmp=lambda x1, x2: x1['dis'] - x2['dis'])
+        # print candidates[0]
+        return [candidates[0]['s'], candidates[0]['e']]
+
+    def execute(self, text, ann_start, ann_end, string_orig=None):
+        # it seems necessary to relocate the original string because of encoding issues
+        if string_orig is not None:
+            [s, e] = AnnRuleExecutor.relocate_annotation_pos(text, ann_start, ann_end, string_orig)
+            ann_start = s
+            ann_end = e
         s_before = text[max(ann_start - self._text_window, 0):ann_start]
         s_end = text[ann_end:min(len(text), ann_end + self._text_window)]
         # tokens_before = nltk.word_tokenize(s_before)
@@ -104,11 +125,11 @@ class AnnRuleExecutor(object):
 
 
 def test_filter_rules():
-    t = """abc |_| asdf a
+    t = """abc clinic for check up
     """
     e = AnnRuleExecutor()
     # e.add_filter_rule(1, [r'.{0,5}\s+yes'], case_sensitive=False)
-    e.load_rule_config('./studies/karen/karen_rule_config.json')
+    e.load_rule_config('./studies/prathiv/pirathiv_rule_config.json')
     # rules = utils.load_json_data('./studies/rules/negation_filters.json')
     # for r in rules:
     #     print r
@@ -127,4 +148,10 @@ def test_osf_rules():
 
 
 if __name__ == "__main__":
-    test_filter_rules()
+    # test_filter_rules()
+    [s, e] = AnnRuleExecutor.relocate_annotation_pos("""
+    i am a very long string
+    with many characters, liver
+     such as Heptaitis C, LIver and Candy
+    """, 77, 15, 'liver')
+    print s, e

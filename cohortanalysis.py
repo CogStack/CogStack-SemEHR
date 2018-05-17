@@ -203,7 +203,8 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                         rule_executor.execute(ann['TextContent'] if not text_preprocessing else
                                               preprocessing_text_befor_rule_execution(ann['TextContent']),
                                               int(ann['start_offset']),
-                                              int(ann['end_offset']))
+                                              int(ann['end_offset']),
+                                              string_orig=ann['string_orig'] if 'string_orig' in ann else None)
                     rule = 'semehr ' + rule
                 if not ruled:
                     # bio-yodie labels
