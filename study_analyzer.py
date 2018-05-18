@@ -230,10 +230,11 @@ class StudyAnalyzer(object):
                                                 db_conn_file)
 
     def gen_study_table_with_rules_es(self, cohort_name, out_file, sample_out_file, ruler, ruled_out_file,
-                                      sem_idx_setting_file, retained_patients_filter):
+                                      sem_idx_setting_file, retained_patients_filter, filter_obj=None):
         cohort.es_populate_patient_study_table_post_ruled(self, out_file, ruler, 20,
                                                           sample_out_file, ruled_out_file, sem_idx_setting_file,
-                                                          retained_patients_filter=retained_patients_filter)
+                                                          retained_patients_filter=retained_patients_filter,
+                                                          filter_obj=filter_obj)
 
 
 def get_sql_template(config_file):
@@ -256,7 +257,8 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
           do_one_iter=False, do_preprocessing=False,
           rule_setting_file=None, sem_idx_setting_file=None,
           concept_filter_file=None,
-          retained_patients_filter=None):
+          retained_patients_filter=None,
+          filter_obj_setting=None):
     p, fn = split(folder)
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
@@ -350,11 +352,14 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
                                           join(folder, 'ruled_anns.json'), sql_config_file, db_conn_file,
                                           text_preprocessing=do_preprocessing)
         else:
+            if filter_obj_setting is not None:
+                filter_obj = utils.load_json_data(filter_obj_setting)
             sa.gen_study_table_with_rules_es(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.js'),
                                              ruler,
                                              join(folder, 'ruled_anns.json'),
                                              sem_idx_setting_file,
-                                             retained_patients_filter)
+                                             retained_patients_filter,
+                                             filter_obj=filter_obj)
     print 'done'
 
 
@@ -377,7 +382,8 @@ def run_study(folder_path, no_sql_filter=None):
               do_one_iter=r['do_one_iter'],
               sem_idx_setting_file=None if 'sem_idx_setting_file' not in r else r['sem_idx_setting_file'],
               concept_filter_file=None if 'concept_filter_file' not in r else r['concept_filter_file'],
-              retained_patients_filter=retained_patients
+              retained_patients_filter=retained_patients,
+              filter_obj_setting=None if 'filter_obj_setting' not in r else r['filter_obj_setting']
               )
     else:
         print 'study.json not found in the folder'
