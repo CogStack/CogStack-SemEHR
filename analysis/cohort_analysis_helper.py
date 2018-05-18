@@ -10,7 +10,7 @@ def get_doc_by_id(p, doc_id):
     return None
 
 
-def collect_patient_docs(po, es, concepts, skip_terms, container):
+def collect_patient_docs(po, es, concepts, skip_terms, container, filter_obj=None, doc_filter_function=None):
     docs = {}
     pid = po['_id']
     p = es.get_doc_detail(pid, doc_type=es.patient_type)
@@ -21,6 +21,9 @@ def collect_patient_docs(po, es, concepts, skip_terms, container):
             doc = get_doc_by_id(p, doc_id) if doc_id not in docs else docs[doc_id]
             if doc is None:
                 continue
+            if doc_filter_function is not None:
+                if doc_filter_function(filter_obj, doc_id, pid):
+                    continue
             docs[doc_id] = doc
             string_orig = doc[ann['appearances'][0]['offset_start']:ann['appearances'][0]['offset_end']]
             if string_orig not in skip_terms:
@@ -34,7 +37,7 @@ def collect_patient_docs(po, es, concepts, skip_terms, container):
     container.append(doc_anns)
 
 
-def query_doc_anns(es, concepts, skip_terms, retained_patients_filter=None):
+def query_doc_anns(es, concepts, skip_terms, retained_patients_filter=None, filter_obj=None, doc_filter_function=None):
     patients = es.search_by_scroll(" ".join(concepts), es.patient_type, collection_func=lambda d, c: c.append(d))
     print '%s patients matched' % len(patients)
     if retained_patients_filter is not None:
@@ -43,10 +46,11 @@ def query_doc_anns(es, concepts, skip_terms, retained_patients_filter=None):
             if po['_id'] in retained_patients_filter:
                 retained.append(po)
         patients = retained
+        print 'patients filtered to size %s' % len(patients)
     doc_anns = {}
     container = []
     utils.multi_thread_tasking(patients, 40, collect_patient_docs,
-                                   args=[es, concepts, skip_terms, container])
+                               args=[es, concepts, skip_terms, container, filter_obj, doc_filter_function])
     print 'data collected, merging...'   
     for d in container:                  
         doc_anns.update(d)
