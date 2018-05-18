@@ -6,11 +6,12 @@ import ontotextapi as oi
 import random
 import study_analyzer as sa
 from ann_post_rules import AnnRuleExecutor
-import trans_anns.sentence_pattern as tssp
-import trans_anns.text_generaliser as tstg
+# import trans_anns.sentence_pattern as tssp
+# import trans_anns.text_generaliser as tstg
 import re
 from analysis.semquery import SemEHRES
 import analysis.cohort_analysis_helper as chelper
+from datetime import datetime
 
 
 db_conn_type = 'mysql'
@@ -156,7 +157,6 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     term_to_docs = {}
     ruled_anns = []
     positive_dumps = []
-    skip_terms_list = [t.lower() for t in rule_executor.skip_terms]
     for sc in study_concepts:
         positive_doc_anns = []
         sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
@@ -183,61 +183,31 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                 d = ann['CN_Doc_ID']
                 if d in counted_docs:
                     continue
-                ruled = False
-                case_instance = ''
+                ruled, rule = rule_executor.execute_original_string_rules(
+                    ann['string_orig'] if 'string_orig' in ann
+                    else ann['TextContent'][int(ann['start_offset']):int(ann['end_offset'])])
                 if not ruled:
-                    # skip term rules
-                    if 'string_orig' in ann and ann['string_orig'].lower() in skip_terms_list:
-                        ruled = True
-                        rule = 'skip-term'
-                        case_instance = ann['string_orig']
-                if not ruled:
-                    # string orign rules - not used now
-                    ruled, case_instance = rule_executor.execute_original_string_rules(
-                        ann['string_orig'] if 'string_orig' in ann
-                        else ann['TextContent'][int(ann['start_offset']):int(ann['end_offset'])])
-                    rule = 'original-string-rule'
-                if not ruled:
-                    # post processing rules
-                    ruled, case_instance, rule = \
-                        rule_executor.execute(ann['TextContent'] if not text_preprocessing else
-                                              preprocessing_text_befor_rule_execution(ann['TextContent']),
-                                              int(ann['start_offset']),
-                                              int(ann['end_offset']),
-                                              string_orig=ann['string_orig'] if 'string_orig' in ann else None)
-                    rule = 'semehr ' + rule
-                if not ruled:
-                    # bio-yodie labels
-                    if 'experiencer' in ann:
-                        if ann['experiencer'].lower() != 'patient' or \
-                                ann['temporality'].lower() != 'recent' or \
-                                ann['negation'].lower() != 'affirmed':
-                            ruled = True
-                            case_instance = '\t'.join([ann['experiencer'], ann['temporality'], ann['negation']])
-                            rule = 'yodie'
+                    ruled, rule = rule_executor.execute(ann['TextContent'] if not text_preprocessing else
+                                                        preprocessing_text_befor_rule_execution(ann['TextContent']),
+                                                        int(ann['start_offset']),
+                                                        int(ann['end_offset']))
+                    if not ruled:
+                        counted_docs.add(d)
+                        p_to_dfreq[p] = 1 if p not in p_to_dfreq else 1 + p_to_dfreq[p]
+                        positive_doc_anns.append({'id': ann['CN_Doc_ID'],
+                                                  'content': ann['TextContent'],
+                                                  'annotations': [{'start': ann['start_offset'],
+                                                                   'end': ann['end_offset'],
+                                                                   'concept': ann['inst_uri'],
+                                                                   'string_orig': ann['string_orig'] if 'string_orig' in ann else ''}],
+                                                  'doc_table': ann['src_table'],
+                                                  'doc_col': ann['src_col']})
                 if ruled:
-                    ruled_anns.append({'p': p, 'd': d, 'ruled': rule, 's': ann['start_offset'],
-                                       'e': ann['end_offset'],
-                                       'c': ann['inst_uri'],
-                                       'case-instance': case_instance,
-                                       'string_orig': ann['string_orig']
-                                       })
+                    ruled_anns.append({'p': p, 'd': d, 'ruled': rule})
                 else:
-                    counted_docs.add(d)
-                    p_to_dfreq[p] = 1 if p not in p_to_dfreq else 1 + p_to_dfreq[p]
-                    positive_doc_anns.append({'id': ann['CN_Doc_ID'],
-                                              'content': ann['TextContent'],
-                                              'annotations': [{'start': ann['start_offset'],
-                                                               'end': ann['end_offset'],
-                                                               'concept': ann['inst_uri'],
-                                                               'string_orig': ann[
-                                                                   'string_orig'] if 'string_orig' in ann else ''}],
-                                              'doc_table': ann['src_table'],
-                                              'doc_col': ann['src_col']})
                     positive_dumps.append({'p': p, 'd': d, 's': ann['start_offset'],
                                            'e': ann['end_offset'],
-                                           'c': ann['inst_uri'],
-                                           'string_orig': ann['string_orig']})
+                                           'c': ann['inst_uri']})
             if len(counted_docs) > 0:
                 non_empty_concepts.append(sc_key)
                 for p in p_to_dfreq:
@@ -265,10 +235,31 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
     print 'done'
 
 
+def patient_timewindow_filter(fo, doc_id, pid):
+    fes = fo['es']
+    d = fes.get_doc_detail(str(doc_id))
+    if d is None:
+        print '%s/%s not found in full index' % (doc_id, pid)
+        return True
+    win = fo['p2win'][pid]
+    if win is None:
+        return False
+    d_date = datetime.strptime(d[fo['date_field']][0:19], fo['date_format'])
+    print d_date, win
+    t0 = datetime.strptime(win['t0'], fo['pt_date_format'])
+    t1 = datetime.strptime(win['t0'], fo['pt_date_format'])
+    if t0 <= d_date <= t1:
+        return False
+    else:
+        print '%s filtered [%s]' % (doc_id, d_date) 
+        return True
+
+
 def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_executor,
                                                sample_size, sample_out_file, ruled_ann_out_file,
                                                es_conn_file, text_preprocessing=False,
-                                               retained_patients_filter=None):
+                                               retained_patients_filter=None,
+                                               filter_obj=None):
     """
     populate patient study result with post processing to remove unwanted mentions
     :param cohort_name:
@@ -280,6 +271,9 @@ def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_ex
     :return:
     """
     es = SemEHRES.get_instance_by_setting_file(es_conn_file)
+    if filter_obj is not None:
+        fes = SemEHRES.get_instance_by_setting_file(filter_obj['doc_es_setting'])
+        filter_obj['es'] = fes
     if retained_patients_filter is None:
         pids = es.search_by_scroll("*", es.patient_type)
     else:
@@ -300,7 +294,9 @@ def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_ex
         doc_anns = []
         if len(sc.concept_closure) > 0:
             doc_anns = chelper.query_doc_anns(es, sc.concept_closure, study_analyzer.skip_terms,
-                                              retained_patients_filter=retained_patients_filter)
+                                              retained_patients_filter=retained_patients_filter,
+                                              filter_obj=filter_obj, doc_filter_function=patient_timewindow_filter
+                                              )
 
         if len(doc_anns) > 0:
             p_to_dfreq = {}
