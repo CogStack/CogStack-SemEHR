@@ -52,7 +52,8 @@
     ".*topic.{0,30}",
     ".*(roller|hostel|walking)\\s+.{0,10}",
     ".*(in different)\\s+.{0,10}",
-    ".*this includes\\s+.{0,50}"
+    ".*this includes\\s+.{0,50}",
+    ".*(esp.)|(in particular)|(patients with)|(commonly seen)\\s+.{0,50}"
   ]},
   {"offset": 1, "regs": [
     "\\s+(society|organisation|unit)", "\\s+care", "[\\s\\n]+team", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}",

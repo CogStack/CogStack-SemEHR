@@ -58,7 +58,8 @@
     ".*\\s+heading towards(\\s)+.{0,60}",
     ".*told about.{0,30}",
     ".*(may|would)\\s+.{0,40}",
-    ".*consider\\s+.{0,40}"
+    ".*consider\\s+.{0,40}",
+    ".*can cause\\s+.{0,100}"
   ]},
   {"offset": 1, "regs": [
     "\\s+risk",
