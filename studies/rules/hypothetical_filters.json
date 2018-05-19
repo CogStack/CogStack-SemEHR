@@ -45,6 +45,7 @@
     ".*predictive value for(\\s)+.{0,10}",
     ".*rumination(s){0,1}(\\s)+.{0,1}",
     ".*check (on|for)(\\s)+.{0,20}",
+    ".*check.{0,50}",
     ".*lead to(\\s)+.{0,20}",
     ".*(likely to|may|maybe|could|could perhaps|potential for)\\s+(be|cause|causing|raised)(\\s)+.{0,20}",
     ".*could have(\\s)+[^\\.]{0,70}",
@@ -59,7 +60,8 @@
     ".*told about.{0,30}",
     ".*(may|would)\\s+.{0,40}",
     ".*consider\\s+.{0,40}",
-    ".*can cause\\s+.{0,100}"
+    ".*can cause\\s+.{0,100}",
+    ".*discussion\\s+.{0,60}"
   ]},
   {"offset": 1, "regs": [
     "\\s+risk",

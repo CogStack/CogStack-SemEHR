@@ -11,6 +11,7 @@
     ".*no other sources of.{0,10}",
     ".*not have.{0,60}",
     ".*ruling out.{0,20}",
+    ".*hasn't got.{0,20}",
     ".*(exclude|excude|exclusion|(r\\/o)).{0,20}"
   ]
   },

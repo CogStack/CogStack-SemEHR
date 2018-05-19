@@ -9,7 +9,8 @@
     ".*(\\s)+(cat(s){0,1}|dog(s){0,1}|family|mother|father|auntie|brother|sister|partner|QQQQQ|(step-){0,1}mum|dad|daughter|son|friend|friends|cousin|niece)'{0,1}s(\\s)+.{0,70}",
     ".*death\\s+.{0,100}",
     ".*victim\\s+.{0,100}",
-    ".*other patient.{0,60}"
+    ".*other patient.{0,60}",
+    ".*staff member.{0,60}"
   ]},
   {"offset": -1, "regs": [
     ".*people(\\s)+.{0,40}",

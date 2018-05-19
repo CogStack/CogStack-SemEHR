@@ -3,6 +3,7 @@
     ".*(\\s)+related to.{0,20}",
     ".*Ongoing physical health problems.{0,100}",
     ".*PNC\\s+",
+    ".*window\\s+",
     ".*stopped\\s.{0,30}",
     ".*would include\\s+(\\:){0,1}.{0,100}",
     ".*as disabling as\\s.{0,70}"
@@ -12,6 +13,7 @@
     "\\s+officer",
     "\\s{0,}of light",
     ".{0,20}toilet",
-    "\\s+of blankets"
+    "\\s+of blankets",
+    "\\s+(acceptance|them)"
   ]}
 ]

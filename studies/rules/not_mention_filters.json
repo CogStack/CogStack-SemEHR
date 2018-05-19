@@ -53,6 +53,7 @@
     ".*(roller|hostel|walking)\\s+.{0,10}",
     ".*(in different)\\s+.{0,10}",
     ".*this includes\\s+.{0,50}",
+    ".*cure\\s+.{0,20}",
     ".*((esp\\.)|(particular)|(patients with)|(commonly seen))\\s+.{0,100}",
     ".*association between.{0,60}"
   ]},
@@ -73,6 +74,7 @@
     ".{0,5}\\s+yes\\s{0,}(\\s|\\/)+no",
     ".{0,5}bloods to be done",
     ".{0,15}hair",
+    ".{0,15}advice",
     "\\s{0,}\\/ss",
     ".*\\s{0,}YES\\s+NO",
     ".{0,50}\\|\\_\\|",
