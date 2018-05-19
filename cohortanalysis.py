@@ -190,7 +190,9 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
                     ruled, rule = rule_executor.execute(ann['TextContent'] if not text_preprocessing else
                                                         preprocessing_text_befor_rule_execution(ann['TextContent']),
                                                         int(ann['start_offset']),
-                                                        int(ann['end_offset']))
+                                                        int(ann['end_offset']),
+                                                        string_orig=ann['string_orig']
+                                                        if 'string_orig' in ann else None)
                     if not ruled:
                         counted_docs.add(d)
                         p_to_dfreq[p] = 1 if p not in p_to_dfreq else 1 + p_to_dfreq[p]
