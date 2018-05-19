@@ -193,10 +193,7 @@ class SemEHRES(object):
 
     @staticmethod
     def get_instance_by_setting(es_host, es_index, es_doc_type, es_concept_type, es_patient_type):
-        global _es_instance
-        if _es_instance is None:
-            _es_instance = SemEHRES(es_host, es_index, es_doc_type, es_concept_type, es_patient_type)
-        return _es_instance
+        return SemEHRES(es_host, es_index, es_doc_type, es_concept_type, es_patient_type)
 
     @staticmethod
     def get_instance_by_setting_file(setting_file_path):
@@ -207,10 +204,10 @@ class SemEHRES(object):
 
 
 if __name__ == "__main__":
-    es = SemEHRES.get_instance_by_setting_file('../index_settings/sem_idx_setting.json')
+    es = SemEHRES.get_instance_by_setting_file('../index_settings/eprdoc_idx_setting.json')
     # print es.get_doc_detail('1044334459', 'docs')
     # print es.search('docs', 'ward')
     try:
-        print es.search_all('ward', 'patient')
+        print es.get_doc_detail('4502902')
     except TransportError as terr:
         print terr.info
