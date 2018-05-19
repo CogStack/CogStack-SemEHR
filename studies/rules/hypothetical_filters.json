@@ -57,13 +57,15 @@
     ".*\\s+alleged(\\s)+.{0,20}",
     ".*\\s+heading towards(\\s)+.{0,60}",
     ".*told about.{0,30}",
-    ".*(may|would)\\s+.{0,40}"
+    ".*(may|would)\\s+.{0,40}",
+    ".*consider\\s+.{0,40}"
   ]},
   {"offset": 1, "regs": [
     "\\s+risk",
     "\\s+[^\\.,;\\n\\r]{0,30}\\?\\s+",
     "\\s+.{0,10}unlikely",
     ".*\\s+bloods to be done.{0,20}",
-    ".{0,40}screen"
+    ".{0,40}screen",
+    ".{0,40}suspected"
   ]}
 ]

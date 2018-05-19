@@ -87,6 +87,7 @@
     "\\s+.{0,10}consultant",
     "\\s+.{0,10}counsel",
     "\\s+.{0,10}copy",
-    "\\s+.{0,10}club"
+    "\\s+.{0,10}club",
+    "\\s+.{0,10}question"
   ]}
 ]

@@ -10,13 +10,16 @@
     ".*No reports of\\s+.{0,50}",
     ".*no other sources of.{0,10}",
     ".*not have.{0,60}",
-    ".*ruling out.{0,20}"
+    ".*ruling out.{0,20}",
+    ".*exclude.{0,20}"
   ]
   },
   {"offset": 1, "regs": [
     "\\s+\\-",
     "\\s+.{0,10}negtive", "\\s+.{0,10}unlikely",
     "\\s+.{0,30}non\\-reactive",
-    "\\s+.{0,40}ruled out"
+    "\\s+.{0,40}ruled out",
+    "\\s+.{0,40}excluded",
+    "\\s+.{0,40}not clinically suspected"
   ]}
 ]
