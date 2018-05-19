@@ -11,6 +11,7 @@
     "\\s+/visually impaired\\?",
     "\\s+officer",
     "\\s{0,}of light",
-    ".{0,20}toilet"
+    ".{0,20}toilet",
+    "\\s+of blankets"
   ]}
 ]

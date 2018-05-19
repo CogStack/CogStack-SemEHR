@@ -46,8 +46,13 @@
     ".*trying to give.{0,20}",
     ".*institute for.{0,40}",
     ".*pull(ed){0,1}.{0,5}",
-    ".*consent for testing.{0,70}",
-    ".*safe from.{0,20}"
+    ".*consent.{0,70}",
+    ".*safe from.{0,20}",
+    ".*liaise with.{0,5}",
+    ".*topic.{0,30}",
+    ".*(roller|hostel|walking)\\s+.{0,10}",
+    ".*(in different)\\s+.{0,10}",
+    ".*this includes\\s+.{0,50}"
   ]},
   {"offset": 1, "regs": [
     "\\s+(society|organisation|unit)", "\\s+care", "[\\s\\n]+team", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}",
@@ -79,6 +84,9 @@
     ".{0,10}\\s+conference",
     "\\s+of context",
     "\\s+hands",
-    "\\s+.{0,10}consultant"
+    "\\s+.{0,10}consultant",
+    "\\s+.{0,10}counsel",
+    "\\s+.{0,10}copy",
+    "\\s+.{0,10}club"
   ]}
 ]

@@ -44,7 +44,7 @@
     ".*caution\\s+[^\\.]{0,20}\\s+with(\\s)+.{0,20}",
     ".*predictive value for(\\s)+.{0,10}",
     ".*rumination(s){0,1}(\\s)+.{0,1}",
-    ".*check for(\\s)+.{0,20}",
+    ".*check (on|for)(\\s)+.{0,20}",
     ".*lead to(\\s)+.{0,20}",
     ".*(likely to|may|maybe|could|could perhaps|potential for)\\s+(be|cause|causing|raised)(\\s)+.{0,20}",
     ".*could have(\\s)+[^\\.]{0,70}",
@@ -56,12 +56,14 @@
     ".*(vulnerable|prone) to(\\s)+.{0,20}",
     ".*\\s+alleged(\\s)+.{0,20}",
     ".*\\s+heading towards(\\s)+.{0,60}",
-    ".*told about.{0,30}"
+    ".*told about.{0,30}",
+    ".*(may|would)\\s+.{0,40}"
   ]},
   {"offset": 1, "regs": [
     "\\s+risk",
     "\\s+[^\\.,;\\n\\r]{0,30}\\?\\s+",
     "\\s+.{0,10}unlikely",
-    ".*\\s+bloods to be done.{0,20}"
+    ".*\\s+bloods to be done.{0,20}",
+    ".{0,40}screen"
   ]}
 ]
