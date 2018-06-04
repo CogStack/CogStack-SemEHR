@@ -258,7 +258,8 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
           rule_setting_file=None, sem_idx_setting_file=None,
           concept_filter_file=None,
           retained_patients_filter=None,
-          filter_obj_setting=None):
+          filter_obj_setting=None,
+          do_disjoint_computing=True):
     p, fn = split(folder)
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
@@ -310,7 +311,8 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
         print 'after removal: %s' % len(sa.study_concepts)
 
     # compute disjoint concepts
-    sa.generate_exclusive_concepts()
+    if do_disjoint_computing:
+        sa.generate_exclusive_concepts()
 
     if isfile(join(folder, 'study_options.json')):
         sa.study_options = utils.load_json_data(join(folder, 'study_options.json'))
@@ -383,7 +385,8 @@ def run_study(folder_path, no_sql_filter=None):
               sem_idx_setting_file=None if 'sem_idx_setting_file' not in r else r['sem_idx_setting_file'],
               concept_filter_file=None if 'concept_filter_file' not in r else r['concept_filter_file'],
               retained_patients_filter=retained_patients,
-              filter_obj_setting=None if 'filter_obj_setting' not in r else r['filter_obj_setting']
+              filter_obj_setting=None if 'filter_obj_setting' not in r else r['filter_obj_setting'],
+              do_disjoint_computing=True if 'do_disjoint' not in r else r['do_disjoint']
               )
     else:
         print 'study.json not found in the folder'
