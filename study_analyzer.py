@@ -321,7 +321,6 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
             sc2closure[sc.name] = list(sc.concept_closure)
         utils.save_json_array(sc2closure, join(folder, 'sc2closure.json'))
         print 'generated'
-        return
 
     if isfile(join(folder, 'study_options.json')):
         sa.study_options = utils.load_json_data(join(folder, 'study_options.json'))
@@ -344,6 +343,10 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
     # print json.dumps(merged_mappings)
     print len(study_concept_list)
     utils.save_string('\n'.join(study_concept_list), join(folder, 'all_concepts.txt'))
+
+    if export_study_concept_only:
+        return
+
     print 'generating result table...'
     # sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
     # sa.gen_sample_docs(cohort_name, join(folder, 'sample_docs.json'))
