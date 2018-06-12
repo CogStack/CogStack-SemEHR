@@ -6,6 +6,7 @@ import sys
 import urllib2
 import urllib
 import traceback
+import math
 
 
 class UMLSAPI(object):
@@ -72,7 +73,7 @@ class UMLSAPI(object):
         # print content
         return json.loads(content)
 
-    def transitive_narrower(self, concept, processed_set=None, result_set=None):
+    def transitive_narrower(self, concept, processed_set=None, result_set=None, skip_relations={}):
         """
         get transitive narrower concepts of a given concept
         :param concept:
@@ -90,7 +91,8 @@ class UMLSAPI(object):
         subconcepts = []
         try:
             subconcepts = self.get_narrower_concepts(concept)
-            subconcepts = [c[0] for c in subconcepts]
+            subconcepts2ignore = [] if concept not in skip_relations else skip_relations[concept]
+            subconcepts = [c[0] for c in subconcepts if c not in subconcepts2ignore]
             print '%s has %s children' % (concept, len(subconcepts))
         except:
             print 'error %s ' % sys.exc_info()[0]
@@ -98,7 +100,8 @@ class UMLSAPI(object):
         result_set |= set(subconcepts)
         processed_set.add(concept)
         for c in subconcepts:
-            self.transitive_narrower(c, processed_set, result_set)
+            self.transitive_narrower(c, processed_set=processed_set, result_set=result_set,
+                                     skip_relations=skip_relations)
         return list(result_set)
 
 
@@ -116,6 +119,19 @@ def align_mapped_concepts(map_file, disorder_file):
 
 def get_umls_concept_detail(umls, cui):
     return umls.get_object(UMLSAPI.api_url + '/content/current/CUI/%s/' % cui)
+
+
+def get_umls_definitions(umls, cui):
+    return umls.get_object(UMLSAPI.api_url + '/content/current/CUI/%s/definitions' % cui)
+
+
+def get_umls_atoms(umls, cui):
+    return umls.get_object(UMLSAPI.api_url + '/content/current/CUI/%s/atoms' % cui)
+
+
+def get_umls_source_descendants(umls, source, id):
+    return umls.get_object(UMLSAPI.api_url + '/content/current/source/{source}/{id}/descendants'.format(
+        **{'source': source, 'id': id}))
 
 
 def complete_tsv_concept_label(umls, tsv_file):
@@ -197,19 +213,36 @@ WHERE {{
     print json.dumps(icd2umls)
 
 
-def get_concepts_names(umls, concepts):
-    c2label = {}
+def do_get_concepts_names(concepts, umls, container):
     for c in concepts:
-        details = get_umls_concept_detail(umls, c)
-        c2label[c] = details['result']['name']
-        print '%s\t%s' % (c, c2label[c])
+        try:
+            details = get_umls_concept_detail(umls, c)
+            print '%s\t%s' % (c, details['result']['name'])
+            container.append([c, details['result']['name']])
+        except:
+            print '%s not retrievable %s' % (c, sys.exc_info()[0])
+
+
+def get_concepts_names(umls, concepts):
+    batch_size = 200
+
+    batches = []
+    for k in range(0, int(math.ceil(len(concepts)*1.0/batch_size))):
+        batches.append(concepts[batch_size * k : batch_size * (k+1)])
+        print 'batch %s, len %s' % (k, len(batches[-1]))
+    container = []
+    utils.multi_thread_tasking(batches, 20, do_get_concepts_names, args=[umls, container])
+    print len(container)
+    c2label = {}
+    for r in container:
+        c2label[r[0]] = r[1]
     return c2label
 
 
 if __name__ == "__main__":
     # align_mapped_concepts('./resources/autoimmune-concepts.json', './resources/auto_immune_gazetteer.txt')
     umls = get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
-    # rets = umls.match_term('Double bypass operation')
+    # rets = umls.match_term('type 2 diabetes')
     # cui = rets[0]['ui']
     # print cui
     # subconcepts = umls.transitive_narrower('C0019104', None, None)
@@ -221,8 +254,12 @@ if __name__ == "__main__":
     #     print len(local_scs)
     # print 'total concepts: %s' % len(next_scs), json.dumps(list(next_scs))
     # print json.dumps(umls.get_object('https://uts-ws.nlm.nih.gov/rest/content/current/CUI/C0178298/relations'))
-    # print get_umls_concept_detail(umls, 'C0946252')
-    get_concepts_names(umls, utils.read_text_file('./resources/text-phenotype-all-concepts.txt'))
+    # print json.dumps(get_umls_concept_detail(umls, 'C0011860'))
+    # print json.dumps(get_umls_source_descendants(umls, 'NCI_NICHD', 'C26747'))
+    utils.save_json_array(json.dumps(
+        get_concepts_names(umls, utils.read_text_file('./resources/all_A00-N99_concepts.txt'))),
+                          './resources/all_A00-N99_concepts_labels.json')
+    # get_concepts_names(umls, ['C0020437', 'C0020438'])
     # print get_umls_concept_detail(umls, 'C0020538')['result']['name']
     # complete_tsv_concept_label(umls, './studies/IMPARTS/concepts_verified_chris.tsv')
     # icd10_queries()

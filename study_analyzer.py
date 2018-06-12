@@ -58,21 +58,21 @@ class StudyConcept(object):
             self._term_to_concept[term] = {'mapped': candidate_terms[0][0], 'closure': len(candidate_terms[0][1])}
 
     @staticmethod
-    def compute_all_concept_closure(all_concepts, umls_instance):
+    def compute_all_concept_closure(all_concepts, umls_instance, skip_relations={}):
         concept_to_closure = {}
         print 'all concepts number %s' % len(all_concepts)
         computed = []
         results =[]
         utils.multi_thread_tasking(all_concepts, 40, StudyConcept.do_compute_concept_closure,
-                                   args=[umls_instance, computed, results])
+                                   args=[umls_instance, computed, results, skip_relations])
         for r in results:
             concept_to_closure[r['concept']] = r['closure']
         return concept_to_closure
 
     @staticmethod
-    def do_compute_concept_closure(concept, umls_instance, computed, results):
+    def do_compute_concept_closure(concept, umls_instance, computed, results, skip_relations={}):
         if concept not in computed:
-            closure = umls_instance.transitive_narrower(concept)
+            closure = umls_instance.transitive_narrower(concept, skip_relations=skip_relations)
             computed.append(concept)
             results.append({'concept': concept, 'closure': closure})
             print 'concept: %s transitive children %s' % (concept, closure)
@@ -260,7 +260,8 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
           retained_patients_filter=None,
           filter_obj_setting=None,
           do_disjoint_computing=True,
-          export_study_concept_only=False):
+          export_study_concept_only=False,
+          skip_closure_relations={}):
     p, fn = split(folder)
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
@@ -270,7 +271,7 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
             concept_mappings = utils.load_json_data(join(folder, 'exact_concepts_mappings.json'))
             concept_to_closure = \
                 StudyConcept.compute_all_concept_closure([concept_mappings[t] for t in concept_mappings],
-                                                         umls_instance)
+                                                         umls_instance, skip_relations=skip_closure_relations)
 
             scs = []
             for t in concept_mappings:
@@ -388,7 +389,9 @@ def run_study(folder_path, no_sql_filter=None):
             for l in lines:
                 arr = l.split('\t')
                 retained_patients.append(arr[0])
-
+        skip_closure_relations = {}
+        if 'skip_closure_relations' in r:
+            skip_closure_relations = utils.load_json_data(r['skip_closure_relations'])
         study(folder_path, r['cohort'], r['sql_config'], r['db_conn'],
               concept_mapping.get_umls_client_inst(r['umls_key']),
               do_preprocessing=r['do_preprocessing'],
@@ -399,7 +402,8 @@ def run_study(folder_path, no_sql_filter=None):
               retained_patients_filter=retained_patients,
               filter_obj_setting=None if 'filter_obj_setting' not in r else r['filter_obj_setting'],
               do_disjoint_computing=True if 'do_disjoint' not in r else r['do_disjoint'],
-              export_study_concept_only=False if 'export_study_concept' not in r else r['export_study_concept']
+              export_study_concept_only=False if 'export_study_concept' not in r else r['export_study_concept'],
+              skip_closure_relations=skip_closure_relations
               )
     else:
         print 'study.json not found in the folder'
