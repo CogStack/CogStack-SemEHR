@@ -1,6 +1,9 @@
 import utils
 import re
 import json
+import joblib as jl
+from study_analyzer import StudyAnalyzer, StudyConcept
+from os.path import isfile
 
 
 """
@@ -74,5 +77,19 @@ def generate_hpo_umls_mapping(hpo_dump):
     print json.dumps(hpo2umls)
 
 
+def export_pickled_study_concept_2_flat_json(pickle_file, output_file):
+    if isfile(pickle_file):
+        obj = {}
+        sa = StudyAnalyzer.deserialise(pickle_file)
+        for sc in sa.study_concepts:
+            for t in sc.term_to_concepts:
+                for c in sc.term_to_concepts[t]['closure']:
+                    obj[c] = {"tc": {"closure": 1, "mapped": c}, "concepts": [c]}
+
+        utils.save_json_array(obj, output_file)
+        print 'flat json saved to %s' % output_file
+
+
 if __name__ == "__main__":
-    generate_hpo_umls_mapping('./resources/hp.obo')
+    # generate_hpo_umls_mapping('./resources/hp.obo')
+    export_pickled_study_concept_2_flat_json('', '')
