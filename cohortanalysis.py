@@ -278,7 +278,7 @@ def patient_timewindow_filter(fo, doc_id, pid):
     d_date = datetime.strptime(d[fo['date_field']][0:19], fo['date_format'])
     print d_date, win
     t0 = datetime.strptime(win['t0'], fo['pt_date_format'])
-    t1 = datetime.strptime(win['t0'], fo['pt_date_format'])
+    t1 = datetime.strptime(win['t1'], fo['pt_date_format'])
     if t0 <= d_date <= t1:
         return False
     else:
