@@ -281,9 +281,10 @@ def do_semehr_index(settings, patients, doc_to_patient):
     if settings.get_attr(['job', 'semehr-concept']) == 'yes':
         print 'working on files : %s' % ann_files
         # index concepts
+        concept_index = settings.get_attr(['semehr', 'concept_index'])
         for ann in ann_files:
             utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 10, do_index_100k_anns,
-                                                  args=[es, doc_to_patient])
+                                                  args=[es, doc_to_patient, concept_index])
     if settings.get_attr(['job', 'semehr-patients']) == 'yes':
         # index patients
         es_doc_url = settings.get_attr(['semehr', 'es_doc_url'])

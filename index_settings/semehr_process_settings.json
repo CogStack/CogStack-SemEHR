@@ -31,6 +31,7 @@
     "full_text_text_field": "",
     "es_host": "",
     "index": "",
+    "concept_index": "ctx_concept_index",
     "concept_doc_type": "ctx_concept",
     "entity_doc_type": "patient"
   },

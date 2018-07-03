@@ -89,7 +89,7 @@ class EntityCentricES(object):
             print 'add mappings [%s]' % t
             self._es_instance.indices.put_mapping(index=self.index_name, doc_type=t, body=mapping[t])
 
-    def index_ctx_concept(self, ann, index_instance=False):
+    def index_ctx_concept(self, ann, index_instance=False, concept_index=None):
         data = {
             "doc": {
                 "cui": ann['features']['inst'],
@@ -104,7 +104,8 @@ class EntityCentricES(object):
         }
         ctx_id = EntityCentricES.get_ctx_concept_id(ann)
         # print json.dumps(data)
-        self._es_instance.update(index=self.index_name, doc_type=self.concept_doc_type, id=ctx_id, body=data,
+        concept_index_name = self.index_name if concept_index is None else concept_index
+        self._es_instance.update(index=concept_index_name, doc_type=self.concept_doc_type, id=ctx_id, body=data,
                                  retry_on_conflict=30, timeout='30s')
         if index_instance:
             ann['ctx_id'] = ctx_id
@@ -161,27 +162,27 @@ class EntityCentricES(object):
         # print 'patient %s updated' % entity_id
         self._es_instance.update(index=self.index_name, doc_type=self.entity_doc_type, id=entity_id, body=data)
 
-    def index_anns(self, entity_id, doc_id, anns):
+    def index_anns(self, entity_id, doc_id, anns, concept_index=None):
         if anns is not None:
-            entity_anns = \
-                [
-                    {
-                        "contexted_concept": EntityCentricES.get_ctx_concept_id(ann),
-                        "CUI": ann['features']['inst'],
-                        "appearances": [
-                            {
-                                "eprid": doc_id,
-                                # "date": 0 if doc_date is None else doc_date,
-                                "offset_start": int(ann['startNode']['offset']),
-                                "offset_end": int(ann['endNode']['offset'])
-                            }
-                        ]
-                    } for ann in anns
-                ]
-            data = {'patientId': entity_id, 'anns': entity_anns}
-            self._es_instance.index(index=self.index_name, doc_type=_ann_doc_type, body=data)
+            # entity_anns = \
+            #     [
+            #         {
+            #             "contexted_concept": EntityCentricES.get_ctx_concept_id(ann),
+            #             "CUI": ann['features']['inst'],
+            #             "appearances": [
+            #                 {
+            #                     "eprid": doc_id,
+            #                     # "date": 0 if doc_date is None else doc_date,
+            #                     "offset_start": int(ann['startNode']['offset']),
+            #                     "offset_end": int(ann['endNode']['offset'])
+            #                 }
+            #             ]
+            #         } for ann in anns
+            #     ]
+            # data = {'patientId': entity_id, 'anns': entity_anns}
+            # self._es_instance.index(index=self.index_name, doc_type=_ann_doc_type, body=data)
             for ann in anns:
-                self.index_ctx_concept(ann)
+                self.index_ctx_concept(ann, concept_index=concept_index)
             print '[concepts] %s indexed for pid:%s did: %s' % (len(anns), entity_id, doc_id)
 
     def query_to_index_entities(self, entity_id,
@@ -382,13 +383,14 @@ def index_pubmed():
     print 'done'
 
 
-def do_index_100k_anns(line, es, doc_to_patient):
+def do_index_100k_anns(line, es, doc_to_patient, concept_index=None):
     ann_data = json.loads(line)
     doc_id = ann_data['docId']
     if doc_id in doc_to_patient:
         patient_id = doc_to_patient[doc_id]
         es.index_anns(patient_id,
-                      doc_id, ann_data['annotations'][0])
+                      doc_id, ann_data['annotations'][0],
+                      concept_index=concept_index)
 
 
 def do_index_100k_patients(patient_id, es,
