@@ -1,0 +1,30 @@
+curl -XPUT -k -u USER 'ES_HOST_URL_WITH_INDEX_NAME' -d'
+{
+  "mappings": {
+    "ctx_concept": {
+      "properties": {
+        "cui": {
+          "type": "keyword"
+        },
+        "negation": {
+          "type": "text"
+        },
+        "experiencer": {
+          "type": "text"
+        },
+        "temporality": {
+          "type": "text"
+        },
+        "prefLabel": {
+          "type": "text"
+        },
+        "vocabularies": {
+          "type": "text"
+        },
+        "STY": {
+          "type": "text"
+        }
+      }
+    }
+  }
+}'
