@@ -13,6 +13,7 @@ if (typeof semehr == "undefined"){
             _es_client: null,
             __es_server_url: "http://10.200.102.23:9200/",
             __es_index: "mimic", //epr_documents_bioyodie
+            __es_concept_index: "mimic", //concept index for separation of ES6
             __es_type: "patient", //patient type
             __es_concept_type: "ctx_concept",
             __es_fulltext_index: "mimic",
@@ -173,7 +174,7 @@ if (typeof semehr == "undefined"){
 
             searchConcept: function(search, successCB, errorCB){
                 semehr.search._es_client.search({
-                    index: semehr.search.__es_index,
+                    index: semehr.search.__es_concept_index,
                     type: semehr.search.__es_concept_type,
                     q: search,
                     size: 20
