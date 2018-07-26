@@ -197,7 +197,7 @@ if (typeof semehr == "undefined"){
 
             getConcept: function (ctxConceptId, successCB, errorCB) {
                 semehr.search._es_client.get({
-                    index: semehr.search.__es_index,
+                    index: semehr.search.__es_concept_index,
                     type: semehr.search.__es_concept_type,
                     id: ctxConceptId
                 }).then(function (resp) {
