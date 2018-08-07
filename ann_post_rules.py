@@ -49,6 +49,8 @@ class AnnRuleExecutor(object):
             [s, e] = AnnRuleExecutor.relocate_annotation_pos(text, ann_start, ann_end, string_orig)
             ann_start = s
             ann_end = e
+        else:
+            string_orig = text[ann_start:ann_end]
         s_before = text[max(ann_start - self._text_window, 0):ann_start]
         s_end = text[ann_end:min(len(text), ann_end + self._text_window)]
         # tokens_before = nltk.word_tokenize(s_before)
@@ -62,6 +64,8 @@ class AnnRuleExecutor(object):
             s_compare = s_end if r['offset'] > 0 else s_before
             if r['offset'] == 0:
                 s_compare = text[:_head_text_window_size]
+            elif r['offset'] == 100:
+                s_compare = string_orig
             s_compare = s_compare.replace('\n', ' ')
             try:
                 if r['case_sensitive']:
