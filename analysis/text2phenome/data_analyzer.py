@@ -259,13 +259,18 @@ def load_phenotype_def_into_db():
     print 'done'
 
 
-def label_analyse():
-    pass
+def label_analyse(sql_template_file, db_cnf):
+    sql_temps = utils.load_json_data(sql_template_file)
+    concepts = []
+    dutil.query_data(sql_temps['get_validated_concepts'], concepts,
+                     dbconn=dutil.get_db_connection_by_setting(db_cnf))
+    for c in concepts[:10]:
+        concept_analyse(c['concept_id'], sql_temps['condition_label_sql'], sql_temps['wrong_label_sql'], db_cnf)
 
 
 def concept_analyse(concept_id, condition_label_sql, wrong_label_sql, db_cnf):
     # get condition mention labels
-    concept_result = {'labels': {}}
+    concept_result = {'concept': concept_id, 'labels': {}}
     results_condition_labels = []
     dutil.query_data(condition_label_sql.format(**{'concept': concept_id}), results_condition_labels,
                      dbconn=dutil.get_db_connection_by_setting(db_cnf))
@@ -281,6 +286,11 @@ def concept_analyse(concept_id, condition_label_sql, wrong_label_sql, db_cnf):
         if r['label'] not in concept_result['labels']:
             concept_result['labels'][r['label']] = {}
         concept_result['labels'][r['label']]['wrong_mention'] = r['num']
+    labels = sorted([{'label': l, 'c': concept_result['labels'][l]['condition_mention'] if 'condition_mention' in concept_result['labels'][l] else 0, 'w': concept_result['labels'][l]['wrong_mention'] if 'wrong_mention' in concept_result['labels'][l] else 0} for l in concept_result['labels']], key=lambda x: - x['c'] - x['w'])
+    print '%s' % concept_id
+    for l in labels:
+        print '%s\t%s\t%s' % (l['label'], l['c'], l['w'])
+    print '\n' + ('-' * 30 )+ '\n'
     return concept_result
 
 
@@ -304,6 +314,7 @@ if __name__ == "__main__":
     # dump_mention_detail('../../studies', r'skin.*|COMOB.*|karen.*',
     #                     './data/mention_dumps.tsv',
     #                     './data/concept_typed_dumps.tsv')
-    phenotype_counting('./data/phenotype_defs.json', './data/concept_level_results.tsv',
-                       './data/phenotype_prev.tsv')
+    # phenotype_counting('./data/phenotype_defs.json', './data/concept_level_results.tsv',
+    #                   './data/phenotype_prev.tsv')
+    label_analyse('./conf/label_analysis_sql.json', './conf/dbcnn.json')
 
