@@ -294,6 +294,72 @@ def concept_analyse(concept_id, condition_label_sql, wrong_label_sql, db_cnf):
     return concept_result
 
 
+class ConceptLabel(object):
+    """
+    concept label with frequencies
+    implements ambiguity scoring
+    """
+    def __init__(self, label):
+        self._label = label
+        self._condition_freq = 0
+        self._wrong_freq = 0
+
+    @property
+    def label(self):
+        return self._label
+
+    @property
+    def condition_mention(self):
+        return self._condition_freq
+
+    @condition_mention.setter
+    def condition_mention(self, value):
+        self._condition_freq = value
+
+    @property
+    def wrong_mention(self):
+        return self._condition_freq
+
+    @wrong_mention.setter
+    def wrong_mention(self, value):
+        self._wrong_freq = value
+
+    def ambiguity_score(self):
+        return self.wrong_mention * 1.0 / (self.wrong_mention + self.condition_mention)
+
+
+class MConcept(object):
+    def __init__(self, concept_id):
+        self._concept_id = concept_id
+        self._l2labels = {}
+
+    @property
+    def labels(self):
+        return [self._l2labels[l] for l in self._l2labels]
+
+    def add_label(self, cl):
+        self._l2labels[cl.label] = cl
+
+    def ambiguity_score(self):
+        s = 0
+        total_freq = 0
+        for l in self.labels:
+            lb = self.labels[l]
+            s += lb.ambiguity_score() * (lb.condition_mention + lb.wrong_mention)
+            total_freq += lb.condition_mention + lb.wrong_mention
+        return s * 1.0 / total_freq
+
+    def label_variation(self, k=2):
+        c_sorted = sorted([self.labels[l] for l in self.labels], key=lambda x: -x['condition_mention'])
+        k_freq = 0
+        t_freq = 0
+        for i in len(c_sorted):
+            if i + 1 <= k:
+                k_freq += c_sorted[i-1]['condition_mention']
+            t_freq += c_sorted[i-1]['condition_mention']
+        return 1 - k_freq * 1.0 / t_freq
+
+
 if __name__ == "__main__":
     # do_phenotype_analysis('./data/phenotype_def_with_validation.json', './data/c_map_file.json', './data/pstats/')
     # add_concept_level_freqs('./data/', './data/c_map_file.json')
