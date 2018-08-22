@@ -5,7 +5,6 @@ import re
 import sqldbutils as dutil
 
 
-
 def populate_concept_level_performance(complete_validation_file, c_map_file):
     if isfile(c_map_file):
         return utils.load_json_data(c_map_file)
@@ -258,6 +257,31 @@ def load_phenotype_def_into_db():
             print 'executing [%s]' % sql
             dutil.query_data(sql, None, dbconn=dutil.get_db_connection_by_setting(db_cnf))
     print 'done'
+
+
+def label_analyse():
+    pass
+
+
+def concept_analyse(concept_id, condition_label_sql, wrong_label_sql, db_cnf):
+    # get condition mention labels
+    concept_result = {'labels': {}}
+    results_condition_labels = []
+    dutil.query_data(condition_label_sql.format(**{'concept': concept_id}), results_condition_labels,
+                     dbconn=dutil.get_db_connection_by_setting(db_cnf))
+    for r in results_condition_labels:
+        if r['label'] not in concept_result['labels']:
+            concept_result['labels'][r['label']] = {}
+        concept_result['labels'][r['label']]['condition_mention'] = r['num']
+
+    results_wrong_labels = []
+    dutil.query_data(wrong_label_sql.format(**{'concept': concept_id}), results_wrong_labels,
+                     dbconn=dutil.get_db_connection_by_setting(db_cnf))
+    for r in results_wrong_labels:
+        if r['label'] not in concept_result['labels']:
+            concept_result['labels'][r['label']] = {}
+        concept_result['labels'][r['label']]['wrong_mention'] = r['num']
+    return concept_result
 
 
 if __name__ == "__main__":
