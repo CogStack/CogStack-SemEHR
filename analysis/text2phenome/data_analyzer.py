@@ -271,26 +271,30 @@ def label_analyse(sql_template_file, db_cnf):
 def concept_analyse(concept_id, condition_label_sql, wrong_label_sql, db_cnf):
     # get condition mention labels
     concept_result = {'concept': concept_id, 'labels': {}}
+    mc = MConcept(concept_id)
     results_condition_labels = []
     dutil.query_data(condition_label_sql.format(**{'concept': concept_id}), results_condition_labels,
                      dbconn=dutil.get_db_connection_by_setting(db_cnf))
     for r in results_condition_labels:
-        if r['label'] not in concept_result['labels']:
-            concept_result['labels'][r['label']] = {}
-        concept_result['labels'][r['label']]['condition_mention'] = r['num']
+        if r['label'] not in mc.labels:
+            mc.add_label(ConceptLabel(r['label']))
+        mc.labels[r['label']].condition_mention = r['num']
 
     results_wrong_labels = []
     dutil.query_data(wrong_label_sql.format(**{'concept': concept_id}), results_wrong_labels,
                      dbconn=dutil.get_db_connection_by_setting(db_cnf))
     for r in results_wrong_labels:
-        if r['label'] not in concept_result['labels']:
-            concept_result['labels'][r['label']] = {}
-        concept_result['labels'][r['label']]['wrong_mention'] = r['num']
-    labels = sorted([{'label': l, 'c': concept_result['labels'][l]['condition_mention'] if 'condition_mention' in concept_result['labels'][l] else 0, 'w': concept_result['labels'][l]['wrong_mention'] if 'wrong_mention' in concept_result['labels'][l] else 0} for l in concept_result['labels']], key=lambda x: - x['c'] - x['w'])
-    print '%s' % concept_id
+        if r['label'] not in mc.labels:
+            mc.add_label(ConceptLabel(r['label']))
+        mc.labels[r['label']].wrong_mention = r['num']
+
+    labels = sorted([mc.labels[l] for l in mc.labels], key=lambda x: - x.total_mentions)
+    print '%s (ambiguity: %s; name variation@2: %s)' \
+          % (concept_id, mc.ambiguity_score, mc.label_variation())
+    print 'label\tambiguity score\tcondition mention/wrong mention'
     for l in labels:
-        print '%s\t%s\t%s' % (l['label'], l['c'], l['w'])
-    print '\n' + ('-' * 30 )+ '\n'
+        print '%s\t%s\t%s/%s' % (l.label, l.ambiguity_score, l.condition_mention, l.wrong_mention)
+    print '\n' + ('-' * 30) + '\n'
     return concept_result
 
 
@@ -324,6 +328,10 @@ class ConceptLabel(object):
     def wrong_mention(self, value):
         self._wrong_freq = value
 
+    @property
+    def total_mentions(self):
+        return self.condition_mention + self.wrong_mention
+
     def ambiguity_score(self):
         return self.wrong_mention * 1.0 / (self.wrong_mention + self.condition_mention)
 
@@ -340,6 +348,7 @@ class MConcept(object):
     def add_label(self, cl):
         self._l2labels[cl.label] = cl
 
+    @property
     def ambiguity_score(self):
         s = 0
         total_freq = 0
