@@ -363,7 +363,7 @@ class MConcept(object):
         return s * 1.0 / total_freq
 
     def label_variation(self, k=2):
-        c_sorted = sorted([l for l in self.labels], key=lambda x: -x['condition_mention'])
+        c_sorted = sorted([l for l in self.labels], key=lambda x: -x.condition_mention)
         k_freq = 0
         t_freq = 0
         for i in len(c_sorted):
