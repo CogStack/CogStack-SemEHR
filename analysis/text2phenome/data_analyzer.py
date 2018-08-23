@@ -366,7 +366,7 @@ class MConcept(object):
         c_sorted = sorted([l for l in self.labels], key=lambda x: -x.condition_mention)
         k_freq = 0
         t_freq = 0
-        for i in len(c_sorted):
+        for i in xrange(len(c_sorted)):
             if i + 1 <= k:
                 k_freq += c_sorted[i-1]['condition_mention']
             t_freq += c_sorted[i-1]['condition_mention']
