@@ -322,7 +322,7 @@ class ConceptLabel(object):
 
     @property
     def wrong_mention(self):
-        return self._condition_freq
+        return self._wrong_freq
 
     @wrong_mention.setter
     def wrong_mention(self, value):
@@ -332,6 +332,7 @@ class ConceptLabel(object):
     def total_mentions(self):
         return self.condition_mention + self.wrong_mention
 
+    @property
     def ambiguity_score(self):
         return self.wrong_mention * 1.0 / (self.wrong_mention + self.condition_mention)
 
