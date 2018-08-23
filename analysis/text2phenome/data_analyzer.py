@@ -276,19 +276,19 @@ def concept_analyse(concept_id, condition_label_sql, wrong_label_sql, db_cnf):
     dutil.query_data(condition_label_sql.format(**{'concept': concept_id}), results_condition_labels,
                      dbconn=dutil.get_db_connection_by_setting(db_cnf))
     for r in results_condition_labels:
-        if r['label'] not in mc.labels:
+        if r['label'] not in mc.name2labels:
             mc.add_label(ConceptLabel(r['label']))
-        mc.labels[r['label']].condition_mention = r['num']
+        mc.name2labels[r['label']].condition_mention = r['num']
 
     results_wrong_labels = []
     dutil.query_data(wrong_label_sql.format(**{'concept': concept_id}), results_wrong_labels,
                      dbconn=dutil.get_db_connection_by_setting(db_cnf))
     for r in results_wrong_labels:
-        if r['label'] not in mc.labels:
+        if r['label'] not in mc.name2labels:
             mc.add_label(ConceptLabel(r['label']))
-        mc.labels[r['label']].wrong_mention = r['num']
+        mc.name2labels[r['label']].wrong_mention = r['num']
 
-    labels = sorted([mc.labels[l] for l in mc.labels], key=lambda x: - x.total_mentions)
+    labels = sorted([l for l in mc.labels], key=lambda x: - x.total_mentions)
     print '%s (ambiguity: %s; name variation@2: %s)' \
           % (concept_id, mc.ambiguity_score, mc.label_variation())
     print 'label\tambiguity score\tcondition mention/wrong mention'
@@ -344,6 +344,10 @@ class MConcept(object):
     @property
     def labels(self):
         return [self._l2labels[l] for l in self._l2labels]
+
+    @property
+    def name2labels(self):
+        return self._l2labels
 
     def add_label(self, cl):
         self._l2labels[cl.label] = cl
