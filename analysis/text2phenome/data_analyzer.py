@@ -390,13 +390,13 @@ class MConcept(object):
     def output(self):
         mc = self
         labels = sorted([l for l in mc.labels], key=lambda x: - x.total_mentions)
-        s = '%s (ambiguity: %s; name variation@2: %s)' \
+        s = '%s (ambiguity: %s; name variation@2: %s)\n' \
             % (self._concept_id, mc.ambiguity_score, mc.label_variation())
-        s += 'label\tambiguity score\tcondition mention/wrong mention\tamb contri\tcond contri'
+        s += 'label\tambiguity score\tcondition mention/wrong mention\tamb contri\tcond contri\n'
         amb_contris = mc.ambiguity_contributions()
         cond_contis = mc.condition_contributions()
         for l in labels:
-            s += '%s\t%s\t%s/%s\t%s\t%s' % (l.label, l.ambiguity_score,
+            s += '%s\t%s\t%s/%s\t%s\t%s\n' % (l.label, l.ambiguity_score,
                                              l.condition_mention, l.wrong_mention,
                                              amb_contris[l.label], cond_contis[l.label])
         s += '\n' + ('-' * 30) + '\n'
