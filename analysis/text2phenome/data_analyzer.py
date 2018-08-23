@@ -264,7 +264,7 @@ def label_analyse(sql_template_file, db_cnf):
     concepts = []
     dutil.query_data(sql_temps['get_validated_concepts'], concepts,
                      dbconn=dutil.get_db_connection_by_setting(db_cnf))
-    for c in concepts[:10]:
+    for c in concepts:
         concept_analyse(c['concept_id'], sql_temps['condition_label_sql'], sql_temps['wrong_label_sql'], db_cnf)
 
 
@@ -359,7 +359,7 @@ class MConcept(object):
         total_freq = 0
         for l in self.name2labels:
             lb = self.name2labels[l]
-            s += lb.ambiguity_score() * (lb.condition_mention + lb.wrong_mention)
+            s += lb.ambiguity_score * (lb.condition_mention + lb.wrong_mention)
             total_freq += lb.condition_mention + lb.wrong_mention
         return s * 1.0 / total_freq
 
@@ -371,6 +371,8 @@ class MConcept(object):
             if i + 1 <= k:
                 k_freq += c_sorted[i-1].condition_mention
             t_freq += c_sorted[i-1].condition_mention
+        if t_freq == 0:
+          return -1
         return 1 - k_freq * 1.0 / t_freq
 
 
