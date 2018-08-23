@@ -340,6 +340,7 @@ class MConcept(object):
     @property
     def total_freq(self):
         if self._total_freq == -1:
+            self._total_freq = 0
             for l in self.labels:
                 self._total_freq += l.total_mentions
         return self._total_freq
@@ -374,7 +375,7 @@ class MConcept(object):
                 k_freq += c_sorted[i-1].condition_mention
             t_freq += c_sorted[i-1].condition_mention
         if t_freq == 0:
-          return -1
+            return -1
         return 1 - k_freq * 1.0 / t_freq
 
     def ambiguity_contributions(self):
