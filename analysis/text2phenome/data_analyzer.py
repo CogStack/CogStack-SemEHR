@@ -288,13 +288,7 @@ def concept_analyse(concept_id, condition_label_sql, wrong_label_sql, db_cnf):
             mc.add_label(ConceptLabel(r['label']))
         mc.name2labels[r['label']].wrong_mention = r['num']
 
-    labels = sorted([l for l in mc.labels], key=lambda x: - x.total_mentions)
-    print '%s (ambiguity: %s; name variation@2: %s)' \
-          % (concept_id, mc.ambiguity_score, mc.label_variation())
-    print 'label\tambiguity score\tcondition mention/wrong mention'
-    for l in labels:
-        print '%s\t%s\t%s/%s' % (l.label, l.ambiguity_score, l.condition_mention, l.wrong_mention)
-    print '\n' + ('-' * 30) + '\n'
+    print mc.output()
     return concept_result
 
 
@@ -375,6 +369,32 @@ class MConcept(object):
           return -1
         return 1 - k_freq * 1.0 / t_freq
 
+    def ambiguity_contributions(self):
+        l2c = {}
+        for l in self.labels:
+            l2c[l.label] = l.ambiguity_score * l.total_mentions / self.ambiguity_score
+        return l2c
+
+    def condition_contributions(self):
+        l2c = {}
+        for l in self.labels:
+            l2c[l.label] = (1 - l.ambiguity_score) * l.total_mentions / (1 -self.ambiguity_score)
+        return l2c
+
+    def output(self):
+        mc = self
+        labels = sorted([l for l in mc.labels], key=lambda x: - x.total_mentions)
+        s = '%s (ambiguity: %s; name variation@2: %s)' \
+            % (self._concept_id, mc.ambiguity_score, mc.label_variation())
+        s += 'label\tambiguity score\tcondition mention/wrong mention\tamb contri\tcond contri'
+        amb_contris = mc.ambiguity_contributions()
+        cond_contis = mc.condition_contributions()
+        for l in labels:
+            s += '%s\t%s\t%s/%s\t%s\t%s' % (l.label, l.ambiguity_score,
+                                             l.condition_mention, l.wrong_mention,
+                                             amb_contris[l.label], cond_contis[l.label])
+        s += '\n' + ('-' * 30) + '\n'
+        return s
 
 if __name__ == "__main__":
     # do_phenotype_analysis('./data/phenotype_def_with_validation.json', './data/c_map_file.json', './data/pstats/')
