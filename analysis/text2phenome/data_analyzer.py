@@ -372,13 +372,19 @@ class MConcept(object):
     def ambiguity_contributions(self):
         l2c = {}
         for l in self.labels:
-            l2c[l.label] = l.ambiguity_score * l.total_mentions / self.ambiguity_score
+            if self.ambiguity_score == 0:
+                l2c[l.label] = -1
+            else:
+                l2c[l.label] = l.ambiguity_score * l.total_mentions / self.ambiguity_score
         return l2c
 
     def condition_contributions(self):
         l2c = {}
         for l in self.labels:
-            l2c[l.label] = (1 - l.ambiguity_score) * l.total_mentions / (1 -self.ambiguity_score)
+            if self.ambiguity_score == 1:
+                l2c[l.label] = -1
+            else:
+                l2c[l.label] = (1 - l.ambiguity_score) * l.total_mentions / (1 - self.ambiguity_score)
         return l2c
 
     def output(self):
