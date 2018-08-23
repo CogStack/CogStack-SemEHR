@@ -356,14 +356,14 @@ class MConcept(object):
     def ambiguity_score(self):
         s = 0
         total_freq = 0
-        for l in self.labels:
-            lb = self.labels[l]
+        for l in self.name2labels:
+            lb = self.name2labels[l]
             s += lb.ambiguity_score() * (lb.condition_mention + lb.wrong_mention)
             total_freq += lb.condition_mention + lb.wrong_mention
         return s * 1.0 / total_freq
 
     def label_variation(self, k=2):
-        c_sorted = sorted([self.labels[l] for l in self.labels], key=lambda x: -x['condition_mention'])
+        c_sorted = sorted([l for l in self.labels], key=lambda x: -x['condition_mention'])
         k_freq = 0
         t_freq = 0
         for i in len(c_sorted):
