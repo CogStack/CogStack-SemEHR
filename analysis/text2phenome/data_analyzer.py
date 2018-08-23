@@ -335,6 +335,14 @@ class MConcept(object):
     def __init__(self, concept_id):
         self._concept_id = concept_id
         self._l2labels = {}
+        self._total_freq = -1
+
+    @property
+    def total_freq(self):
+        if self._total_freq == -1:
+            for l in self.labels:
+                self._total_freq += l.total_mentions
+        return self._total_freq
 
     @property
     def labels(self):
@@ -375,7 +383,7 @@ class MConcept(object):
             if self.ambiguity_score == 0:
                 l2c[l.label] = -1
             else:
-                l2c[l.label] = l.ambiguity_score * l.total_mentions / self.ambiguity_score
+                l2c[l.label] = l.ambiguity_score * l.total_mentions / self.total_freq / self.ambiguity_score
         return l2c
 
     def condition_contributions(self):
@@ -384,7 +392,7 @@ class MConcept(object):
             if self.ambiguity_score == 1:
                 l2c[l.label] = -1
             else:
-                l2c[l.label] = (1 - l.ambiguity_score) * l.total_mentions / (1 - self.ambiguity_score)
+                l2c[l.label] = (1 - l.ambiguity_score) * l.total_mentions / self.total_freq / (1 - self.ambiguity_score)
         return l2c
 
     def output(self):
