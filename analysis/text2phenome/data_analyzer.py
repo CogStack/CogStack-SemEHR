@@ -259,13 +259,18 @@ def load_phenotype_def_into_db():
     print 'done'
 
 
-def label_analyse(sql_template_file, db_cnf):
+def label_analyse(sql_template_file, db_cnf, output_file=None):
     sql_temps = utils.load_json_data(sql_template_file)
     concepts = []
     dutil.query_data(sql_temps['get_validated_concepts'], concepts,
                      dbconn=dutil.get_db_connection_by_setting(db_cnf))
+    s = ''
     for c in concepts:
-        concept_analyse(c['concept_id'], sql_temps['condition_label_sql'], sql_temps['wrong_label_sql'], db_cnf)
+        data, output = concept_analyse(c['concept_id'], sql_temps['condition_label_sql'], sql_temps['wrong_label_sql'], db_cnf)
+        s += output
+    if output_file is not None:
+        print 'saving output to %s...' % output_file
+        utils.save_string(output, output_file)
 
 
 def concept_analyse(concept_id, condition_label_sql, wrong_label_sql, db_cnf):
@@ -288,8 +293,9 @@ def concept_analyse(concept_id, condition_label_sql, wrong_label_sql, db_cnf):
             mc.add_label(ConceptLabel(r['label']))
         mc.name2labels[r['label']].wrong_mention = r['num']
 
-    print mc.output()
-    return concept_result
+    output = mc.output()
+    print output
+    return concept_result, output
 
 
 class ConceptLabel(object):
@@ -433,5 +439,5 @@ if __name__ == "__main__":
     #                     './data/concept_typed_dumps.tsv')
     # phenotype_counting('./data/phenotype_defs.json', './data/concept_level_results.tsv',
     #                   './data/phenotype_prev.tsv')
-    label_analyse('./conf/label_analysis_sql.json', './conf/dbcnn.json')
+    label_analyse('./conf/label_analysis_sql.json', './conf/dbcnn.json', output_file='./concept_analysis_results.tsv')
 
