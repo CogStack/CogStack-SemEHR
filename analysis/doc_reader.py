@@ -220,15 +220,20 @@ def process_batched_docs(folder_path, out_folder):
         for f in listdir(folder_path):
             if isfile(join(folder_path, f)):
                 t = utils.read_text_file_as_string(join(folder_path, f))
-                mit = re.finditer(r'^(\d+)\,\"', t)
+                print 'processing %s' % join(folder_path, f)
+                print t
+                mit = re.finditer(r'^(\d+)\,\"', t, re.MULTILINE)
                 prev_pos = 0
                 prev_id = None
                 for m in mit:
                     if prev_pos > 0:
                         utils.save_string(t[prev_pos:m.start()-2], join(out_folder, prev_id))
-                        prev_pos = m.end()
-                        prev_id = m.string[m.start(1):m.end(1)]
-                utils.save_string(t[prev_pos:len(t) - 1], join(out_folder, prev_id))
+                    prev_pos = m.end()
+                    prev_id = m.string[m.start(1):m.end(1)]
+                if prev_id is not None:
+                    utils.save_string(t[prev_pos:len(t) - 1], join(out_folder, prev_id))
+                else:
+                    print 'ERROR!! pattern not found in %s' % join(folder_path, f)
 
 
 def test():
@@ -248,4 +253,4 @@ def test():
 
 
 if __name__ == "__main__":
-    test()
+    pass
