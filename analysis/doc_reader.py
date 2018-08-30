@@ -108,6 +108,26 @@ class FileIterDocs(StreamedDocs):
         ret += text[prev_pos:]
         return ret
 
+    def ann_to_labelled_data(self, text, window=3):
+        # sort anns
+        anns = self._anns
+        anns = sorted(anns, key=lambda x: x.offset_start)
+
+        data_x = []
+        data_y = []
+        for ann in anns:
+            start = self.match_ann_in_text(text, ann.string_orig, ann.offset_start)
+            end = start + len(ann.string_orig)
+            if start < 0:
+                start = ann.offset_start
+                end = ann.offset_end
+            x = []
+            x.append(text[:start].split()[-window])
+            x.append(text[end:].split())[:window]
+            data_x.append(x)
+            data_y.append(ann.annotator_label + '-' + ann.concept)
+        return data_x, data_y
+
     def get_doc_by_id(self, doc_id):
         doc_path = self._path_template.format(**{'doc_id': doc_id})
         print 'working on %s' % doc_path
