@@ -20,7 +20,15 @@ class StreamedDocs(object):
             doc = nlp(self.get_doc_by_id(d))
             for line in doc.sents:
                 tokens = [StreamedDocs.simple_tokenize(w) for w in line.text.split()]
-                yield [w for w in tokens if w not in nlp.Defaults.stop_words and w not in ['']]
+                yield [w for w in tokens if w not in StreamedDocs.get_customised_stopwords()]
+
+    @staticmethod
+    def get_spacy_en_stopwords():
+        return FileIterDocs.get_nlp().Defaults.stop_words
+
+    @staticmethod
+    def get_customised_stopwords():
+        return ['', 'the', 'a', 'an', 'these', 'that']
 
     @staticmethod
     def simple_tokenize(w):
@@ -30,7 +38,7 @@ class StreamedDocs(object):
     def get_nlp():
         if StreamedDocs._spacy_instance is None:
             print 'loading nlp instance...'
-            StreamedDocs._spacy_instance = spacy.load('en')
+            StreamedDocs._spacy_instance = spacy.load('en_core_web_sm')
         return StreamedDocs._spacy_instance
 
 
@@ -40,11 +48,12 @@ class FileIterDocs(StreamedDocs):
     SemEHR annotation to be marked before embedding learning
     """
 
-    def __init__(self, doc_ids, doc_path_template):
+    def __init__(self, doc_ids, doc_path_template, doc_to_anns):
         self.docs = doc_ids
         self._path_template = doc_path_template
         self._anns = None
         self._need_preprocess = False
+        self._doc_to_anns = doc_to_anns
 
     def add_annotations(self, anns):
         self._anns = anns
@@ -63,14 +72,13 @@ class FileIterDocs(StreamedDocs):
 
     @staticmethod
     def match_ann_in_text(t, a, defaultIndex):
-        mit = re.finditer(r"([\s\.;\,$\?!:/]|^)" + a + "([\s\.;\,\?!:/]|$)", t, re.IGNORECASE)
+        mit = re.finditer(r"([\s\.;\,$\?!:/\('\"]|^)" + a + "([\s\.;\,\?!:/\)'\"]|$)", t, re.IGNORECASE)
         poz = []
         for m in mit:
             if m is not None:
                 p = m.end(1)
                 poz.append([abs(p - defaultIndex), p])
         poz = sorted(poz, key=lambda x: x[0])
-        print poz
         if len(poz) > 0:
             return poz[0][1]
         else:
@@ -83,16 +91,17 @@ class FileIterDocs(StreamedDocs):
 
         inserts = []
         for ann in anns:
-            start = self.match_ann_in_text(text, ann.string_orig, ann.offset_start)
+            start = self.match_ann_in_text(text, ann.string_orig, int(ann.offset_start))
             end = start + len(ann.string_orig)
             if start < 0:
-                start = ann.offset_start
+                start = int(ann.offset_start)
                 end = ann.offset_end
             inserts.append({'p': start, 'insert': ' ' + ann.annotator_label + '-' + ann.concept + ' '})
         inserts = sorted(inserts, key=lambda x: x['p'])
 
         prev_pos = 0
         ret = ''
+        print inserts
         for insert in inserts:
             ret += text[prev_pos:insert['p']] + insert['insert']
             prev_pos = insert['p']
@@ -101,7 +110,10 @@ class FileIterDocs(StreamedDocs):
 
     def get_doc_by_id(self, doc_id):
         doc_path = self._path_template.format(**{'doc_id': doc_id})
+        print 'working on %s' % doc_path
         text = utils.read_text_file_as_string(doc_path)
+        if doc_id in self._doc_to_anns:
+            self.add_annotations(self._doc_to_anns[doc_id])
         if self.need_preprocess:
             text = FileIterDocs.preprocess(text)
         return self.markup_annotations(text)
@@ -253,4 +265,13 @@ def test():
 
 
 if __name__ == "__main__":
-    pass
+    docs_path = 'C:/Users/HWu/Desktop/validated_docs/docs'
+    d2anns = load_tsv_anns('C:/Users/HWu/Desktop/validated_docs/anns/anns_dumped.csv')
+    docs = [f for f in listdir(docs_path)]
+    fdocs = FileIterDocs(docs, docs_path + '/{doc_id}', d2anns)
+    c = 0
+    for d in fdocs:
+        print d
+        c += 1
+        if c > 200:
+            break
