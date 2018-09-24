@@ -118,7 +118,8 @@ class AnnRuleExecutor(object):
         print 'loading rules from [%s]' % r_path
         for rf in rule_config['active_rules']:
             for r in utils.load_json_data(join(r_path, rf)):
-                self.add_filter_rule(r['offset'], r['regs'], rule_name=rf)
+                self.add_filter_rule(r['offset'], r['regs'], rule_name=rf,
+                                     case_sensitive=r['case_sensitive'] if 'case_sensitive' in r else False)
             print '%s loaded' % rf
         if 'osf_rules' in rule_config:
             for osf in rule_config['osf_rules']:
@@ -129,7 +130,7 @@ class AnnRuleExecutor(object):
 
 
 def test_filter_rules():
-    t = """abc clinic for check up
+    t = """ACaCac clincic for check up
     """
     e = AnnRuleExecutor()
     # e.add_filter_rule(1, [r'.{0,5}\s+yes'], case_sensitive=False)
@@ -138,7 +139,7 @@ def test_filter_rules():
     # for r in rules:
     #     print r
     #     e.add_filter_rule(r['offset'], r['regs'], case_sensitive=True if 'case' in r and r['case'] is True else False)
-    print 'workting on [%s]' % t
+    print 'working on [%s]' % t
     print e.execute(t, 0, 3)
 
 
@@ -152,10 +153,10 @@ def test_osf_rules():
 
 
 if __name__ == "__main__":
-    # test_filter_rules()
-    [s, e] = AnnRuleExecutor.relocate_annotation_pos("""
-    i am a very long string
-    with many characters, liver
-     such as Heptaitis C, LIver and Candy
-    """, 77, 15, 'liver')
-    print s, e
+    test_filter_rules()
+    # [s, e] = AnnRuleExecutor.relocate_annotation_pos("""
+    # i am a very long string
+    # with many characters, liver
+    #  such as Heptaitis C, LIver and Candy
+    # """, 77, 15, 'liver')
+    # print s, e
