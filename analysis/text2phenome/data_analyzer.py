@@ -5,7 +5,6 @@ import re
 import sqldbutils as dutil
 from study_analyzer import StudyAnalyzer, StudyConcept
 
-
 def populate_concept_level_performance(complete_validation_file, c_map_file):
     if isfile(c_map_file):
         return utils.load_json_data(c_map_file)
@@ -279,6 +278,165 @@ def merge_study_concepts(studies_folder, include_study_pattern, merged_sa_name, 
     print 'all concept len is %s' % (len(study_concept_list))
     utils.save_string('\n'.join(study_concept_list), join(merged_output_folder, 'all_concepts.txt'))
     merged_sa.serialise(join(merged_output_folder, 'merged_study_analyzer.pickle'))
+
+
+def label_analyse(sql_template_file, db_cnf, output_file=None):
+    sql_temps = utils.load_json_data(sql_template_file)
+    concepts = []
+    dutil.query_data(sql_temps['get_validated_concepts'], concepts,
+                     dbconn=dutil.get_db_connection_by_setting(db_cnf))
+    s = ''
+    for c in concepts:
+        data, output = concept_analyse(c['concept_id'], sql_temps['condition_label_sql'], sql_temps['wrong_label_sql'], db_cnf)
+        s += output
+    if output_file is not None:
+        print 'saving output to %s...' % output_file
+        utils.save_string(output, output_file)
+
+
+def concept_analyse(concept_id, condition_label_sql, wrong_label_sql, db_cnf):
+    # get condition mention labels
+    concept_result = {'concept': concept_id, 'labels': {}}
+    mc = MConcept(concept_id)
+    results_condition_labels = []
+    dutil.query_data(condition_label_sql.format(**{'concept': concept_id}), results_condition_labels,
+                     dbconn=dutil.get_db_connection_by_setting(db_cnf))
+    for r in results_condition_labels:
+        if r['label'] not in mc.name2labels:
+            mc.add_label(ConceptLabel(r['label']))
+        mc.name2labels[r['label']].condition_mention = r['num']
+
+    results_wrong_labels = []
+    dutil.query_data(wrong_label_sql.format(**{'concept': concept_id}), results_wrong_labels,
+                     dbconn=dutil.get_db_connection_by_setting(db_cnf))
+    for r in results_wrong_labels:
+        if r['label'] not in mc.name2labels:
+            mc.add_label(ConceptLabel(r['label']))
+        mc.name2labels[r['label']].wrong_mention = r['num']
+
+    output = mc.output()
+    print output
+    return concept_result, output
+
+
+class ConceptLabel(object):
+    """
+    concept label with frequencies
+    implements ambiguity scoring
+    """
+    def __init__(self, label):
+        self._label = label
+        self._condition_freq = 0
+        self._wrong_freq = 0
+
+    @property
+    def label(self):
+        return self._label
+
+    @property
+    def condition_mention(self):
+        return self._condition_freq
+
+    @condition_mention.setter
+    def condition_mention(self, value):
+        self._condition_freq = value
+
+    @property
+    def wrong_mention(self):
+        return self._wrong_freq
+
+    @wrong_mention.setter
+    def wrong_mention(self, value):
+        self._wrong_freq = value
+
+    @property
+    def total_mentions(self):
+        return self.condition_mention + self.wrong_mention
+
+    @property
+    def ambiguity_score(self):
+        return self.wrong_mention * 1.0 / (self.wrong_mention + self.condition_mention)
+
+
+class MConcept(object):
+    def __init__(self, concept_id):
+        self._concept_id = concept_id
+        self._l2labels = {}
+        self._total_freq = -1
+
+    @property
+    def total_freq(self):
+        if self._total_freq == -1:
+            self._total_freq = 0
+            for l in self.labels:
+                self._total_freq += l.total_mentions
+        return self._total_freq
+
+    @property
+    def labels(self):
+        return [self._l2labels[l] for l in self._l2labels]
+
+    @property
+    def name2labels(self):
+        return self._l2labels
+
+    def add_label(self, cl):
+        self._l2labels[cl.label] = cl
+
+    @property
+    def ambiguity_score(self):
+        s = 0
+        total_freq = 0
+        for l in self.name2labels:
+            lb = self.name2labels[l]
+            s += lb.ambiguity_score * (lb.condition_mention + lb.wrong_mention)
+            total_freq += lb.condition_mention + lb.wrong_mention
+        return s * 1.0 / total_freq
+
+    def label_variation(self, k=2):
+        c_sorted = sorted([l for l in self.labels], key=lambda x: -x.condition_mention)
+        k_freq = 0
+        t_freq = 0
+        for i in xrange(len(c_sorted)):
+            if i + 1 <= k:
+                k_freq += c_sorted[i-1].condition_mention
+            t_freq += c_sorted[i-1].condition_mention
+        if t_freq == 0:
+            return -1
+        return 1 - k_freq * 1.0 / t_freq
+
+    def ambiguity_contributions(self):
+        l2c = {}
+        for l in self.labels:
+            if self.ambiguity_score == 0:
+                l2c[l.label] = -1
+            else:
+                l2c[l.label] = l.ambiguity_score * l.total_mentions / self.total_freq / self.ambiguity_score
+        return l2c
+
+    def condition_contributions(self):
+        l2c = {}
+        for l in self.labels:
+            if self.ambiguity_score == 1:
+                l2c[l.label] = -1
+            else:
+                l2c[l.label] = (1 - l.ambiguity_score) * l.total_mentions / self.total_freq / (1 - self.ambiguity_score)
+        return l2c
+
+    def output(self):
+        mc = self
+        labels = sorted([l for l in mc.labels], key=lambda x: - x.total_mentions)
+        s = '%s (ambiguity: %s; name variation@2: %s)\n' \
+            % (self._concept_id, mc.ambiguity_score, mc.label_variation())
+        s += 'label\tambiguity score\tcondition mention/wrong mention\tamb contri\tcond contri\n'
+        amb_contris = mc.ambiguity_contributions()
+        cond_contis = mc.condition_contributions()
+        for l in labels:
+            s += '%s\t%s\t%s/%s\t%s\t%s\n' % (l.label, l.ambiguity_score,
+                                             l.condition_mention, l.wrong_mention,
+                                             amb_contris[l.label], cond_contis[l.label])
+        s += '\n' + ('-' * 30) + '\n'
+        return s
 
 
 if __name__ == "__main__":

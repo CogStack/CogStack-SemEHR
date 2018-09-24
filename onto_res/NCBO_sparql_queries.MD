@@ -24,3 +24,10 @@ WHERE {
   ?s <http://bioportal.bioontology.org/ontologies/umls/isRoot> true.
 }
 ```
+- get HPO term to UMLS mapping using [bioportal](http://sparql.bioontology.org/): 
+```SPARQL
+SELECT DISTINCT ?umls
+WHERE {
+  <http://purl.obolibrary.org/obo/HP_0003449> <http://www.geneontology.org/formats/oboInOWL#xref> ?umls
+}
+```
