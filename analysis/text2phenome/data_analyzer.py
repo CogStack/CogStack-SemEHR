@@ -3,7 +3,7 @@ from os.path import isfile, join
 from os import listdir
 import re
 import sqldbutils as dutil
-
+from study_analyzer import StudyAnalyzer, StudyConcept
 
 
 def populate_concept_level_performance(complete_validation_file, c_map_file):
@@ -260,6 +260,27 @@ def load_phenotype_def_into_db():
     print 'done'
 
 
+def merge_study_concepts(studies_folder, include_study_pattern, merged_sa_name, merged_output_folder):
+    reg_p = re.compile(include_study_pattern)
+    merged_sa = StudyAnalyzer(merged_sa_name)
+    for f in listdir(studies_folder):
+        m = reg_p.match(f)
+        if m is not None:
+            sa_file = join(studies_folder, f, 'study_analyzer.pickle')
+            print 'picking %s...' % f
+            if isfile(sa_file):
+                sa = StudyAnalyzer.deserialise(sa_file)
+                for sc in sa.study_concepts:
+                    merged_sa.add_concept(sc)
+    study_concept_list = []
+    for c in merged_sa.study_concepts:
+        print '%s - %s' % (c.name, len(c.concept_closure))
+        study_concept_list += list(c.concept_closure)
+    print 'all concept len is %s' % (len(study_concept_list))
+    utils.save_string('\n'.join(study_concept_list), join(merged_output_folder, 'all_concepts.txt'))
+    merged_sa.serialise(join(merged_output_folder, 'merged_study_analyzer.pickle'))
+
+
 if __name__ == "__main__":
     # do_phenotype_analysis('./data/phenotype_def_with_validation.json', './data/c_map_file.json', './data/pstats/')
     # add_concept_level_freqs('./data/', './data/c_map_file.json')
@@ -277,9 +298,10 @@ if __name__ == "__main__":
     # load_phenotype_def_into_db()
     # patient_level_analysis('/Users/honghan.wu/Documents/UoE/working_papers/text2phenome/completed_anns.tsv',
     #                        '/Users/honghan.wu/Documents/UoE/working_papers/text2phenome/condition_patient_dicts.json')
-    # dump_mention_detail('../../studies', r'skin.*|COMOB.*|karen.*',
-    #                     './data/mention_dumps.tsv',
-    #                     './data/concept_typed_dumps.tsv')
-    phenotype_counting('./data/phenotype_defs.json', './data/concept_level_results.tsv',
-                       './data/phenotype_prev.tsv')
+    dump_mention_detail('../../studies/physical_conditions/', r'skin.*|COMOB_SD.*|karen.*',
+                        './data/mention_dumps_082018.tsv',
+                        './data/concept_typed_dumps_082018.tsv')
+    # phenotype_counting('./data/phenotype_defs.json', './data/concept_level_results.tsv',
+    #                    './data/phenotype_prev.tsv')
+    # merge_study_concepts('../../studies', r'skin.*|COMOB\_SD.*|karen.*|raquel.*|autoimmune|HCVpos', 'physical phenotypes', './data/')
 
