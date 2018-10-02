@@ -284,7 +284,7 @@ class EntityCentricES(object):
         }
         self._es_instance.update(index=self.index_name, doc_type=self.doc_doc_type, id=doc_id, body=data)
 
-    def copy_doc(self, src_index, src_doc_type, src_doc_id, dest_index, dest_doc_type):
+    def copy_doc(self, src_index, src_doc_type, src_doc_id, dest_index, dest_doc_type, overwrite=False):
         """
         copy a document from one index to another.
         :param src_index: source doc index name
@@ -292,10 +292,23 @@ class EntityCentricES(object):
         :param src_doc_id: source doc id
         :param dest_index: destination index name
         :param dest_doc_type: destination doc type
+        :param overwrite: yes if copy anyway no matter dest doc exists
         :return:
         """
+        if not overwrite and self.exist_doc(dest_index, dest_doc_type, src_doc_id):
+            return
         src_doc = self._es_instance.get(src_index, src_doc_id, doc_type=src_doc_type)
         self._es_instance.index(index=dest_index, doc_type=dest_doc_type, body=src_doc['_source'], id=src_doc_id, timeout='30s')
+
+    def exist_doc(self, idx, doc_type, doc_id):
+        """
+        check whether a document exists or not
+        :param idx:
+        :param doc_type:
+        :param doc_id:
+        :return:
+        """
+        return self._es_instance.exists(index=idx, doc_type=doc_type, id=doc_id)
 
     def copy_doc_by_entity(self, src_index, src_doc_type, src_entity_id,
                            entity_id_field_name, dest_index, dest_doc_type):
