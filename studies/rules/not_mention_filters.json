@@ -55,7 +55,9 @@
     ".*this includes\\s+.{0,50}",
     ".*cure\\s+.{0,20}",
     ".*((esp\\.)|(particular)|(patients with)|(commonly seen))\\s+.{0,100}",
-    ".*association between.{0,60}"
+    ".*association between.{0,60}",
+    ".*read{0,60}",
+    ".*vaccination.{0,20}"
   ]},
   {"offset": 1, "regs": [
     "\\s+(society|organisation|unit)", "\\s+care", "[\\s\\n]+team", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}",
@@ -92,6 +94,8 @@
     "\\s+.{0,10}counsel",
     "\\s+.{0,10}copy",
     "\\s+.{0,10}club",
-    "\\s+.{0,10}question"
+    "\\s+.{0,10}question",
+    "\\s+.{0,5}booster",
+    "\\s+.{0,5}vaccinat"
   ]}
 ]

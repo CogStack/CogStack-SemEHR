@@ -17,6 +17,7 @@
     ".*(fear(ed){0,1}|signs of|investigate(d){0,1}|saying|possibility|suspect|suspicion|suspicious|suspected|delusional|uncertainty|uncertain|false positive)(\\s)+.{0,40}",
     ".*telling people(\\s)+.{0,40}",
     ".*such as(\\s)+.{0,40}",
+    ".*claim(s|ed){0,1}(\\s)+.{0,40}",
     ".*would be(\\s)+.{0,5}",
     ".*(may|might|could|would|will) (have|be|get|indicate|cause)(\\s)+.{0,45}",
     ".*ix|investigation of(\\s)+.{0,10}",
@@ -30,7 +31,7 @@
     ".*ideas of having(\\s)+.{0,15}",
     ".*concerned about having(\\s)+.{0,15}",
     ".*concerned(\\s)+.{0,70}",
-    ".*(asked|asking|ask|compliant|complian|complain|Complaining|question|questioned|query|querying)(\\s)+.{0,70}",
+    ".*(ideas|asked|asking|ask|compliant|complian|complain|Complaining|question|questioned|query|querying)(\\s)+.{0,70}",
     ".*thought(\\s)+.{0,15}",
     ".*worries about(\\s)+.{0,5}",
     ".*afraid of(\\s)+.{0,20}",
@@ -69,6 +70,7 @@
     "\\s+.{0,10}unlikely",
     ".*\\s+bloods to be done.{0,20}",
     ".{0,40}screen",
-    ".{0,40}suspected"
+    ".{0,40}suspected",
+    ".{0,40}discussion"
   ]}
 ]

@@ -17,7 +17,7 @@
   },
   {"offset": 1, "regs": [
     "\\s+\\-",
-    "\\s+.{0,10}negative", "\\s+.{0,10}unlikely",
+    "\\s+.{0,10}negative", "\\s+.{0,10}unlikely", "\\s+.{0,10}None Seen",
     "\\s+.{0,30}non\\-reactive",
     "\\s+.{0,40}ruled out",
     "\\s+.{0,40}excluded",
