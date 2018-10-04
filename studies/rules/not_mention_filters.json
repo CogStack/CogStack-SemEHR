@@ -57,7 +57,8 @@
     ".*((esp\\.)|(particular)|(patients with)|(commonly seen))\\s+.{0,100}",
     ".*association between.{0,60}",
     ".*read{0,60}",
-    ".*vaccination.{0,20}"
+    ".*vaccination.{0,20}",
+    ".*booster.{0,20}"
   ]},
   {"offset": 1, "regs": [
     "\\s+(society|organisation|unit)", "\\s+care", "[\\s\\n]+team", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}",
@@ -77,6 +78,7 @@
     ".{0,5}bloods to be done",
     ".{0,15}hair",
     ".{0,15}advice",
+    ".{0,15}vacc",
     "\\s{0,}\\/ss",
     ".*\\s{0,}YES\\s+NO",
     ".{0,50}\\|\\_\\|",
