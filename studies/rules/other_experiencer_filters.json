@@ -10,7 +10,8 @@
     ".*death\\s+.{0,100}",
     ".*victim\\s+.{0,100}",
     ".*other patient.{0,60}",
-    ".*staff member.{0,60}"
+    ".*staff member.{0,60}",
+    ".*(to|with)\\s+.{0,30}\\s+(woman|man).{0,60}"
   ]},
   {"offset": -1, "regs": [
     ".*people(\\s)+.{0,40}",

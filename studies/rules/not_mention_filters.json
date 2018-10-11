@@ -57,8 +57,8 @@
     ".*((esp\\.)|(particular)|(patients with)|(commonly seen))\\s+.{0,100}",
     ".*association between.{0,60}",
     ".*read{0,60}",
-    ".*vaccination.{0,20}",
-    ".*booster.{0,20}"
+    ".*(vaccination|immunization).{0,20}",
+    ".*information\\s+(regarding|about|of).{0,80}"
   ]},
   {"offset": 1, "regs": [
     "\\s+(society|organisation|unit)", "\\s+care", "[\\s\\n]+team", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}",

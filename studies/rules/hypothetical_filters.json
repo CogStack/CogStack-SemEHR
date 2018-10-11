@@ -41,7 +41,7 @@
     ".*checking(\\s)+.{0,5}",
     ".*going to have(\\s)+.{0,5}",
     ".*like(\\s)+.{0,5}",
-    ".*(screening|test|testing|evaluating|screen|investigation).{0,50}",
+    ".*(screening|test|testing|evaluating|screen|investigation|assess).{0,50}",
     ".*caution\\s+[^\\.]{0,20}\\s+with(\\s)+.{0,20}",
     ".*predictive value for(\\s)+.{0,10}",
     ".*rumination(s){0,1}(\\s)+.{0,1}",
@@ -62,7 +62,12 @@
     ".*(may|would)\\s+.{0,40}",
     ".*consider\\s+.{0,40}",
     ".*can cause\\s+.{0,100}",
-    ".*discussion\\s+.{0,60}"
+    ".*(discussion|talk|talking)\\s+.{0,60}",
+    ".*(delusion|delusions|delude)\\s+.{0,100}",
+    ".*result(s){0,1}\\s+.{0,50}",
+    ".*expressed that\\s+.{0,130}",
+    ".*scared\\s+.{0,40}",
+    ".*\\s+resembl.{0,40}"
   ]},
   {"offset": 1, "regs": [
     "\\s+risk",
