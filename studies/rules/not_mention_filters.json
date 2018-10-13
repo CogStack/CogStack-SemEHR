@@ -57,8 +57,11 @@
     ".*((esp\\.)|(particular)|(patients with)|(commonly seen))\\s+.{0,100}",
     ".*association between.{0,60}",
     ".*read{0,60}",
-    ".*(vaccination|immunization).{0,20}",
-    ".*information\\s+(regarding|about|of).{0,80}"
+    ".*outbreak{0,60}",
+    ".*mechanism{0,60}",
+    ".*(vaccin|immunization|immunisa|swab).{0,60}",
+    ".*information\\s+(regarding|about|of).{0,80}",
+    ".*book about.{0,80}"
   ]},
   {"offset": 1, "regs": [
     "\\s+(society|organisation|unit)", "\\s+care", "[\\s\\n]+team", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}",
@@ -98,6 +101,6 @@
     "\\s+.{0,10}club",
     "\\s+.{0,10}question",
     "\\s+.{0,5}booster",
-    "\\s+.{0,5}vaccinat"
+    "\\s+.{0,50}vaccinat"
   ]}
 ]
