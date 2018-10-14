@@ -67,7 +67,9 @@
     ".*result(s){0,1}\\s+.{0,50}",
     ".*expressed that\\s+.{0,130}",
     ".*scared\\s+.{0,40}",
-    ".*\\s+resembl.{0,40}"
+    ".*\\s+resembl.{0,40}",
+    ".*\\s+examin.{0,40}",
+    ".*\\s+belief.{0,40}"
   ]},
   {"offset": 1, "regs": [
     "\\s+risk",
