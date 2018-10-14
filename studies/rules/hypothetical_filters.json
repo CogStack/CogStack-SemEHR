@@ -19,7 +19,7 @@
     ".*such as(\\s)+.{0,40}",
     ".*claim(s|ed){0,1}(\\s)+.{0,40}",
     ".*would be(\\s)+.{0,5}",
-    ".*(may|might|could|would|will) (have|be|get|indicate|cause)(\\s)+.{0,45}",
+    ".*(maybe|may|might|could|would|will) (have|be|get|indicate|cause)(\\s)+.{0,45}",
     ".*ix|investigation of(\\s)+.{0,10}",
     ".*(\\s)+\\?",
     ".*look up(\\s)+.{0,10}",

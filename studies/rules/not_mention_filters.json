@@ -74,7 +74,7 @@
     "\\s+.{0,10}(guideline|guide)",
     "\\s+[^\\r\\n\\.]{0,30}Adult(s){0,1}",
     "\\s+[^\\r\\n\\.]{0,30}care home",
-    "\\s+(test|screen|pathway|blood screen)",
+    "\\s+.{0,50}(result|test|screen|pathway|blood screen)",
     "\\s+football",
     "\\s+.{0,50}formcheckbox",
     ".{0,5}\\s+yes\\s{0,}(\\s|\\/)+no",
