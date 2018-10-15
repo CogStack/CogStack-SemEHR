@@ -3,10 +3,10 @@
     ".*(\\s)+charity(\\s)+.{0,20}",
     ".*(\\s)+consultant(\\s)+.{0,20}",
     ".*(telling|tell|told).{0,20} people(\\s)+.{0,60}",
-    ".*such as(\\s)+.{0,40}",
+    ".*such as(\\s)+.{0,120}",
     ".*support worker(\\s)+.{0,20}",
     ".*guideline(s){0,1}(\\s)+.{0,50}",
-    ".*(screening|test|testing|evaluating|screen).{0,30}",
+    ".*(screening|test|testing|evaluating|screen).{0,110}",
     ".*(society|association).{0,20}for.{0,20}",
     ".*department.{0,40}",
     ".*Old(er){0,1} Adults(\\s)+.{0,10}",
@@ -60,7 +60,7 @@
     ".*outbreak{0,60}",
     ".*mechanism{0,60}",
     ".*(jabs|vaccin|immunization|immunisa|swab).{0,90}",
-    ".*information\\s+(regarding|about|of).{0,80}",
+    ".*information|leaflet\\s+(regarding|about|of).{0,80}",
     ".*book about.{0,80}"
   ]},
   {"offset": 1, "regs": [
@@ -98,9 +98,9 @@
     "\\s+.{0,10}consultant",
     "\\s+.{0,10}counsel",
     "\\s+.{0,10}copy",
-    "\\s+.{0,10}club",
-    "\\s+.{0,10}question",
-    "\\s+.{0,5}booster",
-    "\\s+.{0,50}vaccinat"
+    ".{0,10}\\s+club",
+    ".{0,10}\\s+question",
+    ".{0,5}\\s+booster",
+    ".{0,50}\\s+vaccinat"
   ]}
 ]

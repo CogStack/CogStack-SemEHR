@@ -22,6 +22,7 @@
     "\\s+.{0,30}non\\-reactive",
     "\\s+.{0,40}ruled out",
     "\\s+.{0,40}excluded",
-    "\\s+.{0,40}not clinically suspected"
+    "\\s+.{0,40}not clinically suspected",
+    "\\s+.{0,40}not detected"
   ]}
 ]
