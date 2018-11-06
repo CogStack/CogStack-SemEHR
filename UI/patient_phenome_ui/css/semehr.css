@@ -409,7 +409,7 @@ h1.sumHeading{
     text-align: center;
 }
 
-.tabContainer{
+.tabContainer, #patientDataContainer{
     display: block !important;
     border-width: 1px !important;
     border-style: solid !important;
@@ -426,7 +426,7 @@ h1.sumHeading{
     border-bottom: 1px solid #ccc!important;
 }
 
-.tabTitle{
+.tabTitle, .tabView{
     padding: 8px 16px;
     float: left;
     width: auto;
@@ -505,3 +505,73 @@ h1.sumHeading{
     color:#777;
     width:100px;
 }
+#patientDataContainer{
+    margin-top:20px;
+}
+
+
+#docListContainer, #docDetail{
+    display: table;
+    width: 90%;
+    text-align: center;
+    margin-left: 5%;
+    margin-top:20px;
+}
+.dRowHeader{
+    font-size: 90%;
+    font-weight: bold;
+    vertical-align: middle;
+}
+.dRowTitle{    
+    background-color: #e7e8f0;
+    border:white 1px solid;
+}
+.dRow, .dRowHeader{
+    display: table-row;
+}
+.dRowTitle, .cAttr{
+    display: table-cell;
+    padding: 5px;
+    margin: 1px;
+}
+.dRow:hover{
+    background-color: #e7e8c3;
+    border:white 1px solid;
+    cursor: pointer;
+    color: blue;
+}
+.dRow.sel{
+    background-color: #e7c8c3;
+    border:white 1px solid;
+    font-weight: bold;
+}
+#docDetail{
+    background-color: #eee;
+}
+#patientDocumentView{
+    display: none;
+}
+.clsSearchMatched{
+    background-color: #cfdfaf;
+}
+
+.clsPhenotypeResult{
+    margin-top:20px;
+    text-align: center;
+}
+.clsSniptDoc{
+    font-size: 100%;
+    font-weight: bold;
+    border-bottom: #ccc 1px solid;
+}
+.clsSnipts{
+    font-size: 80%;
+    font-style: italic;
+    margin-top: 6px;
+    margin-bottom: 16px;
+}
+.clsSnipts br{
+    margin: 6px;
+}
+
+
