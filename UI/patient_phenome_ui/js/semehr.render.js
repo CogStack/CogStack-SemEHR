@@ -9,7 +9,10 @@ if (typeof semehr == "undefined"){
     if(typeof semehr.Render == "undefined") {
 
         semehr.Render = {
-            docDisplayAttrs: ["charttime", "chartdate", "docType", "fulltext"],
+            docDisplayAttrs: [
+                // ["charttime", "chartdate", "docType", "fulltext"],
+                ["updatetime", "document_description", "body_analysed"], 
+                ["basicobs_createdwhen", "basicobs_itemname_analysed", "textualObs"]],
 
             /**
              * highlight a piece of text with an array of annotations
@@ -57,7 +60,17 @@ if (typeof semehr == "undefined"){
              * @param renderElem
              */
             renderDoc: function(doc, renderElem){
-                var attrs = semehr.Render.docDisplayAttrs;
+                var s = semehr.Render.getDocDisplay(doc);
+                $(renderElem).html(s)
+
+                // for(var k in _user_feedback){
+                //     $('#' + k + ' .' + _user_feedback[k]).addClass('fbed');
+                // }
+                swal.close();
+            },
+
+            getDocDisplay: function(doc){
+                var attrs = semehr.Render.docDisplayAttrs[semehr.search.__indice_index];
                 var s =
                     "<div class='clsRow'><div class='clsField'>DocID</div>" +
                     "<div attr='did' class='clsValue'>" + doc['id'] + "</div></div>";
@@ -66,20 +79,14 @@ if (typeof semehr == "undefined"){
                     var attrS = '';
                     var attr = attrs[i];
                     var val = d[attr];
-                    if (attr == semehr.search._full_text_attr){
+                    if (attr == semehr.search._full_text_attr[semehr.search.__indice_index]){
                         val = "<span class='full'>" + semehr.Render.highlightText(doc["mentions"], d[attr], false) + "</span>";
                     }
                     attrS += "<div class='clsField'>" + attr + "</div>";
                     attrS += "<div attr='" + attr + "' class='clsValue'>" + val + "</div>";
                     s += "<div class='clsRow clsDoc'>" + attrS + "</div>";
                 }
-
-                $(renderElem).html(s)
-
-                // for(var k in _user_feedback){
-                //     $('#' + k + ' .' + _user_feedback[k]).addClass('fbed');
-                // }
-                swal.close();
+                return s;
             },
 
             showPopupLayer: function(sHtml){
@@ -184,6 +191,51 @@ if (typeof semehr == "undefined"){
                     });
                 }
 
+            },
+
+            renderPatientDocs: function(docs, container, docSelectFunc){
+                var attrTypes = semehr.search._es_doc_type_field;
+                var attrDates = semehr.search._es_doc_date_field;
+                docs.sort(function(a, b){
+                    var attrDateA = semehr.Render.getAttrNameFromList(attrDates, a["_source"]);
+                    var attrDateB = semehr.Render.getAttrNameFromList(attrDates, b["_source"]);
+                    return a['_source'][attrDateA] >= b['_source'][attrDateB] ? -1 : 1;
+                })
+                var s = "<div class='dRowHeader'><div class='dRowTitle'>document type</div><div class='dRowTitle'>document date</div></div>";
+                for (var i=0;i<docs.length;i++){
+                    var d = docs[i]['_source'];
+                    var attrType = semehr.Render.getAttrNameFromList(attrTypes, d);
+                    var attrDate = semehr.Render.getAttrNameFromList(attrDates, d);
+                    s += "<div class='dRow' docId='" + docs[i]['_id'] + "'><div class='cAttr'>" + docs[i]["_id"] + "</div><div class='cAttr'>" + d[attrType] + "</div><div class='cAttr'>" + d[attrDate] + "</div></div>";
+                }
+                $(container).html(s);
+                $('.dRow').click(function(){
+                    $('.dRow').removeClass('sel');
+                    $(this).addClass('sel');
+                    docSelectFunc($(this).attr('docId'));
+                });
+            },
+
+            getAttrNameFromList: function(attrs, d){
+                for(var i=0;i<attrs.length;i++){
+                    if (attrs[i] in d)
+                        return attrs[i];
+                }
+                return null;
+            },
+
+            renderSemQueryResult: function(p, mDocs){
+                if (mDocs.length == 0)
+                    return;
+                var s = "<h2 class='clsPhenotypeResult'>semantic search results of [" + p.replace(/\\:/, ":") + "]</h2>";
+                for (var i=0;i<mDocs.length;i++){
+                    var d = mDocs[i];
+                    s += "<div class='clsSniptDoc'>snippts in " + d['d'] + "</div>";
+                    s += "<div class='clsSnipts'>" + d.hts.join("<br/>") + "</div>";
+                }
+                $('#lbl' + p).parent().click(function(){
+                    semehr.Render.showPopupLayer(s);
+                });
             }
         };
     }

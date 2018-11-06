@@ -32,6 +32,7 @@
 
     var _patientResults = null;
     var _queriedPatientId = '';
+    var _semsearch2do = 0;854
     function userLogin(){
         swal.setDefaults({
             confirmButtonText: 'Next &rarr;',
@@ -177,6 +178,35 @@
         }
     }
 
+    function searchPatientDocs(pid, all_docs, from, size){
+        var query_str = "" + pid;
+        if (!from) from = 0;
+        if (!size) size = 100;
+        semehr.search.searchPatientDocIds(query_str, function(result){
+            all_docs = all_docs.concat(result.docs);
+            // console.log("got " + result.docs.length + " docs. total size: " + result.total);
+            if (all_docs.length < result.total){
+                // console.log('continuing searching from ' + (from + all_docs.length));
+                searchPatientDocs(pid, all_docs, all_docs.length, size);
+            }else{                
+                semehr.Render.renderPatientDocs(all_docs, $('#docListContainer'), showDocDetail);
+            }
+        }, function(err){
+            swal(err.message);
+            console.trace(err.message);
+        }, from, size);
+    }
+
+    function showDocDetail(docId){
+        semehr.search.getDocument(docId, function(resp){
+            var doc = {id: docId, mentions: [], docDetail: resp['_source']};
+            var s = semehr.Render.getDocDisplay(doc);
+            semehr.Render.showPopupLayer("<div id='docDetail'>" + s + "</div>");
+        }, function(err){
+            console.trace(err.message);
+        });
+    }
+
     function cohortConcepts(entities){
         var cohort = new semehr.Cohort("cohort");
         cohort.setPatients(entities);
@@ -296,8 +326,8 @@
 
         $('.clsHPRow').unbind('click');
         $('.clsHPRow').click(function(){
+            $('.searched').removeClass('searched');
             if ($(this).attr('cui') != ""){
-                $('.searched').removeClass('searched');
                 resetSearchResult();
                 _queryObj["terms"] = [$(this).attr('cui')];
                 summaris_cohort(_patientResults, _entityCurrentTotal);
@@ -310,9 +340,9 @@
 
             $('#sumTermDiv').html(' HPO: ' + $(this).find('.clsLabel').html());
             $('#feedbackLabel').html('feedback for ' + _queriedPatientId + ' on ' + $(this).find('.clsLabel').html());
-            $('html, body').animate({
-                scrollTop: $("#sumTermDiv").offset().top
-            }, 500);
+            // $('html, body').animate({
+            //     scrollTop: $("#sumTermDiv").offset().top
+            // }, 500);
 
             // put feedback in
             $('#feedBackText').val(_defaultFeedbackTemplate);
@@ -790,27 +820,68 @@
         var strHPOs = "";
         var disObj = disease_model_100k[$('#listDisease').val()];
         if (disObj){
-            strHPOs = render_typed_concepts(disObj, patientHPO);
+            strHPOs = render_typed_concepts(disObj, patientHPO, _phenotypeSearches, complementarySearch4EmptyPhenotypes);
         }
         $('#patientConceptMapDiv').html('');
         append_typed_concepts(anns, ontoMap, strHPOs);
         retrieveFeedback();
     }
 
-    function render_typed_concepts(disObj, patientHPO){
+    function render_typed_concepts(disObj, patientHPO, phenoSearches, doSearchFunc){
 	    var s = "";
 	    var strHPOs = "";
+        var searches = [];
         for(var i=0;i<disObj.length;i++){
             if ("hpo_id" in disObj[i]){
+                var phenotype = disObj[i]['hpo_id'];
                 strHPOs += disObj[i]['hpo_id'] + ";";
-                s += "<div cui='" + (disObj[i]['hpo_id'] in patientHPO ?  patientHPO[disObj[i]['hpo_id']]['cui'] : '' ) + "' class='clsHPRow" + (disObj[i]['hpo_id'] in patientHPO ?  '' : ' clsNotMatched' ) + "'><div class='clsHPCell clsFreq'>" + disObj[i]['hpo_id'] + "</div><div class='clsHPCell clsLabel' id='lbl" + disObj[i]['hpo_id'] + "'>" + disObj[i]['hpo_label'] + "</div><div class='clsHPCell clsFreq'>" +
-                (disObj[i]['hpo_id'] in patientHPO ?  patientHPO[disObj[i]['hpo_id']]['freq'] : '-' )+ "</div></div>";
+                s += "<div cui='" + (disObj[i]['hpo_id'] in patientHPO ?  patientHPO[phenotype]['cui'] : '' ) + "' class='clsHPRow" + (phenotype in patientHPO ?  '' : ' clsNotMatched' ) + "'><div class='clsHPCell clsFreq'>" + phenotype + 
+                "</div><div class='clsHPCell clsLabel' id='lbl" + phenotype + "'>" + disObj[i]['hpo_label'] + "</div><div class='clsHPCell clsFreq clsNum'>" +
+                (phenotype in patientHPO ?  patientHPO[phenotype]['freq'] : '-' )+ "</div></div>";
+
+                if (!(phenotype in patientHPO)){
+                    if (phenotype in phenoSearches){
+                        searches.push({'q': phenoSearches[phenotype], 'pid': _queriedPatientId, 'phenotype': phenotype});
+                    }
+                }
             }
         }
         $('#diseasePhenotypeDiv').html(s);
 
+        if (searches.length > 0 && doSearchFunc){
+            swal.close();
+            _semsearch2do = searches.length;
+            swal("doing semantic searching for " + searches.length + " phenotypes...")
+            doSearchFunc(searches);
+        }
+
         return strHPOs;
 	}
+
+    function complementarySearch4EmptyPhenotypes(searches){
+        /*
+        * use phenotype semantic queries to complement unknown phenotypes
+        */
+        $(searches).each(function(index, qo){
+            semehr.search.queryPatientDocumentsMultiIndice(semehr.semsearch.getTextSearch(qo.q), qo.pid, function(resp){
+                _semsearch2do--;
+                if (_semsearch2do <= 0){
+                    swal.close();
+                }
+                var mDocs = semehr.semsearch.getMatchedHTs(resp['docs'], qo.q);
+                if (mDocs && mDocs.length > 0){
+                    var p = qo.phenotype.replace(/\:/, "\\:");
+                    $('#lbl' + p).parent().removeClass('clsNotMatched');
+                    $('#lbl' + p).parent().addClass('clsSearchMatched');
+                    $('#lbl' + p).parent().find(".clsNum").html('±' + mDocs.length);
+                    semehr.Render.renderSemQueryResult(p, mDocs);        
+                }
+
+            }, function(err){
+                console.trace(err.message);
+            });
+        });
+    }
 
 	function retrieveFeedback(){
 	    qbb.inf.getEvalResult(_invitationId, function(res){
@@ -860,6 +931,8 @@
                     success: function(s){console.log(s)}
                 });
                 cohortSearch({"terms": null, "query": q}, patientIds, [], 0, patientIds.length);
+                var allDocs = [];
+                searchPatientDocs(patientIds[0], allDocs);
             }
         });
 
@@ -927,6 +1000,18 @@
                 $('#tabEntity').show();
             }
             $('.tabTitle').removeClass('tabSelected');
+            $(this).addClass('tabSelected');
+        });
+
+        $('.tabView').click(function(){
+            $('.viewContent').hide();
+            if ($(this).html() == 'PHENOTYPES'){
+                $('#phenotypeView').show();
+            }
+            if ($(this).html() == 'DOCUMENTS'){
+                $('#patientDocumentView').show();
+            }
+            $('.tabView').removeClass('tabSelected');
             $(this).addClass('tabSelected');
         });
 

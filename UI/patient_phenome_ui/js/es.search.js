@@ -9,18 +9,38 @@ if (typeof semehr == "undefined"){
     if(typeof semehr.search == "undefined") {
 
         semehr.search = {
+            __indice_index: 0,
             __es_need_login: false,
             _es_client: null,
             __es_server_url: "http://10.200.102.23:9200/",
             __es_index: "mimic", //epr_documents_bioyodie
             __es_type: "patient", //patient type
             __es_concept_type: "ctx_concept",
-            __es_fulltext_index: "mimic",
+            __es_fulltext_index: ["mimic"],
             __es_fulltext_type: "eprdoc",
-            _full_text_attr: 'fulltext',
+            _full_text_attr: ['fulltext'],
             _user_id: "not_logged",
             _fdid: '_id',
             __discharge_summary_type: "Discharge summary",
+            _es_doc_patient_id_field: ["patientId"],
+            _es_doc_type_field: ["docType"],
+            _es_doc_date_field: ["gooddate"],
+
+            // __es_need_login: false,
+            // _es_client: null,
+            // __es_server_url: "http://10.200.102.23:9200/",
+            // __es_index: "mimic", //epr_documents_bioyodie
+            // __es_type: "patient", //patient type
+            // __es_concept_type: "ctx_concept",
+            // __es_fulltext_index: ["mimic"],
+            // __es_fulltext_type: "eprdoc",
+            // _full_text_attr: ['fulltext'],
+            // _user_id: "not_logged",
+            // _fdid: '_id',
+            // __discharge_summary_type: "Discharge summary",
+            // _es_doc_patient_id_field: "patientId",
+            // _es_doc_type_field: "docType",
+            // _es_doc_date_field: "gooddate",
 
             initESClient: function(){
                 if (semehr.search.__es_need_login){
@@ -124,7 +144,6 @@ if (typeof semehr == "undefined"){
                 }
                 semehr.search._es_client.search(queryObj).then(function (resp) {
                     var hits = resp.hits.hits;
-                    console.log(resp.hits);
                     if (hits.length > 0) {
                         var patients = [];
                         for(var i=0;i<hits.length;i++){
@@ -140,9 +159,9 @@ if (typeof semehr == "undefined"){
                 });
             },
 
-            queryDocuments: function(queryBody, srcFileds, size, successCB, errorCB){
+            queryDocuments: function(queryBody, srcFileds, size, successCB, errorCB, highlight){
                 var queryObj = {
-                    index: semehr.search.__es_index,
+                    index: semehr.search.__es_fulltext_index[semehr.search.__indice_index],
                     type: semehr.search.__es_fulltext_type,
                     body: queryBody
                 };
@@ -159,9 +178,77 @@ if (typeof semehr == "undefined"){
                 if (size != null){
                     queryObj["size"] = size;
                 }
+                if (highlight){
+                    queryObj = {
+                            index: semehr.search.__es_index,
+                            type: semehr.search.__es_fulltext_type,
+                            body:{
+                                "query": {
+                                    "query_string": {"query": queryObj.q}
+                                },
+                                "_source": [ "highlight" ],
+                                "highlight":{
+                                    "fields":{
+                                    }
+                                }
+                            }                            
+                        };
+                    queryObj.body.highlight.fields[highlight] = {};
+                }
+                console.log(queryObj);
                 semehr.search._es_client.search(queryObj).then(function (resp) {
                     var hits = resp.hits.hits;
                     console.log(resp.hits);
+                    if (hits.length > 0) {
+                        var docs = [];
+                        for(var i=0;i<hits.length;i++){
+                            docs.push(hits[i]);
+                        }
+                        successCB({"docs": docs, "total": resp.hits.total});
+                    }else{
+                        successCB({"docs": [], "total": 0})
+                    }
+                }, function (err) {
+                    errorCB(err);
+                    console.trace(err.message);
+                });
+            },
+
+            queryPatientDocumentsMultiIndice: function(query, patientId, successCB, errorCB){
+                var queryIndices = [];
+                var textQs = [];
+                var fulltextFields = [];
+                for (var i=0;i<semehr.search.__es_fulltext_index.length;i++){
+                    queryIndices.push(semehr.search.__es_fulltext_index[i]); 
+                    textQs.push(semehr.search._full_text_attr[i]+ ":(" + query + ")");
+                    fulltextFields.push(semehr.search._full_text_attr[i]);
+                }
+
+                var q = semehr.search._es_doc_patient_id_field + ":" + patientId + " AND (" + textQs.join(" OR ") + ")";
+                var queryObj = {
+                        index: queryIndices.join(","),
+                        type: semehr.search.__es_fulltext_type,
+                        body:{
+                            "query": {
+                                "query_string": {"query": q}
+                            },
+                            "_source": [ "highlight" ],                            
+                            "highlight":{
+                                "fields":{
+                                }
+                            }
+                        },
+                        size: 100                     
+                    };
+                for(var i=0;i<fulltextFields.length;i++)
+                    queryObj.body.highlight.fields[fulltextFields[i]] = {
+                        "fragment_size": 0,
+                        "boundary_scanner_locale": "en"
+                    };
+                // console.log(queryObj);
+                semehr.search._es_client.search(queryObj).then(function (resp) {
+                    var hits = resp.hits.hits;
+                    // console.log(resp.hits);
                     if (hits.length > 0) {
                         var docs = [];
                         for(var i=0;i<hits.length;i++){
@@ -203,6 +290,47 @@ if (typeof semehr == "undefined"){
                 });
             },
 
+            searchPatientDocIds: function(queryBody, successCB, errorCB, from, size){
+                if (!from) from = 0;
+                if (!size) size = 20;
+                var queryObj = {
+                    index: semehr.search.__es_fulltext_index[semehr.search.__indice_index],
+                    type: semehr.search.__es_fulltext_type,
+                    body: queryBody
+                };
+                if (typeof queryBody == "string"){
+                    queryObj = {
+                        index: semehr.search.__es_fulltext_index[semehr.search.__indice_index],
+                        type: semehr.search.__es_fulltext_type,
+                        q: semehr.search._es_doc_patient_id_field + ":" + queryBody
+                    };
+                }
+                queryObj["_sourceInclude"] = [];
+                queryObj["_sourceInclude"] = queryObj["_sourceInclude"].concat(semehr.search._es_doc_type_field); 
+                queryObj["_sourceInclude"] = queryObj["_sourceInclude"].concat(semehr.search._es_doc_date_field); 
+                queryObj['from'] = from;
+                queryObj['size'] = size;
+                if (size != null){
+                    queryObj["size"] = size;
+                }
+                semehr.search._es_client.search(queryObj).then(function (resp) {
+                    var hits = resp.hits.hits;
+                    // console.log(resp.hits);
+                    if (hits.length > 0) {
+                        var docs = [];
+                        for(var i=0;i<hits.length;i++){
+                            docs.push(hits[i]);
+                        }
+                        successCB({"docs": docs, "total": resp.hits.total});
+                    }else{
+                        successCB({"docs": [], "total": 0})
+                    }
+                }, function (err) {
+                    errorCB(err);
+                    console.trace(err.message);
+                });
+            },
+
             getConcept: function (ctxConceptId, successCB, errorCB) {
                 semehr.search._es_client.get({
                     index: semehr.search.__es_index,
@@ -216,16 +344,25 @@ if (typeof semehr == "undefined"){
                 });
             },
 
-            getDocument: function (docId, successCB, errorCB) {
+            getDocument: function (docId, successCB, errorCB, trying) {
+                if (!trying)
+                    semehr.search.__indice_index = 0;
                 semehr.search._es_client.get({
-                    index: semehr.search.__es_fulltext_index,
+                    index: semehr.search.__es_fulltext_index[semehr.search.__indice_index],
                     type: semehr.search.__es_fulltext_type,
                     id: docId
                 }).then(function (resp) {
                     successCB(resp);
                 }, function (err) {
-                    errorCB(err);
-                    console.trace(err.message);
+                    semehr.search.__indice_index++;
+                    if (semehr.search.__indice_index < semehr.search.__es_fulltext_index.length){
+                        console.log("trying "  + semehr.search.__es_fulltext_index[semehr.search.__indice_index]);
+                        semehr.search.getDocument(docId, successCB, errorCB, true);
+                    }
+                    else{                        
+                        errorCB(err);
+                        console.trace(err.message);
+                    }
                 });
             },
 
