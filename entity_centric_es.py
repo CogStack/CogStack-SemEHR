@@ -4,7 +4,7 @@ import utils
 import json
 from os.path import join, isfile
 from os import listdir
-#from cohortanalysis import load_all_docs
+from cohortanalysis import load_all_docs
 from datetime import datetime
 import sys
 import requests
@@ -40,6 +40,16 @@ class EntityCentricES(object):
         self._entity_doc_type = 'user'
         self._doc_doc_type = 'doc'
         self._customise_settings = None
+        self._doc_level_ann_idx = 'doc_anns'
+        self._doc_level_doc_type = 'ann_insts'
+
+    @property
+    def doc_level_index(self):
+        return self._doc_level_ann_idx
+
+    @doc_level_index.setter
+    def doc_level_index(self, value):
+        self._doc_level_ann_idx = value
 
     @property
     def index_name(self):
@@ -164,23 +174,23 @@ class EntityCentricES(object):
 
     def index_anns(self, entity_id, doc_id, anns, concept_index=None):
         if anns is not None:
-            # entity_anns = \
-            #     [
-            #         {
-            #             "contexted_concept": EntityCentricES.get_ctx_concept_id(ann),
-            #             "CUI": ann['features']['inst'],
-            #             "appearances": [
-            #                 {
-            #                     "eprid": doc_id,
-            #                     # "date": 0 if doc_date is None else doc_date,
-            #                     "offset_start": int(ann['startNode']['offset']),
-            #                     "offset_end": int(ann['endNode']['offset'])
-            #                 }
-            #             ]
-            #         } for ann in anns
-            #     ]
-            # data = {'patientId': entity_id, 'anns': entity_anns}
-            # self._es_instance.index(index=self.index_name, doc_type=_ann_doc_type, body=data)
+            entity_anns = \
+                [
+                    {
+                        "contexted_concept": EntityCentricES.get_ctx_concept_id(ann),
+                        "CUI": ann['features']['inst'],
+                        "appearances": [
+                            {
+                                "eprid": doc_id,
+                                # "date": 0 if doc_date is None else doc_date,
+                                "offset_start": int(ann['startNode']['offset']),
+                                "offset_end": int(ann['endNode']['offset'])
+                            }
+                        ]
+                    } for ann in anns
+                ]
+            data = {'patientId': entity_id, 'anns': entity_anns}
+            self._es_instance.index(index=self.doc_level_index, doc_type=self._doc_level_doc_type, body=data)
             for ann in anns:
                 self.index_ctx_concept(ann, concept_index=concept_index)
             print '[concepts] %s indexed for pid:%s did: %s' % (len(anns), entity_id, doc_id)
@@ -197,8 +207,8 @@ class EntityCentricES(object):
         :param ft_fulltext_field_id:
         :return:
         """
-        ann_results = self._es_instance.search(index=self.index_name,
-                                               doc_type=_ann_doc_type,
+        ann_results = self._es_instance.search(index=self.doc_level_index,
+                                               doc_type=self._doc_level_doc_type,
                                                body={'query': {'term': {'patientId': entity_id}}, 'size': 10000})
         doc_results = doc_es_inst.search(index=ft_index_name,
                                          doc_type=ft_doc_type,
