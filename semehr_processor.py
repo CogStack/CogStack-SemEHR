@@ -289,7 +289,7 @@ def do_semehr_index(settings, patients, doc_to_patient):
     if settings.get_attr(['job', 'semehr-patients']) == 'yes':
         # index patients
         es_doc_url = settings.get_attr(['semehr', 'es_doc_url'])
-        es_full_text = Elasticsearch([es_doc_url], serializer=JSONSerializerPython2())
+        es_full_text = Elasticsearch([es_doc_url], serializer=JSONSerializerPython2(), verify_certs=False)
         ft_index_name = settings.get_attr(['semehr', 'full_text_index'])
         ft_doc_type = settings.get_attr(['semehr', 'full_text_doc_type'])
         ft_entity_field = settings.get_attr(['semehr', 'full_text_patient_field'])

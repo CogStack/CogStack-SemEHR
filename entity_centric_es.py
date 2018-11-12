@@ -34,7 +34,7 @@ class JSONSerializerPython2(serializer.JSONSerializer):
 class EntityCentricES(object):
     def __init__(self, es_host):
         self._host = es_host
-        self._es_instance = Elasticsearch([es_host], serializer=JSONSerializerPython2())
+        self._es_instance = Elasticsearch([es_host], serializer=JSONSerializerPython2(), verify_certs=False)
         self._index = 'semehr'
         self._concept_doc_type = 'ctx_concept'
         self._entity_doc_type = 'user'
