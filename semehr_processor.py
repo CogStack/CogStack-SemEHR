@@ -274,6 +274,7 @@ def do_semehr_index(settings, patients, doc_to_patient):
     es.index_name = settings.get_attr(['semehr', 'index'])
     es.concept_doc_type = settings.get_attr(['semehr', 'concept_doc_type'])
     es.entity_doc_type = settings.get_attr(['semehr', 'entity_doc_type'])
+    es.doc_level_index = settings.get_attr(['semehr', 'doc_level_index'])
 
     f_yodie_anns = settings.get_attr(['yodie', 'output_file_path'])
     ann_files = [f for f in listdir(f_yodie_anns) if isfile(join(f_yodie_anns, f))]
