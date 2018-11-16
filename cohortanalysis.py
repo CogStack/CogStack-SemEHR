@@ -324,6 +324,7 @@ def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_ex
         sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
         print 'working on %s' % sc_key
         if sc.name.startswith('ess_'):
+            non_empty_concepts.append(sc_key)
             # elasticsearch concepts
             p2docs = chelper.query_doc_by_search(es, fes, sc.concept_closure, patient_id_field,
                                                  retained_patients_filter=retained_patients_filter,
