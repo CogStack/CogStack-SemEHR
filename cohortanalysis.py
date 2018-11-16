@@ -329,7 +329,7 @@ def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_ex
                                                  retained_patients_filter=retained_patients_filter,
                                                  filter_obj=filter_obj, doc_filter_function=patient_timewindow_filter)
             for pd in p2docs:
-                id2p[pd[0]][sc_key] = str(len(pd[1]))
+                id2p[pd['pid']][sc_key] = str(len(pd['docs']))
             # continue without to do the rest
             continue
 
