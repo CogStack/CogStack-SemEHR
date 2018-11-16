@@ -304,6 +304,7 @@ def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_ex
     es = SemEHRES.get_instance_by_setting_file(es_conn_file)
     if filter_obj is not None:
         fes = SemEHRES.get_instance_by_setting_file(filter_obj['doc_es_setting'])
+        patient_id_field = filter_obj['patient_id_field']
         filter_obj['es'] = fes
     if retained_patients_filter is None:
         pids = es.search_by_scroll("*", es.patient_type)
@@ -322,6 +323,16 @@ def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_ex
         positive_doc_anns = []
         sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
         print 'working on %s' % sc_key
+        if sc.name.startswith('ess_'):
+            # elasticsearch concepts
+            p2docs = chelper.query_doc_by_search(es, fes, sc.concept_closure, patient_id_field,
+                                                 retained_patients_filter=retained_patients_filter,
+                                                 filter_obj=filter_obj, doc_filter_function=patient_timewindow_filter)
+            for pd in p2docs:
+                id2p[pd[0]][sc_key] = str(len(pd[1]))
+            # continue without to do the rest
+            continue
+
         doc_anns = []
         if len(sc.concept_closure) > 0:
             doc_anns = chelper.query_doc_anns(es, sc.concept_closure, study_analyzer.skip_terms,
