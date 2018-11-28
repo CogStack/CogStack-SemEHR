@@ -18,10 +18,10 @@ em{font-size:150%;color:red;background-color: cornsilk}
 #searchDiv div{display: table-row;}
 #entityInput{width: 160px}
 #btnSearch, #btnEntitySearch{height: 40px;font-size: 120%; color: dimgrey}
-#pageCtrl{width: 100%;text-align: center;margin: 10px;display:none;margin-top:20px}
+#pageCtrl, #pPageCtrl{width: 100%;text-align: center;margin: 10px;display:none;margin-top:20px}
 .clsActive{font-size:120%;text-decoration: underline;color: #2980b9;cursor:pointer}
 .clsPageInfo {margin-left:30px;margin-right:30px;font-size: 100%;font-style:italic}
-#results{width: 90%;text-align: center;display: table}
+#results, #pResults{width: 90%;text-align: center;display: table}
 .banner{color:#888;font-style:italic;text-align: left;display: table-row;}
 .banner div{display: table-cell;vertical-align: middle;}
 .banner .head{padding-left: 10px;font-size: 130%;line-height: 80%}
@@ -43,13 +43,13 @@ nav span{
     font-size:80%;
 }
 #searchDiv label{font-size: 126%;padding-right: 10px;padding-left:16px;color: #999999;}
-#entitySummHeader, #entitySumm{width:100%;text-align:center;background-color: #F9F9f9;display:table;visibility: hidden;}
+#entitySummHeader, #entitySumm, #pEntitySumm{width:100%;text-align:center;background-color: #F9F9f9;display:table;visibility: hidden;}
 .sumRow{display: table-row;}
 .sumCol{display: table-cell;padding:5px;}
 .headerRow .sumCol{font-size: 120%;font-weight: bold;border-bottom:solid #999999 1px}
 .sumCol span{font-size:160%;padding-top:10px;cursor: pointer;color:#3498db;}
 .sumCol span:hover{color:#dd5555}
-#sumTermDiv{color:#888;text-align: center;font-size: 160%;margin-top: 50px;margin-bottom:30px;}
+#sumTermDiv, #pSumTermDiv{color:#888;text-align: center;font-size: 160%;margin-top: 50px;margin-bottom:30px;}
 .selected{background-color: #facea8}
 .projectName{padding-left:30px;font-size: 220%}
 .btnCohort{margin-left:16px;font-size:100%;color:blue;text-decoration:underline;cursor:pointer}
