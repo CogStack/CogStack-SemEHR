@@ -1,0 +1,73 @@
+{
+  "env": {
+    "java_home": "/usr/lib/jvm/java-1.8.0-openjdk-amd64/",
+    "gcp_home": "/opt/gcp/gcp-2.5-18658",
+    "gate_home": "/opt/gcp/gate-8.1-build5169-ALL",
+    "yodie_path": "/opt/gcp/",
+    "ukb_home": "/opt/gcp/ukb"
+  },
+  "yodie": {
+    "os": "linux",
+    "gcp_run_path": "/opt/gcp/",
+    "input_doc_file_path": "/data/input_docs/",
+    "thread_num": "10",
+    "memory": "2g",
+    "config_xml_path": "/opt/gcp/ukb/yodi.xml",
+    "output_file_path": "/data/output_docs/",
+    "output_destination": "json",
+    "use_file_based": "true",
+    "output_dbconn_setting_file": "..dbconn.json..",
+    "output_table": "..[kconnect_annotations]..",
+    "output_concept_filter_file": "",
+    "input_source": "files",
+    "input_dbconn_setting_file": "..dbconn.json.."
+  },
+  "semehr": {
+    "es_doc_url": "",
+    "full_text_doc_id": "",
+    "full_text_doc_date": "",
+    "full_text_index": "",
+    "full_text_doc_type": "",
+    "full_text_patient_field": "",
+    "full_text_text_field": "",
+    "es_host": "",
+    "index": "",
+    "concept_index": "ctx_concept_index",
+    "concept_doc_type": "ctx_concept",
+    "entity_doc_type": "patient"
+  },
+  "doc_copy":{
+    "thread_num": "5",
+    "es_host": "",
+    "src_index": "",
+    "src_doc_type": "",
+    "dest_index": "",
+    "dest_doc_type": ""
+  },
+  "new_docs":{
+    "sql_query": "select docid from ...",
+    "dbconn_setting_file": "..dbconn.json.."
+  },
+  "action_trans":{
+    "cohort_name": "",
+    "dbconn_setting_file": "",
+    "sql_cohort_doc_template": "",
+    "sql_doc_anns_template": "",
+    "sql_doc_content_template": "",
+    "sql_action_trans_update_template": "",
+    "action_trans_model_file": ""
+  },
+  "logging":{
+    "file": "/data/semehr.log"
+  },
+  "job":{
+    "load_docs": "no",
+    "copy_docs": "no",
+    "yodie": "yes",
+    "semehr-concept": "no",
+    "semehr-patients": "no",
+    "action_trans": "no",
+    "job_id": "doc_semehr",
+    "job_status_file_path": "/data/"
+  }
+}
