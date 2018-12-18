@@ -12,7 +12,7 @@
     "input_doc_file_path": "/data/input_docs/",
     "thread_num": "10",
     "memory": "2g",
-    "config_xml_path": "/opt/gcp/ukb/yodi.xml",
+    "config_xml_path": "/data/yodi.xml",
     "output_file_path": "/data/output_docs/",
     "output_destination": "json",
     "use_file_based": "true",
