@@ -13,6 +13,7 @@ from subprocess import Popen, STDOUT
 from entity_centric_es import EntityCentricES, do_index_100k_anns, do_index_100k_patients, JSONSerializerPython2
 from elasticsearch import Elasticsearch
 import cohortanalysis as cohort
+import docanalysis
 import logging
 
 
@@ -334,6 +335,24 @@ def do_semehr_index(settings, patients, doc_to_patient):
         logging.info('[SemEHR-step-end]patient level indexing done')
 
 
+def do_semehr_doc_anns_analysis(settings):
+    anns_folder = settings.get_attr(['semehr', 'ann_docs_path'])
+    text_folder = settings.get_attr(['semehr', 'full_text_folder'])
+    full_text_file_pattern = settings.get_attr(['semehr', 'full_text_fn_ptn'])
+    rule_config = settings.get_attr(['semehr', 'rule_config_path'])
+    output_folder = settings.get_attr(['semehr', 'output_folder'])
+    study_folder = settings.get_attr(['semehr', 'study_folder'])
+    output_file_pattern = settings.get_attr(['semehr', 'output_fn_pattern'])
+    docanalysis.process_doc_anns(anns_folder=anns_folder,
+                                 full_text_folder=text_folder,
+                                 rule_config_file=rule_config,
+                                 output_folder=output_folder,
+                                 study_folder=study_folder,
+                                 full_text_fn_ptn=full_text_file_pattern,
+                                 fn_pattern=output_file_pattern
+                                 )
+
+
 def process_semehr(config_file):
     """
     a pipeline to process all SemEHR related processes:
@@ -458,6 +477,12 @@ def process_semehr(config_file):
         if ps.get_attr(['job', 'action_trans']) == 'yes':
             logging.info('[SemEHR-step]doing transparency...')
             actionable_transparise(settings=ps)
+
+        # 4. do SemEHR document annotation analysis (post processing)
+        if ps.get_attr(['job', 'doc_analysis']) == 'yes':
+            logging.info('[SemEHR-step]doing SemEHR annotation analysis...')
+            do_semehr_doc_anns_analysis(settings=ps)
+            logging.info('[SemEHR-step-end] doc_analysis step done')
 
         job_status.set_status(True)
         job_status.save()
