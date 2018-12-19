@@ -7,12 +7,12 @@ if [ ! -f "$sesetting" ]; then
     sesetting="$semehr_path/docker/docker_doc_based_settings.json"
 fi
 
-if [ ! -f "$datapath/input_docs" ]; then
+if [ ! -x "$datapath/input_docs" ]; then
     echo "creating input_docs folder"
     mkdir "$datapath/input_docs"
 fi
 
-if [ ! -f "$datapath/output_docs" ]; then
+if [ ! -x "$datapath/output_docs" ]; then
     echo "creating output_docs folder"
     mkdir "$datapath/output_docs"
 fi
