@@ -9,6 +9,7 @@ import sys
 import xml.etree.ElementTree as ET
 import concept_mapping
 import urllib3
+import logging
 
 
 class StudyConcept(object):
@@ -253,15 +254,20 @@ def get_one_iteration_sql_template(config_file):
             'skip_term_sql': root.find('skip_term_sql').text}
 
 
-def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
-          do_one_iter=False, do_preprocessing=False,
-          rule_setting_file=None, sem_idx_setting_file=None,
-          concept_filter_file=None,
-          retained_patients_filter=None,
-          filter_obj_setting=None,
-          do_disjoint_computing=True,
-          export_study_concept_only=False,
-          skip_closure_relations={}):
+def load_ruler(rule_setting_file):
+    ruler = AnnRuleExecutor()
+    if rule_setting_file is None:
+        ruler.load_rule_config('./studies/rules/_default_rule_config.json')
+    else:
+        ruler.load_rule_config(rule_setting_file)
+    return ruler
+
+
+def load_study_settings(folder, umls_instance,
+                        rule_setting_file=None,
+                        concept_filter_file=None,
+                        do_disjoint_computing=True,
+                        export_study_concept_only=False):
     p, fn = split(folder)
     if isfile(join(folder, 'study_analyzer.pickle')):
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
@@ -269,9 +275,10 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
         sa = StudyAnalyzer(fn)
         if isfile(join(folder, 'exact_concepts_mappings.json')):
             concept_mappings = utils.load_json_data(join(folder, 'exact_concepts_mappings.json'))
-            concept_to_closure = \
-                StudyConcept.compute_all_concept_closure([concept_mappings[t] for t in concept_mappings],
-                                                         umls_instance, skip_relations=skip_closure_relations)
+            concept_to_closure = None
+            # concept_to_closure = \
+            #     StudyConcept.compute_all_concept_closure([concept_mappings[t] for t in concept_mappings],
+            #                                              umls_instance, skip_relations=skip_closure_relations)
 
             scs = []
             for t in concept_mappings:
@@ -280,7 +287,7 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
                 t_c[t] = [concept_mappings[t]]
                 sc.gen_concept_closure(term_concepts=t_c, concept_to_closure=concept_to_closure)
                 scs.append(sc)
-                print sc.concept_closure
+                logging.debug(sc.concept_closure)
             sa.study_concepts = scs
             sa.serialise(join(folder, 'study_analyzer.pickle'))
         elif isfile(join(folder, 'manual_mapped_concepts.json')):
@@ -293,7 +300,7 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
                 tc[t] = mapped_scs[t]['tc']
                 sc.term_to_concept = tc
                 scs.append(sc)
-                print sc.term_to_concept, sc.concept_closure
+                logging.debug('study concept [%s]: %s, %s' % (sc.name, sc.term_to_concept, sc.concept_closure))
             sa.study_concepts = scs
         else:
             concepts = utils.load_json_data(join(folder, 'study_concepts.json'))
@@ -301,16 +308,16 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
                 scs = []
                 for name in concepts:
                     scs.append(StudyConcept(name, concepts[name], umls_instance=umls_instance))
-                    print name, concepts[name]
+                    logging.debug('%s, %s' % (name, concepts[name]))
             sa.study_concepts = scs
             sa.serialise(join(folder, 'study_analyzer.pickle'))
 
     # get filtered concepts only, if filter exists
     if concept_filter_file is not None:
-        print 'before removal, the concept length is: %s' % len(sa.study_concepts)
+        logging.debug('before removal, the concept length is: %s' % len(sa.study_concepts))
         concept_names = utils.load_json_data(concept_filter_file)
         sa.retain_study_concepts(concept_names)
-        print 'after removal: %s' % len(sa.study_concepts)
+        logging.debug('after removal: %s' % len(sa.study_concepts))
 
     # compute disjoint concepts
     if do_disjoint_computing:
@@ -321,7 +328,7 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
         for sc in sa.study_concepts:
             sc2closure[sc.name] = list(sc.concept_closure)
         utils.save_json_array(sc2closure, join(folder, 'sc2closure.json'))
-        print 'generated'
+        logging.debug('sc2closure.json generated in %s' % folder)
 
     if isfile(join(folder, 'study_options.json')):
         sa.study_options = utils.load_json_data(join(folder, 'study_options.json'))
@@ -340,24 +347,38 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
                 merged_mappings['(%s) %s' % (c.name, t)] = c.term_to_concept[t]
         # print c.name, c.term_to_concept, c.concept_closure
         # print json.dumps(list(c.concept_closure))
-    print 'print merged mappings...'
+    # logging.debug('print merged mappings...')
     # print json.dumps(merged_mappings)
-    print len(study_concept_list)
+    # logging.debug(len(study_concept_list))
     utils.save_string('\n'.join(study_concept_list), join(folder, 'all_concepts.txt'))
 
     if export_study_concept_only:
         return
 
-    print 'generating result table...'
     # sa.gen_study_table(cohort_name, join(folder, 'result.csv'))
     # sa.gen_sample_docs(cohort_name, join(folder, 'sample_docs.json'))
-    ruler = AnnRuleExecutor()
-    if rule_setting_file is None:
-        ruler.load_rule_config('./studies/rules/_default_rule_config.json')
-    else:
-        ruler.load_rule_config(rule_setting_file)
+    ruler = load_ruler(rule_setting_file)
     if len(ruler.skip_terms) > 0:
         sa.skip_terms = ruler.skip_terms
+    return {'study_analyzer': sa, 'ruler': ruler}
+
+
+def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
+          do_one_iter=False, do_preprocessing=False,
+          rule_setting_file=None, sem_idx_setting_file=None,
+          concept_filter_file=None,
+          retained_patients_filter=None,
+          filter_obj_setting=None,
+          do_disjoint_computing=True,
+          export_study_concept_only=False,
+          skip_closure_relations={}):
+    ret = load_study_settings(folder, umls_instance,
+                              rule_setting_file=rule_setting_file,
+                              concept_filter_file=concept_filter_file,
+                              do_disjoint_computing=do_disjoint_computing,
+                              export_study_concept_only=export_study_concept_only)
+    sa = ret['study_analyzer']
+    ruler = ret['ruler']
     if do_one_iter:
         sa.gen_study_table_in_one_iteration(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.json'),
                                             sql_config_file, db_conn_file)
@@ -375,7 +396,7 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
                                              sem_idx_setting_file,
                                              retained_patients_filter,
                                              filter_obj=filter_obj)
-    print 'done'
+    logging.info('done')
 
 
 def run_study(folder_path, no_sql_filter=None):
@@ -406,7 +427,7 @@ def run_study(folder_path, no_sql_filter=None):
               skip_closure_relations=skip_closure_relations
               )
     else:
-        print 'study.json not found in the folder'
+        logging.error('study.json not found in the folder')
 
 
 if __name__ == "__main__":
