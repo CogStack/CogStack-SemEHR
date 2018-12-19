@@ -1,8 +1,9 @@
 import re
 import utils
 from os.path import join
+import logging
 
-_text_window = 100
+_text_window = 150
 _head_text_window_size = 200
 
 
@@ -85,6 +86,42 @@ class AnnRuleExecutor(object):
                 break
         return filtered, matched, rule_name
 
+    def execute_context_text(self, text, s_before, s_end, string_orig):
+        filtered = False
+        matched = []
+        rule_name = ''
+        for r in self._filter_rules:
+            for st in self.skip_terms:
+                if st == string_orig:
+                    return True, [st], 'skip terms'
+            s_compare = s_end if r['offset'] > 0 else s_before
+            if r['offset'] == 0:
+                s_compare = text[:_head_text_window_size]
+            elif r['offset'] == 100:
+                s_compare = string_orig
+            s_compare = s_compare.replace('\n', ' ')
+            for single_ptn in r['regs']:
+                if not single_ptn.startswith('^') and not single_ptn.endswith('$'):
+                    single_ptn = '^' + single_ptn + '$'
+                try:
+                    if r['case_sensitive']:
+                        reg_p = re.compile(single_ptn)
+                    else:
+                        reg_p = re.compile(single_ptn, re.IGNORECASE)
+                except Exception:
+                    logging.error('regs error: [%s]' % r['regs'])
+                    exit(1)
+                # print 'matching %s on %s' % (reg_p, s_compare)
+                m = reg_p.match(s_compare)
+                if m is not None:
+                    # print m.group(0)
+                    matched.append(m.group(0))
+                    rule_name = r['rule_name']
+                    filtered = True
+                    logging.debug('%s matched %s' % (s_compare, reg_p.pattern))
+                    break
+        return filtered, matched, rule_name
+
     def add_original_string_filters(self, regs):
         self._osf_rules += regs
 
@@ -101,7 +138,7 @@ class AnnRuleExecutor(object):
             try:
                 reg_p = re.compile(r)
             except Exception:
-                print 'regs error: [%s]' % r['regs']
+                logging.error('regs error: [%s]' % r['regs'])
                 exit(1)
             # print 'matching %s on %s' % (reg_p, s_compare)
             m = reg_p.match(s_compare)
@@ -115,16 +152,16 @@ class AnnRuleExecutor(object):
     def load_rule_config(self, config_file):
         rule_config = utils.load_json_data(config_file)
         r_path = rule_config['rules_folder']
-        print 'loading rules from [%s]' % r_path
+        logging.debug('loading rules from [%s]' % r_path)
         for rf in rule_config['active_rules']:
             for r in utils.load_json_data(join(r_path, rf)):
                 self.add_filter_rule(r['offset'], r['regs'], rule_name=rf,
                                      case_sensitive=r['case_sensitive'] if 'case_sensitive' in r else False)
-            print '%s loaded' % rf
+            logging.debug('%s loaded' % rf)
         if 'osf_rules' in rule_config:
             for osf in rule_config['osf_rules']:
                 self.add_original_string_filters(utils.load_json_data(join(r_path, osf)))
-                print 'original string filters from [%s] loaded' % osf
+                logging.debug('original string filters from [%s] loaded' % osf)
         if 'skip_term_setting' in rule_config:
             self.skip_terms = utils.load_json_data(rule_config['skip_term_setting'])
 
