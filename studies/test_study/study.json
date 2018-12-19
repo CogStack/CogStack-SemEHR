@@ -1,0 +1,9 @@
+{
+  "cohort": "test_study",
+  "sql_config": "",
+  "db_conn": "",
+  "umls_key": "./resources/HW_UMLS_KEY.txt",
+  "do_preprocessing": false,
+  "rule_setting_file": "./studies/test_study/sample_rule_config.json",
+  "do_one_iter": false
+}

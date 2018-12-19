@@ -1,0 +1,31 @@
+{
+  "Body Part, Organ": {
+    "tc": {
+      "closure": 3,
+      "mapped": "C0036277"
+    },
+    "concepts": [
+      "C1185781",
+      "C0036277",
+      "C0017067"
+    ]
+  },
+  "Preventive Procedure": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0050385"
+    },
+    "concepts": [
+      "C0050385"
+    ]
+  },
+  "Bleeding": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0019080"
+    },
+    "concepts": [
+      "C0019080"
+    ]
+  }
+}
