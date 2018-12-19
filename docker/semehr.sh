@@ -7,6 +7,21 @@ if [ ! -f "$sesetting" ]; then
     sesetting="$semehr_path/docker/docker_doc_based_settings.json"
 fi
 
+if [ ! -f "$datapath/input_docs" ]; then
+    echo "creating input_docs folder"
+    mkdir "$datapath/input_docs"
+fi
+
+if [ ! -f "$datapath/output_docs" ]; then
+    echo "creating output_docs folder"
+    mkdir "$datapath/output_docs"
+fi
+
+if [ ! -f "$datapath/semehr_results" ]; then
+    echo "creating semehr_results folder"
+    mkdir "$datapath/semehr_results"
+fi
+
 #check input docs
 ndocs=`find $datapath/input_docs/ -maxdepth 1 -type f | wc -l`
 if [[ $ndocs = 0 ]]; then
