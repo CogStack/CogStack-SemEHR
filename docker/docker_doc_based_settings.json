@@ -2,7 +2,7 @@
   "env": {
     "java_home": "/usr/lib/jvm/java-8-oracle/",
     "gcp_home": "/opt/gcp/gcp-2.5-18658",
-    "gate_home": "/opt/gcp/gate-8.1-build5169-ALL",
+    "gate_home": "/opt/gcp/gate",
     "yodie_path": "/opt/gcp/",
     "ukb_home": "/opt/gcp/ukb"
   },
