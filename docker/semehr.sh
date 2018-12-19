@@ -30,4 +30,9 @@ if [[ $ndocs = 0 ]]; then
 else
     echo "total $ndocs docs to process..."
 fi
+
+# update repo
+cd "$semehr_path"
+`git pull`
+
 python "$semehr_path/semehr_processor.py" "$sesetting"
