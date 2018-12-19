@@ -336,13 +336,13 @@ def do_semehr_index(settings, patients, doc_to_patient):
 
 
 def do_semehr_doc_anns_analysis(settings):
-    anns_folder = settings.get_attr(['semehr', 'ann_docs_path'])
-    text_folder = settings.get_attr(['semehr', 'full_text_folder'])
-    full_text_file_pattern = settings.get_attr(['semehr', 'full_text_fn_ptn'])
-    rule_config = settings.get_attr(['semehr', 'rule_config_path'])
-    output_folder = settings.get_attr(['semehr', 'output_folder'])
-    study_folder = settings.get_attr(['semehr', 'study_folder'])
-    output_file_pattern = settings.get_attr(['semehr', 'output_fn_pattern'])
+    anns_folder = settings.get_attr(['doc_ann_analysis', 'ann_docs_path'])
+    text_folder = settings.get_attr(['doc_ann_analysis', 'full_text_folder'])
+    full_text_file_pattern = settings.get_attr(['doc_ann_analysis', 'full_text_fn_ptn'])
+    rule_config = settings.get_attr(['doc_ann_analysis', 'rule_config_path'])
+    output_folder = settings.get_attr(['doc_ann_analysis', 'output_folder'])
+    study_folder = settings.get_attr(['doc_ann_analysis', 'study_folder'])
+    output_file_pattern = settings.get_attr(['doc_ann_analysis', 'output_fn_pattern'])
     docanalysis.process_doc_anns(anns_folder=anns_folder,
                                  full_text_folder=text_folder,
                                  rule_config_file=rule_config,
