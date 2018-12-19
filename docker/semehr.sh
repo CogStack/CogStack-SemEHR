@@ -33,6 +33,6 @@ fi
 
 # update repo
 cd "$semehr_path"
-`git pull`
+git pull
 
 python "$semehr_path/semehr_processor.py" "$sesetting"
