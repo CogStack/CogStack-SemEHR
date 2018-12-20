@@ -17,7 +17,7 @@ if [ ! -x "$datapath/output_docs" ]; then
     mkdir "$datapath/output_docs"
 fi
 
-if [ ! -f "$datapath/semehr_results" ]; then
+if [ ! -x "$datapath/semehr_results" ]; then
     echo "creating semehr_results folder"
     mkdir "$datapath/semehr_results"
 fi
