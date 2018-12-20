@@ -65,9 +65,9 @@ top level as follows.
     }
 ```
 - `ruled_by` gives the rule set that the annotation matched. Generally, there are several types of rules of
-negation, hypothetical, not a mention, other experiencer.
+negation, hypothetical, not a mention, other experiencer. These rules were developed for clinical studies conducted at SLaM CRIS data. Consider this as an extra improvement step on the embedded NLP model (i.e. bio-yodie for now) in SemEHR.
 - `study_concepts` the type of the annotation as specified in the study configuration (e.g., cancer can be mapped to many UMLS concepts).
-- all other attribtues are general attributes of SemEHR as specified in the wiki.
+- all other attribtues are general attributes of SemEHR as specified in the wiki. So, essentially, a study concept denotes a list of UMLS CUIs, which is specified by the study designer. SemEHR repo's `studies` folder contains configurations of several studies conducted on SLaM CRIS.
 
 ## logging
 A log file `semehr.log` will be generated in the above mentioned attached `data` folder. 
