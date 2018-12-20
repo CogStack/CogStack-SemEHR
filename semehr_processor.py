@@ -481,7 +481,7 @@ def process_semehr(config_file):
         # 4. do SemEHR document annotation analysis (post processing)
         if ps.get_attr(['job', 'doc_analysis']) == 'yes':
             logging.info('[SemEHR-step]doing SemEHR annotation analysis...')
-            logging.info('cwd :' % os.getcwd())
+            logging.info('cwd : %s' % os.getcwd())
             test_dir_path = './studies/test_study/'
             logging.info('%s' % '\n'.join([f for f in listdir(test_dir_path) if isfile(join(test_dir_path, f))]))
             do_semehr_doc_anns_analysis(settings=ps)
