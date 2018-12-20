@@ -1,5 +1,6 @@
 # SemEHR
 Surfacing Semantic Data from Clinical Notes in Electronic Health Records for Tailored Care, Trial Recruitment and Clinical Research
+- [Dockerised SemEHR](https://github.com/CogStack/CogStack-SemEHR/tree/master/docker)
 - [Documentation on running SemEHR](https://github.com/CogStack/SemEHR/wiki)
 - [Documentation on API calls to SemEHR](https://github.com/CogStack/SemEHR/wiki/API-calls-to-SemEHR-index)
 
