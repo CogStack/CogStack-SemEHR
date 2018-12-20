@@ -59,10 +59,10 @@
   },
   "doc_ann_analysis": {
     "ann_docs_path": "/data/output_docs/",
-    "rule_config_path": "./studies/test_study/sample_rule_config.json",
+    "rule_config_path": "/opt/semehr/CogStack-SemEHR/studies/test_study/sample_rule_config.json",
     "full_text_folder": "/data/input_docs",
     "output_folder": "/data/semehr_results",
-    "study_folder": "./studies/test_study",
+    "study_folder": "/opt/semehr/CogStack-SemEHR/studies/test_study",
     "full_text_fn_ptn": "%s.txt",
     "output_fn_pattern": "se_ann_%s.json"
   },
