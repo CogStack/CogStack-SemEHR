@@ -2,12 +2,12 @@
 
 Makes it dead easy to run SemEHR: just put a set of documents in a folder and then run SemEHR container over it.
 
-## compile docker locally
+## compile docker image locally
 ```
 docker build -t cogstack/semehr - < Dockerfile
 ```
 
-## run container
+## run SemEHR docker image
 1. prerequisite
 - select/create a host directory (let's call it `data` dir) for input fulltexts and outputs. There should be 3 subfolders:
     - input_docs: for putting full text documents;
