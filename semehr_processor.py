@@ -462,6 +462,9 @@ def process_semehr(config_file):
                     exit(p.returncode)
                 else:
                     logging.info('[SemEHR-step-end] NLP step done')
+                if 'semehr_path' in os.environ:
+                    os.info('changing back to semehr_path: %s' % os.environ['semehr_path'])
+                    os.chdir(os.environ['semehr_path'])
 
         # 2. do SemEHR concept/entity indexing
         if ps.get_attr(['job', 'semehr-concept']) == 'yes' or ps.get_attr(['job', 'semehr-patients']) == 'yes':
