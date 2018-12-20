@@ -10,7 +10,7 @@ docker build -t cogstack/semehr - < Dockerfile
 ## run SemEHR docker image
 1. prerequisite
 - select/create a host directory (let's call it `data` dir) for input fulltexts and outputs. There should be 3 subfolders:
-    - input_docs: for putting full text documents;
+    - input_docs: for putting full text documents; Add your own documents or two sample docs will be put in here for demostration purposes.
     - output_docs: for saving `temporary` NLP annotations;
     - smehr_results: for saving SeEHR results.
 - (optional) create a SemEHR configuration file in `data` dir. If not, a default configuration will be used, i.e. `docker/docker_doc_based_settings.json`.
@@ -68,3 +68,6 @@ top level as follows.
 negation, hypothetical, not a mention, other experiencer.
 - `study_concepts` the type of the annotation as specified in the study configuration (e.g., cancer can be mapped to many UMLS concepts).
 - all other attribtues are general attributes of SemEHR as specified in the wiki.
+
+## logging
+A log file `semehr.log` will be generated in the above mentioned attached `data` folder. 
