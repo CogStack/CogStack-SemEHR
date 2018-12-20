@@ -61,7 +61,7 @@
     "ann_docs_path": "/data/output_docs/",
     "rule_config_path": "./studies/autoimmune.v3/sample_rule_config.json",
     "full_text_folder": "/data/input_docs",
-    "output_folder": "/data/smehr_results",
+    "output_folder": "/data/semehr_results",
     "study_folder": "./studies/autoimmune.v3",
     "full_text_fn_ptn": "%s.txt",
     "output_fn_pattern": "se_ann_%s.json"
