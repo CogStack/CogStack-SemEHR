@@ -26,7 +26,7 @@ fi
 ndocs=`find $datapath/input_docs/ -maxdepth 1 -type f | wc -l`
 if [[ $ndocs = 0 ]]; then
     echo 'no files found, copying sample docs...'
-    cp "$semehr_path/resources/sample_docs/*" /data/input_docs
+    cp "$semehr_path"/resources/sample_docs/* /data/input_docs
 else
     echo "total $ndocs docs to process..."
 fi
