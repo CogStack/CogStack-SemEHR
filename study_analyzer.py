@@ -162,10 +162,10 @@ class StudyAnalyzer(object):
                             if self.study_concepts[j].name not in explain_inter \
                             else explain_inter[self.study_concepts[j].name] + \
                                  ['removed %s common (%s) concepts' % (len(common), self.study_concepts[i].name)]
-        if len(intersections) > 0:
-            print 'intersections [[\n%s\n]]' % json.dumps(explain_inter)
-        for sc in self.study_concepts:
-            print '%s %s' % (sc.name, len(sc.concept_closure))
+        # if len(intersections) > 0:
+        #     print 'intersections [[\n%s\n]]' % json.dumps(explain_inter)
+        # for sc in self.study_concepts:
+        #     print '%s %s' % (sc.name, len(sc.concept_closure))
 
     def remove_study_concept_by_name(self, concept_name):
         for sc in self.study_concepts:
