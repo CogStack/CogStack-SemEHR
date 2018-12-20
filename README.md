@@ -4,6 +4,7 @@ Surfacing Semantic Data from Clinical Notes in Electronic Health Records for Tai
 - [Documentation on API calls to SemEHR](https://github.com/CogStack/SemEHR/wiki/API-calls-to-SemEHR-index)
 
 ## updates
+- (20 Dec 2018) Dead easy to run SemEHR NOW - Docker version of SemEHR released! Check [docker](https://github.com/CogStack/CogStack-SemEHR/tree/master/docker).
 - (26 Feb 2018) An actionable transparency model has been implemented to derive confidence/accuracy value for [each annotation on a cohort basis](https://github.com/CogStack/SemEHR/blob/master/cohortanalysis.py#L334). Such value is based on the syntactic/semantic/contextual characteristics of the containing sentence/document of annotations. (a working paper about this technique will be shared soon.)
 - (9 Feb 2018) [Patient Phenome UI](https://github.com/CogStack/SemEHR/tree/master/UI/patient_phenome_ui) implemented - to support 100k Genomics England (GeL) phenome model population for patients recruited for rare disease studies. ![HPO Phenome Model](https://raw.githubusercontent.com/CogStack/SemEHR/master/resources/HPO_Phenome_Model_sample.png "HPO Phenome Model")
 - (22 Dec 2017)  An application paper describing SemEHR has been accepted by [JAMIA](https://academic.oup.com/jamia), titled “SemEHR: A General-purpose Semantic Search System to Surface Semantic Data from Clinical Notes for Tailored Care, Trial Recruitment and Clinical Research”.

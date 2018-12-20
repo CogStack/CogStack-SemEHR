@@ -1,5 +1,7 @@
 # docker version of SemEHR
 
+Makes it dead easy to run SemEHR: just put a set of documents in a folder and then run SemEHR container over it.
+
 ## compile docker locally
 ```
 docker build -t cogstack/semehr - < Dockerfile
