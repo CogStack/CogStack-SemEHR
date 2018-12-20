@@ -69,5 +69,7 @@ negation, hypothetical, not a mention, other experiencer (see [here](https://git
 - `study_concepts` the type of the annotation as specified in the study configuration (e.g., cancer can be mapped to many UMLS concepts).  So, essentially, a study concept denotes a list of UMLS CUIs, which is specified by the study designer. SemEHR repo's `studies` folder contains configurations of several studies conducted on SLaM CRIS.
 - all other attribtues are general attributes of SemEHR as specified in the wiki.
 
+*NB*: when a study configuration is provided, SemEHR will only apply rules on annotations that are relevant to the study and skip other ones. This means only those whose `study_concepts` is not empty will be checked by rules. 
+
 ## logging
 A log file `semehr.log` will be generated in the above mentioned attached `data` folder. 
