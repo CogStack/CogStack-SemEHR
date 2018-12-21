@@ -375,7 +375,7 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
     sa = None
     ruler = None
     text_reader = FulltextReader(full_text_folder, full_text_fn_ptn)
-    if study_folder is not None or study_folder == '':
+    if study_folder is not None and study_folder != '':
         r = utils.load_json_data(join(study_folder, study_config))
 
         ret = study_analyzer.load_study_settings(study_folder,
@@ -388,6 +388,7 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
         sa = ret['study_analyzer']
         ruler = ret['ruler']
     else:
+        logging.info('no study configuration provided, applying rules to all annotations...')
         ruler = study_analyzer.load_ruler(rule_config_file)
 
     # for ff in [f for f in listdir(anns_folder) if isfile(join(anns_folder, f))]:
