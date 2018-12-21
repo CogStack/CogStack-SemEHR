@@ -8,14 +8,16 @@ docker build -t cogstack/semehr - < Dockerfile
 ```
 
 ## run SemEHR docker image
-1. prerequisite
-- select/create a host directory (let's call it `data` dir) for input fulltexts and outputs. There should be 3 subfolders:
+
+### prerequisite
+- select/create a host directory (let's call it `data` dir) for input fulltexts and outputs. There should be 3 subfolders (if not exist, they will be created automatically):
     - input_docs: for putting full text documents; Add your own documents or two sample docs will be put in here for demostration purposes.
     - output_docs: for saving `temporary` NLP annotations;
-    - smehr_results: for saving SeEHR results.
+    - semehr_results: for saving SeEHR results.
 - (optional) create a SemEHR configuration file in `data` dir. If not, a default configuration will be used, i.e. `docker/docker_doc_based_settings.json`.
 - (optional) [*Gazetteer settings*] A sample gazetteer will be used for NLP annotation. This is a list of entities used for a stroke subtyping study. It is recommended to use a UMLS gazetteer that bio-yodie can use. Due to license purpose, we cannot provide it. But very happy to support you to populate your own if you have got a UMLS license.
-2. run the container
+
+### run the container
 ```
 docker run --name=semehr-test \
 --mount type=bind,src=FULL PATH OF YOUR DATA FOLDER,dst=/data/ \
