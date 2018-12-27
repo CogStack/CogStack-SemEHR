@@ -29,7 +29,7 @@ class CohortHelper(object):
             return
         q_temp = self._conf['doc_query_temp']
         logging.info('working on extraction, cohort size:%s' % len(self._patient_ids))
-        for idx in range(0, len(self._patient_ids), step=query_size):
+        for idx in range(0, len(self._patient_ids), query_size):
             q = q_temp.format(**{'patient_ids': ",".join(["'%s'" % p for p in self._patient_ids[idx:idx+query_size]])})
             logging.info('querying batch %s' % (idx + 1))
             logging.debug(q)
