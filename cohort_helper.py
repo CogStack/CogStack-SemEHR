@@ -3,6 +3,7 @@ import utils
 import logging
 from os.path import join
 import sys
+from subprocess import Popen, STDOUT
 
 
 class CohortHelper(object):
@@ -21,6 +22,12 @@ class CohortHelper(object):
         self._patient_ids = [l.split('\t')[0] for l in lines]
 
     def extract_cohort_docs(self):
+        db_conf_file = self._cohort_conf
+        db_conf = None
+        if 'linux_dns_setting' in self._conf and self._conf['linux_dns_setting']:
+            db_conf = self.populate_linux_odbc_setting()
+            db_conf_file = None
+            logging.info('using dsn %s' % db_conf['dsn'])
         query_size = self._conf['query_size'] if 'query_size' in self._conf else 50
         file_pattern = self._conf['file_pattern'] if 'file_pattern' in self._conf else '%s.txt'
         out_put_folder = self._conf['out_put_folder']
@@ -34,10 +41,25 @@ class CohortHelper(object):
             logging.info('querying batch %s' % (idx + 1))
             logging.debug(q)
             docs = []
-            db.query_data(q, docs, db.get_db_connection_by_setting(self._cohort_conf))
+            db.query_data(q, docs, db.get_db_connection_by_setting(db_conf_file, db_conf))
             for d in docs:
                 utils.save_string(d['doc_content'], join(out_put_folder, file_pattern % d['doc_id']))
         logging.info('query finished, docs saved to %s' % out_put_folder)
+
+    def populate_linux_odbc_setting(self, template_file='./docker/linux_odbc_init_temp.sh'):
+        s = utils.read_text_file_as_string(template_file)
+        ret = s.format(**{'host': self._conf['server'], 'port': self._conf['port'],
+                          'database': self._conf['database']})
+        utils.save_string(ret, template_file)
+        cmd = 'sh %s' % template_file
+        p = Popen(cmd, shell=True, stderr=STDOUT)
+        p.wait()
+        if 0 != p.returncode:
+            logging.error('ERROR doing the ODBC setting, stopped with a coide [%s]' % p.returncode)
+            exit(p.returncode)
+        return {'dsn': 'semehrdns', 'user': self._conf['user'],
+                'password': self._conf['password'],
+                'database': self._conf['database']}
 
 
 if __name__ == "__main__":

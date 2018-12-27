@@ -1,6 +1,8 @@
 {
   "driver": "{SQL Server Native Client 10.0}",
+  "linux_dns_setting": "yes",
   "server": "x.x.x.x",
+  "port": "xxxx",
   "user": "",
   "password": "",
   "database": "",
