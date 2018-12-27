@@ -1,0 +1,10 @@
+{
+  "driver": "{SQL Server Native Client 10.0}",
+  "server": "x.x.x.x",
+  "user": "",
+  "password": "",
+  "database": "",
+  "out_put_folder": "/data/input_docs/",
+  "doc_query_temp": "select doc_content, doc_id from doc_table where patient_id in ({patient_ids})",
+  "patient_id_file": ""
+}
