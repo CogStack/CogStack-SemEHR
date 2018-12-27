@@ -24,7 +24,7 @@ class CohortHelper(object):
     def extract_cohort_docs(self):
         db_conf_file = self._cohort_conf
         db_conf = None
-        if 'linux_dns_setting' in self._conf and self._conf['linux_dns_setting']:
+        if 'linux_dsn_setting' in self._conf and self._conf['linux_dsn_setting']:
             db_conf = self.populate_linux_odbc_setting()
             db_conf_file = None
             logging.info('using dsn %s' % db_conf['dsn'])
