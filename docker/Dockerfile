@@ -75,7 +75,7 @@ RUN pip install Elasticsearch
 RUN apt-get -y install python-mysqldb
 #RUN pip install MySQL-python
 
-RUN apt-get -y install unixodbc unixodbc-dev libmysqlclient-dev
+RUN apt-get -y install unixodbc unixodbc-dev libmysqlclient-dev freetds-dev tdsodbc
 RUN pip install pyodbc
 
 ########
