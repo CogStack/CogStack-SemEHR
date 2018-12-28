@@ -6,17 +6,17 @@ TDS=/etc/freetds/freetds.conf
 DNSNAME=semehrdns
 SVRNAME=semehrsvr
 
-if [[ ! -f "$TDS" ]]; then
+if [ ! -f "$TDS" ]; then
     echo "$TDS not found!"
     exit -1
 fi
 
-if [[ ! -f "$ODBC" ]]; then
+if [ ! -f "$ODBC" ]; then
     echo "$ODBC not found!"
     exit -1
 fi
 
-if [[ ! -f "$ODBCINST" ]]; then
+if [ ! -f "$ODBCINST" ]; then
     echo "$ODBCINST not found!"
     exit -1
 fi
