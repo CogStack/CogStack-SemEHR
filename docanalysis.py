@@ -2,6 +2,8 @@ import utils
 from os.path import join, isfile, split
 import logging
 import study_analyzer
+import sqldbutils as db
+import json
 
 
 class BasicAnn(object):
@@ -212,16 +214,17 @@ class SemEHRAnnDoc(object):
     """
     SemEHR annotation Doc
     """
-    def __init__(self, file_path, file_key=None):
-        if file_key is None:
-            p, fn = split(file_path)
-            file_key = fn[:fn.index('.')]
+    def __init__(self, file_key=None):
         self._fk = file_key
-        self._doc = utils.load_json_data(file_path)
         self._anns = []
         self._phenotype_anns = []
         self._sentences = []
         self._others = []
+
+    def load(self, json_doc, file_key=None):
+        self._doc = json_doc
+        if file_key is not None:
+            self._fk = file_key
         self.load_anns()
 
     def load_anns(self):
@@ -316,14 +319,7 @@ class FulltextReader(object):
             return None
 
 
-def analyse_doc_anns(ann_doc_path, rule_executor, text_reader, output_folder, fn_pattern='se_ann_%s.json',
-                     study_analyzer=None):
-    ann_doc = SemEHRAnnDoc(file_path=ann_doc_path)
-    text = text_reader.read_full_text(ann_doc.file_key)
-    if text is None:
-        logging.error('file [%s] full text not found' % ann_doc.file_key)
-        return
-
+def process_doc_rule(ann_doc, rule_executor, text, study_analyzer):
     study_concepts = study_analyzer.study_concepts if study_analyzer is not None else None
     for ann in ann_doc.annotations:
         is_a_concept = False
@@ -353,8 +349,83 @@ def analyse_doc_anns(ann_doc_path, rule_executor, text_reader, output_folder, fn
                 if ruled:
                     ann.add_ruled_by(rule)
                     logging.debug('%s [%s, %s] ruled by %s' % (ann.str, ann.start, ann.end, rule))
+
+
+def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, sa, ruler):
+    sql = sql_template % [row[k] for k in pks]
+    logging.debug('query ann: %s' % sql)
+    rets = []
+    db.query_data(sql, rets, db.get_db_connection_by_setting(dbcnn_file))
+    if len(rets) > 0:
+        anns = json.loads(rets[0]['anns'])
+        if len(anns.annotations) > 0:
+            text = rets[0]['text']
+            process_doc_rule(anns, ruler, text, sa)
+            update_query = update_template % [row[k] for k in pks]
+            db.query_data(update_query, None, db.get_db_connection_by_setting(dbcnn_file))
+            logging.info('ann %s updated' % row)
+        else:
+            logging.debug('ann skipped, %s annotation empty' % row)
+
+
+def analyse_db_doc_anns(sql, ann_sql, pks, update_template, dbcnn_file, num_thread,
+                        study_folder, rule_config_file, study_config):
+    """
+    do database based annotation post processing
+    :param sql: get a list of annotation primary keys
+    :param ann_sql: a query template to query ann and its doc full text
+    :param pks: an array of primary key columns
+    :param update_template: an update query template to update post-processed ann
+    :param dbcnn_file: database connection file
+    :param num_thread:
+    :param study_folder:
+    :param rule_config_file:
+    :param study_config:
+    :return:
+    """
+    ret = load_study_ruler(study_folder, rule_config_file, study_config)
+    sa = ret['sa']
+    ruler = ret['ruler']
+    rows = []
+    db.query_data(sql, rows, db.get_db_connection_by_setting(dbcnn_file))
+    utils.multi_thread_tasking(rows, num_thread, db_doc_process,
+                               args=[ann_sql, pks, update_template, dbcnn_file, sa, ruler])
+
+
+def analyse_doc_anns(ann_doc_path, rule_executor, text_reader, output_folder, fn_pattern='se_ann_%s.json',
+                     study_analyzer=None):
+    p, fn = split(ann_doc_path)
+    file_key = fn[:fn.index('.')]
+    json_doc = utils.load_json_data(ann_doc_path)
+    ann_doc = SemEHRAnnDoc()
+    ann_doc.load(json_doc, file_key=file_key)
+    text = text_reader.read_full_text(ann_doc.file_key)
+    if text is None:
+        logging.error('file [%s] full text not found' % ann_doc.file_key)
+        return
+
+    process_doc_rule(ann_doc, rule_executor, text, study_analyzer)
     utils.save_json_array(ann_doc.serialise_json(), join(output_folder, fn_pattern % ann_doc.file_key))
     return ann_doc.serialise_json()
+
+
+def load_study_ruler(study_folder, rule_config_file, study_config='study.json'):
+    if study_folder is not None and study_folder != '':
+        r = utils.load_json_data(join(study_folder, study_config))
+
+        ret = study_analyzer.load_study_settings(study_folder,
+                                                 umls_instance=None,
+                                                 rule_setting_file=r['rule_setting_file'],
+                                                 concept_filter_file=None if 'concept_filter_file' not in r else r['concept_filter_file'],
+                                                 do_disjoint_computing=True if 'do_disjoint' not in r else r['do_disjoint'],
+                                                 export_study_concept_only=False if 'export_study_concept' not in r else r['export_study_concept']
+                                                 )
+        sa = ret['study_analyzer']
+        ruler = ret['ruler']
+    else:
+        logging.info('no study configuration provided, applying rules to all annotations...')
+        ruler = study_analyzer.load_ruler(rule_config_file)
+    return {'sa': sa, 'ruler': ruler}
 
 
 def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_folder,
@@ -373,24 +444,10 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
     :param fn_pattern:
     :return:
     """
-    sa = None
-    ruler = None
     text_reader = FulltextReader(full_text_folder, full_text_fn_ptn)
-    if study_folder is not None and study_folder != '':
-        r = utils.load_json_data(join(study_folder, study_config))
-
-        ret = study_analyzer.load_study_settings(study_folder,
-                                                 umls_instance=None,
-                                                 rule_setting_file=r['rule_setting_file'],
-                                                 concept_filter_file=None if 'concept_filter_file' not in r else r['concept_filter_file'],
-                                                 do_disjoint_computing=True if 'do_disjoint' not in r else r['do_disjoint'],
-                                                 export_study_concept_only=False if 'export_study_concept' not in r else r['export_study_concept']
-                                                 )
-        sa = ret['study_analyzer']
-        ruler = ret['ruler']
-    else:
-        logging.info('no study configuration provided, applying rules to all annotations...')
-        ruler = study_analyzer.load_ruler(rule_config_file)
+    ret = load_study_ruler(study_folder, rule_config_file, study_config)
+    sa = ret['sa']
+    ruler = ret['ruler']
 
     # for ff in [f for f in listdir(anns_folder) if isfile(join(anns_folder, f))]:
     #     analyse_doc_anns(join(anns_folder, ff), ruler, text_reader, output_folder, fn_pattern, sa)
