@@ -359,7 +359,8 @@ def analyse_doc_anns(ann_doc_path, rule_executor, text_reader, output_folder, fn
 
 def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_folder,
                      study_folder=None,
-                     study_config='study.json', full_text_fn_ptn='%s.txt', fn_pattern='se_ann_%s.json'):
+                     study_config='study.json', full_text_fn_ptn='%s.txt', fn_pattern='se_ann_%s.json',
+                     thread_num=10):
     """
     multiple threading process doc anns
     :param anns_folder:
@@ -395,7 +396,7 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
     #     analyse_doc_anns(join(anns_folder, ff), ruler, text_reader, output_folder, fn_pattern, sa)
     utils.multi_thread_process_files(dir_path=anns_folder,
                                      file_extension='json',
-                                     num_threads=10,
+                                     num_threads=thread_num,
                                      process_func=analyse_doc_anns,
                                      args=[ruler, text_reader, output_folder, fn_pattern, sa])
     logging.info('post processing of ann docs done')

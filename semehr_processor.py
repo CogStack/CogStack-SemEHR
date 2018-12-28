@@ -343,13 +343,17 @@ def do_semehr_doc_anns_analysis(settings):
     output_folder = settings.get_attr(['doc_ann_analysis', 'output_folder'])
     study_folder = settings.get_attr(['doc_ann_analysis', 'study_folder'])
     output_file_pattern = settings.get_attr(['doc_ann_analysis', 'output_fn_pattern'])
+    thread_num = settings.get_attr(['doc_ann_analysis', 'thread_num'])
+    if thread_num is None:
+        thread_num = 10
     docanalysis.process_doc_anns(anns_folder=anns_folder,
                                  full_text_folder=text_folder,
                                  rule_config_file=rule_config,
                                  output_folder=output_folder,
                                  study_folder=study_folder,
                                  full_text_fn_ptn=full_text_file_pattern,
-                                 fn_pattern=output_file_pattern
+                                 fn_pattern=output_file_pattern,
+                                 thread_num=thread_num
                                  )
 
 
