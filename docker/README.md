@@ -14,7 +14,7 @@ docker build -t cogstack/semehr - < Dockerfile
     - input_docs: for putting full text documents; Add your own documents or two sample docs will be put in here for demostration purposes.
     - output_docs: for saving `temporary` NLP annotations;
     - semehr_results: for saving SeEHR results.
-- (optional) create a SemEHR configuration file in `data` dir. If not, a default configuration will be used, i.e. `docker/docker_doc_based_settings.json`.
+- (optional) create a SemEHR configuration file (semehr_settings.json) in `data` dir. If not, a default configuration will be used, i.e. `docker/docker_doc_based_settings.json`.
 - (optional) [*Gazetteer settings*] A sample gazetteer will be used for NLP annotation. This is a list of entities used for a stroke subtyping study. It is recommended to use a UMLS gazetteer that bio-yodie can use. Due to license purpose, we cannot provide it. But very happy to support you to populate your own if you have got a UMLS license.
 
 ### run the container
