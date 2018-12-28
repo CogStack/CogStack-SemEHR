@@ -66,6 +66,17 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         print 'syntax: python cohort_helper.py JSON_CONF_FILE_PATH'
     else:
+        log_level = 'INFO'
+        log_format = '%(name)s %(asctime)s %(levelname)s %(message)s'
+        log_file = '/data/semehr-cohort.log'
+        logging.basicConfig(level=log_level, format=log_format)
+        formatter = logging.Formatter(log_format)
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(log_level)
+        file_handler.setFormatter(formatter)
+        logging.getLogger().addHandler(file_handler)
+        logging.info('logging to %s' % log_file)
+
         ch = CohortHelper(sys.argv[1])
         ch.extract_cohort_docs()
         logging.info('docs extracted')
