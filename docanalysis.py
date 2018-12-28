@@ -369,7 +369,7 @@ def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, sa, rule
 
 
 def analyse_db_doc_anns(sql, ann_sql, pks, update_template, dbcnn_file, num_thread,
-                        study_folder, rule_config_file, study_config):
+                        study_folder, rule_config_file, study_config='study.json'):
     """
     do database based annotation post processing
     :param sql: get a list of annotation primary keys

@@ -354,15 +354,29 @@ def do_semehr_doc_anns_analysis(settings):
     thread_num = settings.get_attr(['doc_ann_analysis', 'thread_num'])
     if thread_num is None:
         thread_num = 10
-    docanalysis.process_doc_anns(anns_folder=anns_folder,
-                                 full_text_folder=text_folder,
-                                 rule_config_file=rule_config,
-                                 output_folder=output_folder,
-                                 study_folder=study_folder,
-                                 full_text_fn_ptn=full_text_file_pattern,
-                                 fn_pattern=output_file_pattern,
-                                 thread_num=thread_num
-                                 )
+    process_mode = settings.get_attr(['doc_ann_analysis', 'process_mode'])
+    if process_mode is not None and process_mode != 'sql':
+        docanalysis.process_doc_anns(anns_folder=anns_folder,
+                                     full_text_folder=text_folder,
+                                     rule_config_file=rule_config,
+                                     output_folder=output_folder,
+                                     study_folder=study_folder,
+                                     full_text_fn_ptn=full_text_file_pattern,
+                                     fn_pattern=output_file_pattern,
+                                     thread_num=thread_num
+                                     )
+    else:
+        ann_list_sql = settings.get_attr(['doc_ann_analysis', 'ann_list_sql'])
+        primary_keys = settings.get_attr(['doc_ann_analysis', 'primary_keys'])
+        ann_inst_sql = settings.get_attr(['doc_ann_analysis', 'ann_inst_sql'])
+        update_query_template = settings.get_attr(['doc_ann_analysis', 'update_query_template'])
+        dbconn_file = settings.get_attr(['doc_ann_analysis', 'dbconn_file'])
+        docanalysis.analyse_db_doc_anns(ann_list_sql, ann_inst_sql, primary_keys,
+                                        update_query_template, dbconn_file,
+                                        thread_num=thread_num,
+                                        study_folder=study_folder,
+                                        rule_config_file=rule_config
+                                        )
 
 
 def process_semehr(config_file):
