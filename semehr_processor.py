@@ -250,6 +250,10 @@ def produce_yodie_config(settings, data_rows, docid_path):
             output.set('annotationOutputSettings', settings.get_attr(['yodie', 'annotationOutputSettings']))
         if settings.get_attr(['yodie', 'docBasedOutput']) is not None:
             output.set('docBasedOutput', settings.get_attr(['yodie', 'docBasedOutput']))
+        if settings.get_attr(['yodie', 'docAnnSQLTemplate']) is not None:
+            output.set('docAnnSQLTemplate', settings.get_attr(['yodie', 'docAnnSQLTemplate']))
+        if settings.get_attr(['yodie', 'singleAnnSQLTemplate']) is not None:
+            output.set('singleAnnSQLTemplate', settings.get_attr(['yodie', 'singleAnnSQLTemplate']))
         if settings.get_attr(['yodie', 'output_concept_filter_file']) is not None:
             output.set('concept_filter', '%s' % settings.get_attr(['yodie', 'output_concept_filter_file']))
         logging.info('saving annotations to sql [%s]' % settings.get_attr(['yodie', 'output_dbconn_setting_file']))
