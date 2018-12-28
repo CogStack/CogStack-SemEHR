@@ -215,6 +215,10 @@ def produce_yodie_config(settings, data_rows, docid_path):
         input.set('user', input_db['user'])
         input.set('password', input_db['password'])
         input.set('get_doc_sql_prefix', input_db['get_doc_sql_prefix'])
+        if settings.get_attr(['yodie', 'annotationOutputSettings']) is not None:
+            input.set('annotationOutputSettings', settings.get_attr(['yodie', 'annotationOutputSettings']))
+        if settings.get_attr(['yodie', 'docBasedOutput']) is not None:
+            input.set('docBasedOutput', settings.get_attr(['yodie', 'docBasedOutput']))
         logging.info('using docs from sql server [%s]' % settings.get_attr(['yodie', 'input_dbconn_setting_file']))
     elif settings.get_attr(['yodie', 'input_source']) == "files":
         dir_path = settings.get_attr(['yodie', 'input_doc_file_path'])
