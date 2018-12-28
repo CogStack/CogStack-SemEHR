@@ -215,10 +215,6 @@ def produce_yodie_config(settings, data_rows, docid_path):
         input.set('user', input_db['user'])
         input.set('password', input_db['password'])
         input.set('get_doc_sql_prefix', input_db['get_doc_sql_prefix'])
-        if settings.get_attr(['yodie', 'annotationOutputSettings']) is not None:
-            input.set('annotationOutputSettings', settings.get_attr(['yodie', 'annotationOutputSettings']))
-        if settings.get_attr(['yodie', 'docBasedOutput']) is not None:
-            input.set('docBasedOutput', settings.get_attr(['yodie', 'docBasedOutput']))
         logging.info('using docs from sql server [%s]' % settings.get_attr(['yodie', 'input_dbconn_setting_file']))
     elif settings.get_attr(['yodie', 'input_source']) == "files":
         dir_path = settings.get_attr(['yodie', 'input_doc_file_path'])
@@ -250,6 +246,10 @@ def produce_yodie_config(settings, data_rows, docid_path):
         output.set('user', output_db['user'])
         output.set('password', output_db['password'])
         output.set('output_table', '%s' % settings.get_attr(['yodie', 'output_table']))
+        if settings.get_attr(['yodie', 'annotationOutputSettings']) is not None:
+            output.set('annotationOutputSettings', settings.get_attr(['yodie', 'annotationOutputSettings']))
+        if settings.get_attr(['yodie', 'docBasedOutput']) is not None:
+            output.set('docBasedOutput', settings.get_attr(['yodie', 'docBasedOutput']))
         if settings.get_attr(['yodie', 'output_concept_filter_file']) is not None:
             output.set('concept_filter', '%s' % settings.get_attr(['yodie', 'output_concept_filter_file']))
         logging.info('saving annotations to sql [%s]' % settings.get_attr(['yodie', 'output_dbconn_setting_file']))
