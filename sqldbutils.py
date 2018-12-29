@@ -80,3 +80,7 @@ def query_data(query, container, dbconn=None):
     else:
         conn_dic['cnxn'].commit()
     release_db_connection(conn_dic)
+
+
+def escape_string(s):
+    return s.replace("'", "''")
