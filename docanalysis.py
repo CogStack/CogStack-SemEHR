@@ -365,7 +365,7 @@ def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, sa, rule
             process_doc_rule(ann_doc, ruler, text, sa)
             update_query = update_template.format(*([db.escape_string(json.dumps(ann_doc.serialise_json()))] +
                                                     [row[k] for k in pks]))
-            logging.debug('update ann: %s' % update_query)
+            # logging.debug('update ann: %s' % update_query)
             db.query_data(update_query, None, db.get_db_connection_by_setting(dbcnn_file))
             logging.info('ann %s updated' % row)
         else:
