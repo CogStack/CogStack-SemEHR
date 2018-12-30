@@ -352,7 +352,7 @@ def process_doc_rule(ann_doc, rule_executor, text, study_analyzer):
 
 
 def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, sa, ruler):
-    sql = sql_template % [row[k] for k in pks]
+    sql = sql_template.format(*[row[k] for k in pks])
     logging.debug('query ann: %s' % sql)
     rets = []
     db.query_data(sql, rets, db.get_db_connection_by_setting(dbcnn_file))
@@ -361,15 +361,16 @@ def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, sa, rule
         if len(anns.annotations) > 0:
             text = rets[0]['text']
             process_doc_rule(anns, ruler, text, sa)
-            update_query = update_template % ([db.escape_string(anns.serialise_json())] + [row[k] for k in pks])
+            update_query = update_template.format(*([db.escape_string(anns.serialise_json())] + [row[k] for k in pks]))
+            logging.debug('update ann: %s' % update_query)
             db.query_data(update_query, None, db.get_db_connection_by_setting(dbcnn_file))
             logging.info('ann %s updated' % row)
         else:
             logging.debug('ann skipped, %s annotation empty' % row)
 
 
-def analyse_db_doc_anns(sql, ann_sql, pks, update_template, dbcnn_file, num_thread,
-                        study_folder, rule_config_file, study_config='study.json'):
+def analyse_db_doc_anns(sql, ann_sql, pks, update_template, dbcnn_file, rule_config_file,
+                        study_folder, thread_num=10, study_config='study.json'):
     """
     do database based annotation post processing
     :param sql: get a list of annotation primary keys
@@ -377,7 +378,7 @@ def analyse_db_doc_anns(sql, ann_sql, pks, update_template, dbcnn_file, num_thre
     :param pks: an array of primary key columns
     :param update_template: an update query template to update post-processed ann
     :param dbcnn_file: database connection file
-    :param num_thread:
+    :param thread_num:
     :param study_folder:
     :param rule_config_file:
     :param study_config:
@@ -388,7 +389,7 @@ def analyse_db_doc_anns(sql, ann_sql, pks, update_template, dbcnn_file, num_thre
     ruler = ret['ruler']
     rows = []
     db.query_data(sql, rows, db.get_db_connection_by_setting(dbcnn_file))
-    utils.multi_thread_tasking(rows, num_thread, db_doc_process,
+    utils.multi_thread_tasking(rows, thread_num, db_doc_process,
                                args=[ann_sql, pks, update_template, dbcnn_file, sa, ruler])
 
 
