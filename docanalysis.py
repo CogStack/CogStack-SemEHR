@@ -228,6 +228,10 @@ class SemEHRAnn(ContextedAnn):
         ann = SemEHRAnn(jo['str'], jo['start'], jo['end'], jo['negation'], jo['temporality'],
                         jo['experiencer'], jo['cui'], jo['sty'], jo['pref'], 'mention')
         ann.id = jo['id']
+        if 'ruled_by' in jo:
+            ann._ruled_by = jo['ruled_by']
+        if 'study_concepts' in jo:
+            ann._ruled_by = jo['study_concepts']
         return ann
 
 
