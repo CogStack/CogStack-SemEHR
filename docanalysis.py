@@ -358,10 +358,13 @@ def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, sa, rule
     db.query_data(sql, rets, db.get_db_connection_by_setting(dbcnn_file))
     if len(rets) > 0:
         anns = json.loads(rets[0]['anns'])
-        if len(anns.annotations) > 0:
+        ann_doc = SemEHRAnnDoc()
+        ann_doc.load(anns)
+        if len(ann_doc.annotations) > 0:
             text = rets[0]['text']
-            process_doc_rule(anns, ruler, text, sa)
-            update_query = update_template.format(*([db.escape_string(anns.serialise_json())] + [row[k] for k in pks]))
+            process_doc_rule(ann_doc, ruler, text, sa)
+            update_query = update_template.format(*([db.escape_string(ann_doc.serialise_json())] +
+                                                    [row[k] for k in pks]))
             logging.debug('update ann: %s' % update_query)
             db.query_data(update_query, None, db.get_db_connection_by_setting(dbcnn_file))
             logging.info('ann %s updated' % row)
