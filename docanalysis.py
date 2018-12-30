@@ -61,6 +61,13 @@ class BasicAnn(object):
     def serialise_json(self):
         return {'start': self.start, 'end': self.end, 'str': self.str, 'id': self.id}
 
+    @staticmethod
+    def deserialise(jo):
+        ann = BasicAnn(jo['start'], jo['start'], jo['end'])
+        ann.id = jo['id']
+        return ann
+
+
 class ContextedAnn(BasicAnn):
     """
     a contextulised annotation class (negation/tempolarity/experiencer)
@@ -136,6 +143,13 @@ class PhenotypeAnn(ContextedAnn):
         dict['minor_type'] = self.minor_type
         return dict
 
+    @staticmethod
+    def deserialise(jo):
+        ann = PhenotypeAnn(jo['str'], jo['start'], jo['end'], jo['negation'], jo['temporality'],
+                           jo['experiencer'], jo['major_type'], jo['minor_type'])
+        ann.id = jo['id']
+        return ann
+
 
 class SemEHRAnn(ContextedAnn):
     """
@@ -209,6 +223,13 @@ class SemEHRAnn(ContextedAnn):
         dict['ruled_by'] = self.ruled_by
         return dict
 
+    @staticmethod
+    def deserialise(jo):
+        ann = SemEHRAnn(jo['str'], jo['start'], jo['end'], jo['negation'], jo['temporality'],
+                        jo['experiencer'], jo['cui'], jo['sty'], jo['pref'], 'mention')
+        ann.id = jo['id']
+        return ann
+
 
 class SemEHRAnnDoc(object):
     """
@@ -232,10 +253,10 @@ class SemEHRAnnDoc(object):
         panns = self._phenotype_anns
         if 'sentences' in self._doc:
             # is a SemEHRAnnDoc serialisation
-            self._anns = self._doc['annotations']
+            self._anns = [SemEHRAnn.deserialise(a) for a in self._doc['annotations']]
             if 'phenotypes' in self._doc:
-                self._phenotype_anns = self._doc['phenotypes']
-            self._sentences = self._doc['sentences']
+                self._phenotype_anns = [PhenotypeAnn.deserialise(a) for a in self._doc['phenotypes']]
+            self._sentences = [BasicAnn.deserialise(a) for a in self._doc['sentences']]
         else:
             for anns in self._doc['annotations']:
                 for ann in anns:
