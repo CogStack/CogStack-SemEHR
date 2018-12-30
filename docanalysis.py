@@ -230,47 +230,54 @@ class SemEHRAnnDoc(object):
     def load_anns(self):
         all_anns = self._anns
         panns = self._phenotype_anns
-        for anns in self._doc['annotations']:
-            for ann in anns:
-                t = ann['type']
-                if t == 'Mention':
-                    a = SemEHRAnn(ann['features']['string_orig'],
-                                  int(ann['startNode']['offset']),
-                                  int(ann['endNode']['offset']),
+        if 'sentences' in self._doc:
+            # is a SemEHRAnnDoc serialisation
+            self._anns = self._doc['annotations']
+            if 'phenotypes' in self._doc:
+                self._phenotype_anns = self._doc['phenotypes']
+            self._sentences = self._doc['sentences']
+        else:
+            for anns in self._doc['annotations']:
+                for ann in anns:
+                    t = ann['type']
+                    if t == 'Mention':
+                        a = SemEHRAnn(ann['features']['string_orig'],
+                                      int(ann['startNode']['offset']),
+                                      int(ann['endNode']['offset']),
 
-                                  ann['features']['Negation'],
-                                  ann['features']['Temporality'],
-                                  ann['features']['Experiencer'],
+                                      ann['features']['Negation'],
+                                      ann['features']['Temporality'],
+                                      ann['features']['Experiencer'],
 
-                                  ann['features']['inst'],
-                                  ann['features']['STY'],
-                                  ann['features']['PREF'],
-                                  t)
-                    all_anns.append(a)
-                    a.id = 'cui-%s' % len(all_anns)
-                elif t == 'Phenotype':
-                    a = PhenotypeAnn(ann['features']['string_orig'],
+                                      ann['features']['inst'],
+                                      ann['features']['STY'],
+                                      ann['features']['PREF'],
+                                      t)
+                        all_anns.append(a)
+                        a.id = 'cui-%s' % len(all_anns)
+                    elif t == 'Phenotype':
+                        a = PhenotypeAnn(ann['features']['string_orig'],
+                                         int(ann['startNode']['offset']),
+                                         int(ann['endNode']['offset']),
+
+                                         ann['features']['Negation'],
+                                         ann['features']['Temporality'],
+                                         ann['features']['Experiencer'],
+
+                                         ann['features']['majorType'],
+                                         ann['features']['minorType'])
+                        panns.append(a)
+                        a.id = 'phe-%s' % len(panns)
+                    elif t == 'Sentence':
+                        a = BasicAnn('Sentence',
                                      int(ann['startNode']['offset']),
-                                     int(ann['endNode']['offset']),
+                                     int(ann['endNode']['offset']))
+                        self._sentences.append(a)
+                        a.id = 'sent-%s' % len(self._sentences)
+                    else:
+                        self._others.append(ann)
 
-                                     ann['features']['Negation'],
-                                     ann['features']['Temporality'],
-                                     ann['features']['Experiencer'],
-
-                                     ann['features']['majorType'],
-                                     ann['features']['minorType'])
-                    panns.append(a)
-                    a.id = 'phe-%s' % len(panns)
-                elif t == 'Sentence':
-                    a = BasicAnn('Sentence',
-                                 int(ann['startNode']['offset']),
-                                 int(ann['endNode']['offset']))
-                    self._sentences.append(a)
-                    a.id = 'sent-%s' % len(self._sentences)
-                else:
-                    self._others.append(ann)
-
-        sorted(all_anns, key=lambda x: x.start)
+            sorted(all_anns, key=lambda x: x.start)
 
     @property
     def file_key(self):
