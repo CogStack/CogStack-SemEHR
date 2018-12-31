@@ -353,6 +353,7 @@ class FulltextReader(object):
 
 def process_doc_rule(ann_doc, rule_executor, text, study_analyzer):
     study_concepts = study_analyzer.study_concepts if study_analyzer is not None else None
+    num_concepts = 0
     for ann in ann_doc.annotations:
         is_a_concept = False
         if study_concepts is not None:
@@ -381,6 +382,8 @@ def process_doc_rule(ann_doc, rule_executor, text, study_analyzer):
                 if ruled:
                     ann.add_ruled_by(rule)
                     logging.debug('%s [%s, %s] ruled by %s' % (ann.str, ann.start, ann.end, rule))
+            num_concepts += 1
+    return num_concepts
 
 
 def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, sa, ruler):
@@ -394,12 +397,15 @@ def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, sa, rule
         ann_doc.load(anns)
         if len(ann_doc.annotations) > 0:
             text = rets[0]['text']
-            process_doc_rule(ann_doc, ruler, text, sa)
-            update_query = update_template.format(*([db.escape_string(json.dumps(ann_doc.serialise_json()))] +
-                                                    [row[k] for k in pks]))
-            # logging.debug('update ann: %s' % update_query)
-            db.query_data(update_query, None, db.get_db_connection_by_setting(dbcnn_file))
-            logging.info('ann %s updated' % row)
+            num_concepts = process_doc_rule(ann_doc, ruler, text, sa)
+            if num_concepts > 0:
+                update_query = update_template.format(*([db.escape_string(json.dumps(ann_doc.serialise_json()))] +
+                                                        [row[k] for k in pks]))
+                # logging.debug('update ann: %s' % update_query)
+                db.query_data(update_query, None, db.get_db_connection_by_setting(dbcnn_file))
+                logging.info('ann %s updated' % row)
+            else:
+                logging.info('no concepts found/update %s' % row)
         else:
             logging.debug('ann skipped, %s annotation empty' % row)
 
