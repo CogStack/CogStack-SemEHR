@@ -528,6 +528,7 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
             anns = json.loads(fix_escaped_issue(r['anns']))
             ann_doc = SemEHRAnnDoc()
             ann_doc.load(anns)
+            logging.debug('doc #%s loaded with %s anns' % (i, len(ann_doc.annotations)))
             for a in ann_doc.annotations:
                 for c in a.study_concepts:
                     if c in c2f:
