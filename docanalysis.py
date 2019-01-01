@@ -524,20 +524,12 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
     for r in rows:
         try:
             i += 1
-            logging.debug('working on doc #%s' % i)
             anns = json.loads(fix_escaped_issue(r['anns']))
             ann_doc = SemEHRAnnDoc()
             ann_doc.load(anns)
             for a in ann_doc.annotations:
-                # for c in a.study_concepts:
-                is_concept = False
-                sc_name = None
-                for sc in study_concepts:
-                    if a.cui in sc.concept_closure:
-                        is_concept = True
-                        sc_name = sc.name
-                if is_concept:
-                    logging.debug('%s found in %s, ruled_by=%s, concepts:%s' % (sc_name, '-'.join([r[k] for k in doc_ann_pks]),
+                for c in a.study_concepts:
+                    logging.debug('%s found in %s, ruled_by=%s, concepts:%s' % (c, '-'.join([r[k] for k in doc_ann_pks]),
                                                                    a.ruled_by, a.study_concepts))
                     if c in c2f:
                         if len(a.ruled_by) > 0:
