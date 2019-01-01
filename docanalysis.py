@@ -544,7 +544,7 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
 
 def fix_escaped_issue(s):
     return re.sub(
-        r'(string_orig":"|str": ")(((?!","|"\}|", ").)*)(","|"\}|", ")',
+        r'(string_orig":"|pref": "|PREF":"|str": ")(((?!","|"\}|", ").)*)(","|"\}|", ")',
         r'\1\4',
         s
     )
