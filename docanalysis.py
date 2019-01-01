@@ -233,7 +233,7 @@ class SemEHRAnn(ContextedAnn):
         if 'ruled_by' in jo:
             ann._ruled_by = jo['ruled_by']
         if 'study_concepts' in jo:
-            ann._ruled_by = jo['study_concepts']
+            ann._study_concepts = jo['study_concepts']
         return ann
 
 
