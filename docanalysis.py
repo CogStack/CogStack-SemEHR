@@ -520,7 +520,7 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
         c2f[c] = {'f': 0, 'rf': 0, 'docs': {}}
     for r in rows:
         try:
-            anns = json.loads(r['anns'])
+            anns = json.loads(fix_escaped_issue(r['anns']))
             ann_doc = SemEHRAnnDoc()
             ann_doc.load(anns)
             for a in ann_doc.annotations:
@@ -534,6 +534,10 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
         except Exception as e:
             logging.error('parsing anns %s because of %s' % (r['anns'], str(e)))
     container.append({'p': pid, 'c2f': c2f})
+
+
+def fix_escaped_issue(s):
+    return s.replace('""', '"')
 
 
 def extract_sample(pk_vals, concept, sample_sql_temp, dbcnn_file, container):
