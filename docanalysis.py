@@ -617,7 +617,7 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
         for c in concept_list:
             if r['c2f'][c]['f'] > 0:
                 c2pks[c].append(r['c2f'][c]['docs'][0])
-            pr.append(r['c2f'][c]['f'])
+            pr.append(str(r['c2f'][c]['f']))
         s += '\t'.join(pr)
     f = join(output_folder, 'result.tsv')
     utils.save_string(s, f)
