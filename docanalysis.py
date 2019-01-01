@@ -519,17 +519,20 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
     for c in concept_list:
         c2f[c] = {'f': 0, 'rf': 0, 'docs': {}}
     for r in rows:
-        anns = json.loads(r['anns'])
-        ann_doc = SemEHRAnnDoc()
-        ann_doc.load(anns)
-        for a in ann_doc.annotations:
-            for c in a.study_concepts:
-                if c in c2f:
-                    if len(a.ruled_by) > 0:
-                        c2f[c]['rf'] += 1
-                    else:
-                        c2f[c]['f'] += 1
-                        c2f[c]['docs'].append([r[k] for k in doc_ann_pks])
+        try:
+            anns = json.loads(r['anns'])
+            ann_doc = SemEHRAnnDoc()
+            ann_doc.load(anns)
+            for a in ann_doc.annotations:
+                for c in a.study_concepts:
+                    if c in c2f:
+                        if len(a.ruled_by) > 0:
+                            c2f[c]['rf'] += 1
+                        else:
+                            c2f[c]['f'] += 1
+                            c2f[c]['docs'].append([r[k] for k in doc_ann_pks])
+        except Exception as e:
+            logging.error('parsing anns %s because of %s' % (r['anns'], str(e)))
     container.append({'p': pid, 'c2f': c2f})
 
 
