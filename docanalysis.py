@@ -525,6 +525,7 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
         try:
             i += 1
             logging.debug('working on doc #%s' % i)
+            logging.debug(r['anns'])
             anns = json.loads(fix_escaped_issue(r['anns']))
             ann_doc = SemEHRAnnDoc()
             ann_doc.load(anns)
