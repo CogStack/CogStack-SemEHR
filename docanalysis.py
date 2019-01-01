@@ -518,7 +518,7 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
     db.query_data(doc_ann_sql_temp.format(pid), rows, db.get_db_connection_by_setting(dbcnn_file))
     c2f = {}
     for c in concept_list:
-        c2f[c] = {'f': 0, 'rf': 0, 'docs': {}}
+        c2f[c] = {'f': 0, 'rf': 0, 'docs': []}
     logging.debug('pid: %s has %s docs' % (pid, len(rows)))
     i = 0
     for r in rows:
@@ -536,7 +536,6 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
                         else:
                             c2f[c]['f'] += 1
                             c2f[c]['docs'].append([r[k] for k in doc_ann_pks])
-            logging.debug('c2f: %s' % c2f)
         except Exception as e:
             logging.error('parsing anns %s because of %s' % (r['anns'], str(e)))
     logging.info('pid %s done, %s' % (pid, c2f))
