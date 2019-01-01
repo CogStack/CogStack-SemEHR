@@ -503,7 +503,7 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
     logging.info('post processing of ann docs done')
 
 
-def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, container):
+def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, container, study_concepts):
     """
     populate a row (per patient) in the result table
     :param pid:
@@ -529,8 +529,15 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
             ann_doc = SemEHRAnnDoc()
             ann_doc.load(anns)
             for a in ann_doc.annotations:
-                for c in a.study_concepts:
-                    logging.debug('%s found in %s, ruled_by=%s' % (c, r['doc_id'], a.ruled_by))
+                # for c in a.study_concepts:
+                is_concept = False
+                sc_name = None
+                for sc in study_concepts:
+                    if a.ui in sc.concept_closure:
+                        is_concept = True
+                        sc_name = sc.name
+                if is_concept:
+                    logging.debug('%s found in %s, ruled_by=%s' % (sc_name, r['doc_id'], a.ruled_by))
                     if c in c2f:
                         if len(a.ruled_by) > 0:
                             c2f[c]['rf'] += 1
@@ -607,7 +614,7 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
     db.query_data(cohort_sql, rows, db.get_db_connection_by_setting(dbcnn_file))
     logging.info('querying results (cohort size:%s)...' % len(rows))
     utils.multi_thread_tasking([r['pid'] for r in rows], thread_num, db_populate_patient_result,
-                               args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, results])
+                               args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, results, sa.study_concepts])
     # populate result table
     c2pks = {}
     for c in concept_list:
