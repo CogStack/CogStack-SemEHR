@@ -5,6 +5,7 @@ import study_analyzer
 import sqldbutils as db
 import json
 import random
+import re
 
 
 class BasicAnn(object):
@@ -537,7 +538,11 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
 
 
 def fix_escaped_issue(s):
-    return s.replace('""', '"')
+    re.sub(
+        r'(string_orig":")(((?!","inst_full")[^"]*"[^"]*)*)(","inst_full")',
+        r'\1\4',
+        s
+    )
 
 
 def extract_sample(pk_vals, concept, sample_sql_temp, dbcnn_file, container):
