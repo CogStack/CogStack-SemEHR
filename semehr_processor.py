@@ -383,7 +383,7 @@ def populate_cohort_results(settings):
     cohort_sql = settings.get_attr(['populate_cohort_result', 'cohort_sql'])
     doc_ann_sql_temp = settings.get_attr(['populate_cohort_result', 'doc_ann_sql_temp'])
     doc_ann_pks = settings.get_attr(['populate_cohort_result', 'doc_ann_pks'])
-    dbcnn_file = settings.get_attr(['populate_cohort_result', 'dbcnn_file'])
+    dbcnn_file = settings.get_attr(['populate_cohort_result', 'dbconn_file'])
     study_folder = settings.get_attr(['populate_cohort_result', 'study_folder'])
     output_folder = settings.get_attr(['populate_cohort_result', 'output_folder'])
     sample_sql_temp = settings.get_attr(['populate_cohort_result', 'sample_sql_temp'])
