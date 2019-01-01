@@ -538,7 +538,7 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
                             c2f[c]['docs'].append([r[k] for k in doc_ann_pks])
         except Exception as e:
             logging.error('parsing anns %s because of %s' % (r['anns'], str(e)))
-    logging.info('pid %s done, %s' % (pid, c2f))
+    logging.info('pid %s done' % pid)
     container.append({'p': pid, 'c2f': c2f})
 
 
@@ -618,7 +618,7 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
             if r['c2f'][c]['f'] > 0:
                 c2pks[c].append(r['c2f'][c]['docs'][0])
             pr.append(str(r['c2f'][c]['f']))
-        s += '\t'.join(pr)
+        s += '\t'.join(pr) + '\n'
     f = join(output_folder, 'result.tsv')
     utils.save_string(s, f)
     logging.info('result table saved to [%s]' % f)
