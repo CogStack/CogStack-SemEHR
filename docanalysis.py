@@ -533,7 +533,7 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
                 is_concept = False
                 sc_name = None
                 for sc in study_concepts:
-                    if a.ui in sc.concept_closure:
+                    if a.cui in sc.concept_closure:
                         is_concept = True
                         sc_name = sc.name
                 if is_concept:
