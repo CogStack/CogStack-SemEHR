@@ -530,6 +530,7 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
             ann_doc.load(anns)
             for a in ann_doc.annotations:
                 for c in a.study_concepts:
+                    logging.debug('%s found in %s, ruled_by=%s' % (c, r['doc_id'], a.ruled_by))
                     if c in c2f:
                         if len(a.ruled_by) > 0:
                             c2f[c]['rf'] += 1
