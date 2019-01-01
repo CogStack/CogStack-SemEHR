@@ -379,6 +379,28 @@ def do_semehr_doc_anns_analysis(settings):
                                         )
 
 
+def populate_cohort_results(settings):
+    cohort_sql = settings.get_attr(['populate_cohort_result', 'cohort_sql'])
+    doc_ann_sql_temp = settings.get_attr(['populate_cohort_result', 'doc_ann_sql_temp'])
+    doc_ann_pks = settings.get_attr(['populate_cohort_result', 'doc_ann_pks'])
+    dbcnn_file = settings.get_attr(['populate_cohort_result', 'dbcnn_file'])
+    study_folder = settings.get_attr(['populate_cohort_result', 'study_folder'])
+    output_folder = settings.get_attr(['populate_cohort_result', 'output_folder'])
+    sample_sql_temp = settings.get_attr(['populate_cohort_result', 'sample_sql_temp'])
+    thread_num = settings.get_attr(['populate_cohort_result', 'thread_num'])
+    sampling = settings.get_attr(['populate_cohort_result', 'sampling'])
+    if sampling is None:
+        sampling = True
+    if sampling:
+        sample_size = settings.get_attr(['populate_cohort_result', 'sample_size'])
+    if sample_size is None:
+        sample_size = 20
+    docanalysis.db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_file,
+                                          study_folder, output_folder, sample_sql_temp,
+                                          thread_num=thread_num, sampling=sampling,
+                                          sample_size=sample_size)
+
+
 def process_semehr(config_file):
     """
     a pipeline to process all SemEHR related processes:
@@ -512,6 +534,12 @@ def process_semehr(config_file):
             logging.info('[SemEHR-step]doing SemEHR annotation analysis...')
             do_semehr_doc_anns_analysis(settings=ps)
             logging.info('[SemEHR-step-end] doc_analysis step done')
+
+        # 5. do populate results for a research study
+        if ps.get_attr(['job', 'populate_cohort_result']) == 'yes':
+            logging.info('[SemEHR-step]doing SemEHR cohort result extraction...')
+            populate_cohort_results(settings=ps)
+            logging.info('[SemEHR-step-end] populate_cohort_result step done')
 
         job_status.set_status(True)
         job_status.save()

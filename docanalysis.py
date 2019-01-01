@@ -4,6 +4,7 @@ import logging
 import study_analyzer
 import sqldbutils as db
 import json
+import random
 
 
 class BasicAnn(object):
@@ -499,6 +500,134 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
                                      process_func=analyse_doc_anns,
                                      args=[ruler, text_reader, output_folder, fn_pattern, sa])
     logging.info('post processing of ann docs done')
+
+
+def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, container):
+    """
+    populate a row (per patient) in the result table
+    :param pid:
+    :param doc_ann_sql_temp:
+    :param doc_ann_pks:
+    :param dbcnn_file:
+    :param concept_list:
+    :param container:
+    :return:
+    """
+    rows = []
+    db.query_data(doc_ann_sql_temp % pid, rows, db.get_db_connection_by_setting(dbcnn_file))
+    c2f = {}
+    for c in concept_list:
+        c2f[c] = {'f': 0, 'rf': 0, 'docs': {}}
+    for r in rows:
+        anns = json.loads(r['anns'])
+        ann_doc = SemEHRAnnDoc()
+        ann_doc.load(anns)
+        for a in ann_doc.annotations:
+            for c in a.study_concepts:
+                if c in c2f:
+                    if len(a.ruled_by) > 0:
+                        c2f[c]['rf'] += 1
+                    else:
+                        c2f[c]['f'] += 1
+                        c2f[c]['docs'].append([r[k] for k in doc_ann_pks])
+    container.append({'p': pid, 'c2f': c2f})
+
+
+def extract_sample(pk_vals, concept, sample_sql_temp, dbcnn_file, container):
+    """
+    extract an sample
+    :param pk_vals:
+    :param concept:
+    :param sample_sql_temp:
+    :param dbcnn_file:
+    :param container:
+    :return:
+    """
+    rows = []
+    db.query_data(sample_sql_temp.format(*[v for v in pk_vals]), rows,
+                  db.get_db_connection_by_setting(dbcnn_file))
+    if len(rows) > 0:
+        r = rows[0]
+        anns = json.loads(r['anns'])
+        ann_doc = SemEHRAnnDoc()
+        ann_doc.load(anns)
+        for a in ann_doc.annotations:
+            if concept in a.study_concepts:
+                container.append({'content': r['text'], 'doc_table': r['src_table'], 'doc_col': r['src_col'],
+                                  'id': '_'.join(pk_vals),
+                                  'annotations': [{'start': a.start,
+                                                   'end': a.end,
+                                                   'concept': a.cui,
+                                                   'string_orig': a.str}]})
+                break
+
+
+def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_file,
+                              study_folder, output_folder, sample_sql_temp,
+                              thread_num=10, study_config='study.json',
+                              sampling=True, sample_size=20):
+    """
+    populate results for a research study
+    :param cohort_sql: cohort selection query
+    :param doc_ann_sql_temp: query template for getting a doc_anns item
+    :param doc_ann_pks: primary key columns of doc ann table
+    :param dbcnn_file: database connection config file
+    :param study_folder: study folder
+    :param output_folder: where to save the results
+    :param sample_sql_temp: query template for getting a sample item (including full text and doc_anns)
+    :param thread_num:
+    :param study_config:
+    :param sampling: whether sampling is needed
+    :param sample_size: how many samples per study concept
+    :return:
+    """
+    ret = load_study_ruler(study_folder, None, study_config)
+    sa = ret['sa']
+    concept_list = sorted([sc.name for sc in sa.study_concepts])
+    results = []
+    rows = []
+    db.query_data(cohort_sql, rows, db.get_db_connection_by_setting(dbcnn_file))
+    logging.info('querying results (cohort size:%s)...' % len(rows))
+    utils.multi_thread_tasking([r['pid'] for r in rows], thread_num, db_populate_patient_result,
+                               args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, results])
+    # populate result table
+    c2pks = {}
+    for c in concept_list:
+        c2pks[c] = []
+    s = '\t'.join(['pid'] + concept_list)
+    for r in results:
+        pr = [r['p']]
+        for c in concept_list:
+            if r['c2f'][c]['f'] > 0:
+                c2pks[c].append(r['c2f'][c]['docs'][0])
+            pr.append(r['c2f'][c]['f'])
+        s += '\t'.join(pr)
+    f = join(output_folder, 'result.tsv')
+    utils.save_string(s, f)
+    logging.info('result table saved to [%s]' % f)
+    if sampling:
+        logging.info('doing sampling...')
+        sampled_result = {}
+        for c in c2pks:
+            pks = c2pks[c]
+            sample_pks = []
+            if len(pks) <= sample_size:
+                sample_pks = pks
+            else:
+                for i in xrange(sample_size):
+                    index = random.randrange(len(pks))
+                    sample_pks.append(pks[index])
+                    del pks[index]
+            samples = []
+            utils.multi_thread_tasking(sample_pks, thread_num, extract_sample,
+                                       args=[c, sample_sql_temp, dbcnn_file, samples])
+            sampled_result[c] = samples
+            logging.info('%s sampled (%s) results' % (c, len(samples)))
+
+        f = join(output_folder, 'sampled_docs.js')
+        utils.save_string('var sample_docs= %s;' % json.dumps(sampled_result), f)
+        logging.info('samples saved to %s' % f)
+    logging.info('all results populated')
 
 
 if __name__ == "__main__":
