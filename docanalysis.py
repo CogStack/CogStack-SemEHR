@@ -519,12 +519,14 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
     c2f = {}
     for c in concept_list:
         c2f[c] = {'f': 0, 'rf': 0, 'docs': {}}
+    logging.debug('pid: %s has %s docs' % (pid, len(rows)))
     for r in rows:
         try:
             logging.debug('working on %s' % r['anns'])
             anns = json.loads(fix_escaped_issue(r['anns']))
             ann_doc = SemEHRAnnDoc()
             ann_doc.load(anns)
+            logging.debug('num annotations %s' % len(ann_doc.annotations))
             for a in ann_doc.annotations:
                 for c in a.study_concepts:
                     if c in c2f:
