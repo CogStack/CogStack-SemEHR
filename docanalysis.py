@@ -520,13 +520,14 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
     for c in concept_list:
         c2f[c] = {'f': 0, 'rf': 0, 'docs': {}}
     logging.debug('pid: %s has %s docs' % (pid, len(rows)))
+    i = 0
     for r in rows:
         try:
-            logging.debug('working on %s' % r['anns'])
+            i += 1
+            logging.debug('working on doc #%s' % i)
             anns = json.loads(fix_escaped_issue(r['anns']))
             ann_doc = SemEHRAnnDoc()
             ann_doc.load(anns)
-            logging.debug('num annotations %s' % len(ann_doc.annotations))
             for a in ann_doc.annotations:
                 for c in a.study_concepts:
                     if c in c2f:
@@ -535,6 +536,7 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
                         else:
                             c2f[c]['f'] += 1
                             c2f[c]['docs'].append([r[k] for k in doc_ann_pks])
+            logging.debug('c2f: %s' % c2f)
         except Exception as e:
             logging.error('parsing anns %s because of %s' % (r['anns'], str(e)))
     logging.info('pid %s done, %s' % (pid, c2f))
