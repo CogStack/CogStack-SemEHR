@@ -537,7 +537,8 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
                         is_concept = True
                         sc_name = sc.name
                 if is_concept:
-                    logging.debug('%s found in %s, ruled_by=%s' % (sc_name, r['doc_id'], a.ruled_by))
+                    logging.debug('%s found in %s, ruled_by=%s, concepts:%s' % (sc_name, '-'.join([r[k] for k in doc_ann_pks]),
+                                                                   a.ruled_by, a.study_concepts))
                     if c in c2f:
                         if len(a.ruled_by) > 0:
                             c2f[c]['rf'] += 1
