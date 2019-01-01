@@ -514,7 +514,7 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
     :return:
     """
     rows = []
-    db.query_data(doc_ann_sql_temp % pid, rows, db.get_db_connection_by_setting(dbcnn_file))
+    db.query_data(doc_ann_sql_temp.format(pid), rows, db.get_db_connection_by_setting(dbcnn_file))
     c2f = {}
     for c in concept_list:
         c2f[c] = {'f': 0, 'rf': 0, 'docs': {}}
