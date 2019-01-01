@@ -534,6 +534,7 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
                             c2f[c]['docs'].append([r[k] for k in doc_ann_pks])
         except Exception as e:
             logging.error('parsing anns %s because of %s' % (r['anns'], str(e)))
+    logging.info('pid %s done, %s' % (pid, c2f))
     container.append({'p': pid, 'c2f': c2f})
 
 
