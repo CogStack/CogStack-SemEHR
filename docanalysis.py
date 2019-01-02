@@ -417,7 +417,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
                 str_orig = ann.str if context_text[offset_start:offset_end].lower() != ann.str.lower() else \
                     context_text[offset_start:offset_end]
                 # logging.debug('%s' % context_text)
-                # logging.debug('[%s] <%s> [%s]' % (s_before, str_orig, s_end))
+                logging.debug('[%s] <%s> [%s]' % (s_before, str_orig, s_end))
                 if not ruled:
                     # string orign rules - not used now
                     ruled, case_instance = rule_executor.execute_original_string_rules(str_orig)
