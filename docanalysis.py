@@ -393,7 +393,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
                 if ann.cui in sc.concept_closure:
                     ann.add_study_concept(sc.name)
                     is_a_concept = True
-                    logging.debug('%s [%s, %s] is one %s' % (ann.str, ann.start, ann.end, sc.name))
+                    logging.info('%s [%s, %s] is one %s' % (ann.str, ann.start, ann.end, sc.name))
         else:
             is_a_concept = True
         if is_a_concept:
@@ -430,7 +430,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
                     ann.add_ruled_by(rule)
                     logging.debug('%s [%s, %s] ruled by %s' % (str_orig, ann.start, ann.end, rule))
             else:
-                logging.info('sentence not found for ann %s,%s %s' % (ann.start, ann.end, ann.str))
+                logging.error('sentence not found for ann %s,%s %s' % (ann.start, ann.end, ann.str))
             num_concepts += 1
     return num_concepts
 
