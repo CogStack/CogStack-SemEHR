@@ -382,6 +382,7 @@ def process_doc_rule(ann_doc, rule_executor, text, study_analyzer):
                     offset_end = e
                 s_before = context_text[:offset_start]
                 s_end = context_text[offset_end:]
+                logging.debug('%s' % context_text)
                 logging.debug('[%s] <%s> [%s]' % (s_before, ann.str, s_end))
                 if not ruled:
                     # string orign rules - not used now
