@@ -340,7 +340,15 @@ class SemEHRAnnDoc(object):
                 'sentences': [ann.serialise_json() for ann in self.sentences]}
 
 
-class FulltextReader(object):
+class TextReader(object):
+    def __init__(self):
+        pass
+
+    def read_full_text(self, text_key):
+        pass
+
+
+class FileTextReader(TextReader):
 
     def __init__(self, folder, pattern):
         self._folder = folder
@@ -354,9 +362,30 @@ class FulltextReader(object):
             return None
 
 
-def process_doc_rule(ann_doc, rule_executor, text, study_analyzer):
+class WrapperTextReader(TextReader):
+    def __init__(self, text):
+        self._text = text
+
+    def read_full_text(self, text_key):
+        return self._text
+
+
+class DBTextReader(TextReader):
+    def __init__(self, sql_temp, dbcnn_file):
+        self._qt = sql_temp
+        self._cnn_file = dbcnn_file
+
+    def read_full_text(self, text_key):
+        sql = self._qt.format(*[k for k in text_key])
+        rets = []
+        db.query_data(sql, rets, db.get_db_connection_by_setting(self._cnn_file))
+        return rets[0]['text']
+
+
+def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
     study_concepts = study_analyzer.study_concepts if study_analyzer is not None else None
     num_concepts = 0
+    text = None
     for ann in ann_doc.annotations:
         is_a_concept = False
         if study_concepts is not None:
@@ -368,6 +397,9 @@ def process_doc_rule(ann_doc, rule_executor, text, study_analyzer):
         else:
             is_a_concept = True
         if is_a_concept:
+            # lazy reading to ignore unnecessary full text reading
+            if text is None:
+                text = reader.read_full_text(text_key)
             sent = ann_doc.get_ann_sentence(ann)
             if sent is not None:
                 ruled = False
@@ -382,7 +414,8 @@ def process_doc_rule(ann_doc, rule_executor, text, study_analyzer):
                     offset_end = e
                 s_before = context_text[:offset_start]
                 s_end = context_text[offset_end:]
-                str_orig = ann.str if context_text[offset_start:offset_end].lower() != ann.str.lower() else context_text[offset_start:offset_end]
+                str_orig = ann.str if context_text[offset_start:offset_end].lower() != ann.str.lower() else \
+                    context_text[offset_start:offset_end]
                 # logging.debug('%s' % context_text)
                 # logging.debug('[%s] <%s> [%s]' % (s_before, str_orig, s_end))
                 if not ruled:
@@ -402,9 +435,9 @@ def process_doc_rule(ann_doc, rule_executor, text, study_analyzer):
     return num_concepts
 
 
-def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, sa, ruler):
+def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, text_reader, sa, ruler, update_status_template):
     sql = sql_template.format(*[row[k] for k in pks])
-    logging.debug('query ann: %s' % sql)
+    # logging.debug('query ann: %s' % sql)
     rets = []
     db.query_data(sql, rets, db.get_db_connection_by_setting(dbcnn_file))
     if len(rets) > 0:
@@ -412,8 +445,7 @@ def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, sa, rule
         ann_doc = SemEHRAnnDoc()
         ann_doc.load(anns)
         if len(ann_doc.annotations) > 0:
-            text = rets[0]['text']
-            num_concepts = process_doc_rule(ann_doc, ruler, text, sa)
+            num_concepts = process_doc_rule(ann_doc, ruler, text_reader, [row[k] for k in pks], sa)
             if num_concepts > 0:
                 update_query = update_template.format(*([db.escape_string(json.dumps(ann_doc.serialise_json()))] +
                                                         [row[k] for k in pks]))
@@ -421,13 +453,16 @@ def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, sa, rule
                 db.query_data(update_query, None, db.get_db_connection_by_setting(dbcnn_file))
                 logging.info('ann %s updated' % row)
             else:
-                logging.info('no concepts found/update %s' % row)
+                if update_status_template is not None:
+                    q = update_status_template.format(*[row[k] for k in pks])
+                    db.query_data(q, None, db.get_db_connection_by_setting(dbcnn_file))
+                    logging.debug('no concepts found/update %s' % q)
         else:
             logging.debug('ann skipped, %s annotation empty' % row)
 
 
-def analyse_db_doc_anns(sql, ann_sql, pks, update_template, dbcnn_file, rule_config_file,
-                        study_folder, thread_num=10, study_config='study.json'):
+def analyse_db_doc_anns(sql, ann_sql, pks, update_template, full_text_sql, dbcnn_file, rule_config_file,
+                        study_folder, thread_num=10, study_config='study.json', update_status_template=None):
     """
     do database based annotation post processing
     :param sql: get a list of annotation primary keys
@@ -446,8 +481,10 @@ def analyse_db_doc_anns(sql, ann_sql, pks, update_template, dbcnn_file, rule_con
     ruler = ret['ruler']
     rows = []
     db.query_data(sql, rows, db.get_db_connection_by_setting(dbcnn_file))
+    reader = DBTextReader(full_text_sql, dbcnn_file)
     utils.multi_thread_tasking(rows, thread_num, db_doc_process,
-                               args=[ann_sql, pks, update_template, dbcnn_file, sa, ruler])
+                               args=[ann_sql, pks, update_template, dbcnn_file, reader, sa, ruler,
+                                     update_status_template])
 
 
 def analyse_doc_anns(ann_doc_path, rule_executor, text_reader, output_folder, fn_pattern='se_ann_%s.json',
@@ -461,8 +498,8 @@ def analyse_doc_anns(ann_doc_path, rule_executor, text_reader, output_folder, fn
     if text is None:
         logging.error('file [%s] full text not found' % ann_doc.file_key)
         return
-
-    process_doc_rule(ann_doc, rule_executor, text, study_analyzer)
+    reader = WrapperTextReader(text)
+    process_doc_rule(ann_doc, rule_executor, reader, None, study_analyzer)
     utils.save_json_array(ann_doc.serialise_json(), join(output_folder, fn_pattern % ann_doc.file_key))
     return ann_doc.serialise_json()
 
@@ -502,7 +539,7 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
     :param fn_pattern:
     :return:
     """
-    text_reader = FulltextReader(full_text_folder, full_text_fn_ptn)
+    text_reader = FileTextReader(full_text_folder, full_text_fn_ptn)
     ret = load_study_ruler(study_folder, rule_config_file, study_config)
     sa = ret['sa']
     ruler = ret['ruler']
