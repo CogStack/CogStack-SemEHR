@@ -384,6 +384,8 @@ def process_doc_rule(ann_doc, rule_executor, text, study_analyzer):
                 if ruled:
                     ann.add_ruled_by(rule)
                     logging.debug('%s [%s, %s] ruled by %s' % (ann.str, ann.start, ann.end, rule))
+            else:
+                logging.info('sentence not found for ann %s,%s %s' % (ann.start, ann.end, ann.str))
             num_concepts += 1
     return num_concepts
 
