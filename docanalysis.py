@@ -377,13 +377,13 @@ def process_doc_rule(ann_doc, rule_executor, text, study_analyzer):
                 if context_text[offset_start:offset_end].lower() != ann.str.lower():
                     [s, e] = ann_post_rules.AnnRuleExecutor.relocate_annotation_pos(context_text,
                                                                                     offset_start, offset_end, ann.str)
-                    logging.debug('offset not matching, relocated from %s,%s to %s,%s' % (offset_end, offset_end, s, e))
+                    logging.debug('offset not matching, relocated from %s,%s to %s,%s' % (offset_start, offset_end, s, e))
                     offset_start = s
                     offset_end = e
                 s_before = context_text[:offset_start]
                 s_end = context_text[offset_end:]
                 logging.debug('%s' % context_text)
-                logging.debug('[%s] <%s> [%s]' % (s_before, ann.str, s_end))
+                logging.debug('[%s] <%s> [%s]' % (s_before, context_text[offset_start:offset_end], s_end))
                 if not ruled:
                     # string orign rules - not used now
                     ruled, case_instance = rule_executor.execute_original_string_rules(ann.str)
