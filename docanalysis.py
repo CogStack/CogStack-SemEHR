@@ -382,6 +382,7 @@ def process_doc_rule(ann_doc, rule_executor, text, study_analyzer):
                     offset_end = e
                 s_before = context_text[:offset_start]
                 s_end = context_text[offset_end:]
+                logging.debug('[%s] <%s> [%s]' % (s_before, ann.str, s_end))
                 if not ruled:
                     # string orign rules - not used now
                     ruled, case_instance = rule_executor.execute_original_string_rules(ann.str)
@@ -514,7 +515,8 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
     logging.info('post processing of ann docs done')
 
 
-def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, container, study_concepts):
+def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, container,
+                               ontext_filter_fun=None):
     """
     populate a row (per patient) in the result table
     :param pid:
@@ -543,7 +545,10 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
                     logging.debug('%s found in %s, ruled_by=%s, concepts:%s' % (c, '-'.join([r[k] for k in doc_ann_pks]),
                                                                    a.ruled_by, a.study_concepts))
                     if c in c2f:
-                        if len(a.ruled_by) > 0:
+                        correct = len(a.ruled_by) == 0
+                        if correct and ontext_filter_fun is not None:
+                            correct = ontext_filter_fun(a)
+                        if not correct:
                             c2f[c]['rf'] += 1
                         else:
                             c2f[c]['f'] += 1
@@ -552,6 +557,10 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
             logging.error('parsing anns %s because of %s' % (fix_escaped_issue(r['anns']), str(e)))
     logging.info('pid %s done' % pid)
     container.append({'p': pid, 'c2f': c2f})
+
+
+def positive_patient_filter(ann):
+    return ann.negation == 'Affirmed' and ann.experiencer == 'Patient'
 
 
 def fix_escaped_issue(s):
@@ -618,7 +627,7 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
     db.query_data(cohort_sql, rows, db.get_db_connection_by_setting(dbcnn_file))
     logging.info('querying results (cohort size:%s)...' % len(rows))
     utils.multi_thread_tasking([r['pid'] for r in rows], thread_num, db_populate_patient_result,
-                               args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, results, sa.study_concepts])
+                               args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, results, positive_patient_filter])
     # populate result table
     c2pks = {}
     for c in concept_list:
