@@ -92,7 +92,7 @@ class AnnRuleExecutor(object):
         rule_name = ''
         for r in self._filter_rules:
             for st in self.skip_terms:
-                if st == string_orig:
+                if st.lower() == string_orig.lower():
                     return True, [st], 'skip terms'
             s_compare = s_end if r['offset'] > 0 else s_before
             if r['offset'] == 0:
