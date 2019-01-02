@@ -6,6 +6,7 @@ import sqldbutils as db
 import json
 import random
 import re
+import ann_post_rules
 
 
 class BasicAnn(object):
@@ -371,9 +372,15 @@ def process_doc_rule(ann_doc, rule_executor, text, study_analyzer):
             if sent is not None:
                 ruled = False
                 context_text = text[sent.start:sent.end]
+                if context_text[ann.start:ann.end].lower() != ann.str.lower():
+                    [s, e] = ann_post_rules.AnnRuleExecutor.relocate_annotation_pos(context_text,
+                                                                                    ann.start, ann.end, ann.str)
+                    logging.debug('offset not matching, relocated from %s,%s to %s,%s' % (ann.start, ann.end, s, e))
+                    ann.start = s
+                    ann.end = e
                 s_before = context_text[:ann.start-sent.start]
                 s_end = context_text[ann.end-sent.start:]
-                logging.debug('checking... \n [%s] \n [%s]' % (s_before, s_end))
+                logging.debug('checking... [%s] \n [%s] \n [%s]' % (context_text, s_before, s_end))
                 if not ruled:
                     # string orign rules - not used now
                     ruled, case_instance = rule_executor.execute_original_string_rules(ann.str)
