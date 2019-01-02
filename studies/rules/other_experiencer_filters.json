@@ -1,12 +1,12 @@
 [
   {"offset": -1, "regs": [
-    ".*(\\s)+died of(\\s)+.{0,10}", ".*(\\s)+died from(\\s)+.{0,10}", ".*(\\s)+dying(\\s)+.{0,10}",
-    ".*(\\s)+(died|passed away|dies)(\\s)+.{0,30}",
-    ".*(\\s)+die(\\s)+.{0,30}",
-    ".*(\\s)+death from(\\s)+.{0,10}", ".*(\\s)+deaths from(\\s)+.{0,10}", ".*(\\s)+death by(\\s)+.{0,10}", ".*(\\s)+death .{0,10} result of .{0,5}(\\s)+.{0,10}",
+    ".*(\\b)died of(\\b).{0,10}", ".*(\\b)died from(\\b).{0,10}", ".*(\\b)dying(\\b).{0,10}",
+    ".*(\\b)(died|passed away|dies)(\\b).{0,30}",
+    ".*(\\b)die(\\b).{0,30}",
+    ".*(\\b)death from(\\b).{0,10}", ".*(\\b)deaths from(\\b).{0,10}", ".*(\\b)death by(\\b).{0,10}", ".*(\\b)death(\\b).{0,10} result of .{0,5}(\\s)+.{0,10}",
     ".*(\\b)(dog|mother|family|family member|father|parent(s){0,1}|brother(s){0,1}|mate(s){0,1}|sister(s){0,1}|partner|QQQQQ|mum|dad|daughter|son(s){0,1}|friend(s){0,1}|friends|cousin(s){0,1}|niece(s){0,1}|niece(s){0,1})\\b.{0,70}",
     ".*(\\b)(boyfriend|baby|a woman|a man|person|girlfriend|granddad|grandmum|wife|ex\\-partner|husbands|relative(s){0,1}|granddaughter(s){0,1})\\b.{0,50}",
-    ".*(\\b)(cat(s){0,1}|dog(s){0,1}|family|mother|father|auntie|brother|sister|partner|QQQQQ|(step-){0,1}mum|dad|daughter|son|friend|friends|cousin|niece)'{0,1}s\\b(\\s)+.{0,70}",
+    ".*(\\b)(cat(s){0,1}|dog(s){0,1}|family|mother|father|auntie|brother|sister|partner|QQQQQ|(step-){0,1}mum|dad|daughter|son|friend|friends|cousin|niece)'{0,1}s\\b.{0,70}",
     ".*death\\s+.{0,100}",
     ".*victim\\s+.{0,100}",
     ".*other patient.{0,60}",
@@ -19,6 +19,6 @@
     "Family History.{0,10}"
   ]},
   {"offset": 1, "regs": [
-    "\\s+.{0,20}(mother|family|family member|father|brother(s){0,1}|mate(s){0,1}|sister(s){0,1}|partner|QQQQQ|mum|dad|daughter|son(s){0,1}|friend(s){0,1}|friends|cousin(s){0,1}|niece(s){0,1}|niece(s){0,1})"
+    ".{0,20}\\b(mother|family|family member|father|brother(s){0,1}|mate(s){0,1}|sister(s){0,1}|partner|QQQQQ|mum|dad|daughter|son(s){0,1}|friend(s){0,1}|friends|cousin(s){0,1}|niece(s){0,1}|niece(s){0,1})\\b"
     ]}
 ]
