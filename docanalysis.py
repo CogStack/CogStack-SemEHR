@@ -436,8 +436,8 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
 
 
 def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, text_reader, sa, ruler, update_status_template):
+    logging.debug('query ann: %s' % sql_template)
     sql = sql_template.format(*[row[k] for k in pks])
-    logging.debug('query ann: %s' % sql)
     rets = []
     db.query_data(sql, rets, db.get_db_connection_by_setting(dbcnn_file))
     if len(rets) > 0:
