@@ -373,8 +373,8 @@ def do_semehr_doc_anns_analysis(settings):
         update_query_template = settings.get_attr(['doc_ann_analysis', 'update_query_template'])
         update_status_template = settings.get_attr(['doc_ann_analysis', 'update_status_template'])
         dbconn_file = settings.get_attr(['doc_ann_analysis', 'dbconn_file'])
-        docanalysis.analyse_db_doc_anns(ann_list_sql, ann_inst_sql, full_text_sql, primary_keys,
-                                        update_query_template, dbconn_file,
+        docanalysis.analyse_db_doc_anns(ann_list_sql, ann_inst_sql, primary_keys, update_query_template,
+                                        full_text_sql, dbconn_file,
                                         thread_num=thread_num,
                                         study_folder=study_folder,
                                         rule_config_file=rule_config,
