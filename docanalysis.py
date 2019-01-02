@@ -382,7 +382,6 @@ def process_doc_rule(ann_doc, rule_executor, text, study_analyzer):
                     offset_end = e
                 s_before = context_text[:offset_start]
                 s_end = context_text[offset_end:]
-                logging.debug('checking... [%s] \n [%s] \n [%s]' % (context_text, s_before, s_end))
                 if not ruled:
                     # string orign rules - not used now
                     ruled, case_instance = rule_executor.execute_original_string_rules(ann.str)
