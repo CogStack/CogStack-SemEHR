@@ -428,7 +428,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
                         rule_executor.execute_context_text(text, s_before, s_end, str_orig)
                 if ruled:
                     ann.add_ruled_by(rule)
-                    logging.debug('%s [%s, %s] ruled by %s' % (str_orig, ann.start, ann.end, rule))
+                    logging.info('%s [%s, %s] ruled by %s' % (str_orig, ann.start, ann.end, rule))
             else:
                 logging.error('sentence not found for ann %s,%s %s' % (ann.start, ann.end, ann.str))
             num_concepts += 1
