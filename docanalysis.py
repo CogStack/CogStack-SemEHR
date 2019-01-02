@@ -382,19 +382,20 @@ def process_doc_rule(ann_doc, rule_executor, text, study_analyzer):
                     offset_end = e
                 s_before = context_text[:offset_start]
                 s_end = context_text[offset_end:]
+                str_orig = ann.str if context_text[offset_start:offset_end].lower() != ann.str.lower() else context_text[offset_start:offset_end]
                 logging.debug('%s' % context_text)
-                logging.debug('[%s] <%s> [%s]' % (s_before, context_text[offset_start:offset_end], s_end))
+                logging.debug('[%s] <%s> [%s]' % (s_before, str_orig, s_end))
                 if not ruled:
                     # string orign rules - not used now
-                    ruled, case_instance = rule_executor.execute_original_string_rules(ann.str)
+                    ruled, case_instance = rule_executor.execute_original_string_rules(str_orig)
                     rule = 'original-string-rule'
                 if not ruled:
                     # post processing rules
                     ruled, case_instance, rule = \
-                        rule_executor.execute_context_text(text, s_before, s_end, ann.str)
+                        rule_executor.execute_context_text(text, s_before, s_end, str_orig)
                 if ruled:
                     ann.add_ruled_by(rule)
-                    logging.debug('%s [%s, %s] ruled by %s' % (ann.str, ann.start, ann.end, rule))
+                    logging.debug('%s [%s, %s] ruled by %s' % (str_orig, ann.start, ann.end, rule))
             else:
                 logging.info('sentence not found for ann %s,%s %s' % (ann.start, ann.end, ann.str))
             num_concepts += 1
