@@ -483,9 +483,9 @@ def analyse_db_doc_anns(sql, ann_sql, pks, update_template, full_text_sql, dbcnn
     rows = []
     db.query_data(sql, rows, db.get_db_connection_by_setting(dbcnn_file))
     reader = DBTextReader(full_text_sql, dbcnn_file)
-    utils.multi_thread_tasking(rows, thread_num, db_doc_process,
-                               args=[ann_sql, pks, update_template, dbcnn_file, reader, sa, ruler,
-                                     update_status_template])
+    utils.multi_process_tasking(rows, db_doc_process, num_procs=thread_num,
+                                args=[ann_sql, pks, update_template, dbcnn_file, reader, sa, ruler,
+                                      update_status_template])
 
 
 def analyse_doc_anns(ann_doc_path, rule_executor, text_reader, output_folder, fn_pattern='se_ann_%s.json',
