@@ -558,7 +558,7 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
     logging.info('post processing of ann docs done')
 
 
-def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, container,
+def db_populate_patient_result(container, pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list,
                                ontext_filter_fun=None):
     """
     populate a row (per patient) in the result table
@@ -599,7 +599,7 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
         except Exception as e:
             logging.error('parsing anns %s because of %s' % (fix_escaped_issue(r['anns']), str(e)))
     logging.info('pid %s done' % pid)
-    container.put({'p': pid, 'c2f': c2f})
+    container.append({'p': pid, 'c2f': c2f})
 
 
 def positive_patient_filter(ann):
@@ -679,19 +679,20 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
     ret = load_study_ruler(study_folder, None, study_config)
     sa = ret['sa']
     concept_list = sorted([sc.name for sc in sa.study_concepts])
-    results = multiprocessing.Queue()
+    results = []
     rows = []
     db.query_data(cohort_sql, rows, db.get_db_connection_by_setting(dbcnn_file))
     logging.info('querying results (cohort size:%s)...' % len(rows))
     utils.multi_process_tasking([r['pid'] for r in rows], db_populate_patient_result, num_procs=thread_num,
-                                args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, results, positive_patient_filter])
+                                args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, positive_patient_filter],
+                                thread_init_func=lambda: [],
+                                thread_end_func=lambda container, r=results: (r.append(c) for c in container))
     # populate result table
     c2pks = {}
     for c in concept_list:
         c2pks[c] = []
     s = '\t'.join(['pid'] + concept_list)
-    while not results.empty():
-        r = results.get_nowait()
+    for r in results:
         pr = [r['p']]
         for c in concept_list:
             if r['c2f'][c]['f'] > 0:
