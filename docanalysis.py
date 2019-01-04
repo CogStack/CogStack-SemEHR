@@ -610,7 +610,7 @@ def fix_escaped_issue(s):
         vg = 2
         val = s[m.span(vg)[0]:m.span(vg)[1]]
         if '"' in val:
-            new_val = val.replace('"', '\\"')
+            new_val = val.replace('\\', '').replace('"', '\\"')
             fix = {'s': m.span()[0], 'e': m.span()[1], 'mid': s[m.span(1)[0]:m.span(1)[1]] + new_val + s[m.span(4)[0]:m.span(4)[1]]}
             fiz.append(fix)
     new_s = s
