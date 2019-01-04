@@ -210,7 +210,7 @@ def multi_process_do(thread_obj, q, func, *args):
 def multi_process_tasking(lst, process_func, num_procs=multiprocessing.cpu_count()*2,
                           proc_desc='processed', args=None, multi=None,
                           file_filter_func=None, callback_func=None, thread_wise_objs=None,
-                          thread_init_func=None, thread_end_func=None,):
+                          thread_init_func=None, thread_end_func=None, thread_end_args=[]):
     """
     multiprocessing tasking to make use of multiple cores
     :param lst:
@@ -252,7 +252,7 @@ def multi_process_tasking(lst, process_func, num_procs=multiprocessing.cpu_count
     if thread_end_func is not None:
         for to in thread_objs:
             if to is not None:
-                thread_end_func(to)
+                thread_end_func(to, *tuple(thread_end_args))
     if callback_func is not None:
         callback_func(*tuple(args))
 

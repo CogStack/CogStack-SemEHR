@@ -657,6 +657,10 @@ def extract_sample(pk_vals, concept, sample_sql_temp, dbcnn_file, container):
                 break
 
 
+def proc_final_collect(container, results):
+    results += container
+
+
 def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_file,
                               study_folder, output_folder, sample_sql_temp,
                               thread_num=10, study_config='study.json',
@@ -686,7 +690,8 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
     utils.multi_process_tasking([r['pid'] for r in rows], db_populate_patient_result, num_procs=thread_num,
                                 args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, positive_patient_filter],
                                 thread_init_func=lambda: [],
-                                thread_end_func=lambda container, r=results: (r.append(c) for c in container))
+                                thread_end_func=proc_final_collect,
+                                thread_end_args=[results])
     # populate result table
     c2pks = {}
     for c in concept_list:
