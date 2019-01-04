@@ -442,7 +442,7 @@ def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, text_rea
     rets = []
     db.query_data(sql, rets, db.get_db_connection_by_setting(dbcnn_file))
     if len(rets) > 0:
-        anns = json.loads(rets[0]['anns'])
+        anns = json.loads(fix_escaped_issue(rets[0]['anns']))
         ann_doc = SemEHRAnnDoc()
         ann_doc.load(anns)
         if len(ann_doc.annotations) > 0:
@@ -604,11 +604,25 @@ def positive_patient_filter(ann):
 
 
 def fix_escaped_issue(s):
-    return re.sub(
-        r'(string_orig":"|pref": "|PREF":"|str": ")(((?!","|"\}|", ").)*)(","|"\}|", ")',
-        r'\1\4',
-        s
-    )
+    p = re.compile(r'(string_orig":"|pref": "|PREF":"|str": ")(((?!","|"\}|", ").)*)(","|"\}|", ")')
+    fiz = []
+    for m in p.finditer(s):
+        vg = 2
+        val = s[m.span(vg)[0]:m.span(vg)[1]]
+        if '"' in val:
+            new_val = val.replace('"', '\\"')
+            fix = {'s': m.span()[0], 'e': m.span()[1], 'mid': s[m.span(1)[0]:m.span(1)[1]] + new_val + s[m.span(4)[0]:m.span(4)[1]]}
+            fiz.append(fix)
+    new_s = s
+    if len(fiz) > 0:
+        logging.debug('fixes needed: %s' % fiz)
+        new_s = ''
+        last_pos = 0
+        for f in fiz:
+            new_s += '%s%s' % (s[last_pos:f['s']], f['mid'])
+            last_pos = f['e']
+        new_s += s[last_pos:]
+    return new_s
 
 
 def extract_sample(pk_vals, concept, sample_sql_temp, dbcnn_file, container):
