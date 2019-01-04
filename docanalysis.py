@@ -413,6 +413,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
                     logging.debug('offset not matching, relocated from %s,%s to %s,%s, offset: %s' %
                                   (ann.start, ann.end, s, e, offset))
                     context_text = text[sent.start + offset:sent.end+offset]
+                    logging.debug('context text: %s' % context_text)
                 s_before = context_text[:offset_start]
                 s_end = context_text[offset_end:]
                 str_orig = ann.str if context_text[offset_start:offset_end].lower() != ann.str.lower() else \
