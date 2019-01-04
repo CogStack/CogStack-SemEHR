@@ -658,6 +658,7 @@ def extract_sample(pk_vals, concept, sample_sql_temp, dbcnn_file, container):
 
 
 def proc_final_collect(container, results):
+    logging.debug('collecting %s' % len(container))
     results += container
 
 
