@@ -7,6 +7,7 @@ import json
 import random
 import re
 import ann_post_rules
+import multiprocessing
 
 
 class BasicAnn(object):
@@ -445,6 +446,7 @@ def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, text_rea
         anns = json.loads(fix_escaped_issue(rets[0]['anns']))
         ann_doc = SemEHRAnnDoc()
         ann_doc.load(anns)
+        no_concepts = False
         if len(ann_doc.annotations) > 0:
             num_concepts = process_doc_rule(ann_doc, ruler, text_reader, [row[k] for k in pks], sa)
             if num_concepts > 0:
@@ -454,12 +456,13 @@ def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, text_rea
                 db.query_data(update_query, None, db.get_db_connection_by_setting(dbcnn_file))
                 logging.info('ann %s updated' % row)
             else:
-                if update_status_template is not None:
-                    q = update_status_template.format(*[row[k] for k in pks])
-                    db.query_data(q, None, db.get_db_connection_by_setting(dbcnn_file))
-                    logging.debug('no concepts found/update %s' % q)
+                no_concepts = True
         else:
-            logging.debug('ann skipped, %s annotation empty' % row)
+            no_concepts = True
+        if no_concepts and update_status_template is not None:
+            q = update_status_template.format(*[row[k] for k in pks])
+            db.query_data(q, None, db.get_db_connection_by_setting(dbcnn_file))
+            logging.debug('no concepts found/update %s' % q)
 
 
 def analyse_db_doc_anns(sql, ann_sql, pks, update_template, full_text_sql, dbcnn_file, rule_config_file,
@@ -596,7 +599,7 @@ def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, c
         except Exception as e:
             logging.error('parsing anns %s because of %s' % (fix_escaped_issue(r['anns']), str(e)))
     logging.info('pid %s done' % pid)
-    container.append({'p': pid, 'c2f': c2f})
+    container.put({'p': pid, 'c2f': c2f})
 
 
 def positive_patient_filter(ann):
@@ -676,18 +679,19 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
     ret = load_study_ruler(study_folder, None, study_config)
     sa = ret['sa']
     concept_list = sorted([sc.name for sc in sa.study_concepts])
-    results = []
+    results = multiprocessing.Queue()
     rows = []
     db.query_data(cohort_sql, rows, db.get_db_connection_by_setting(dbcnn_file))
     logging.info('querying results (cohort size:%s)...' % len(rows))
-    utils.multi_thread_tasking([r['pid'] for r in rows], thread_num, db_populate_patient_result,
-                               args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, results, positive_patient_filter])
+    utils.multi_process_tasking([r['pid'] for r in rows], db_populate_patient_result, num_procs=thread_num,
+                                args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, results, positive_patient_filter])
     # populate result table
     c2pks = {}
     for c in concept_list:
         c2pks[c] = []
     s = '\t'.join(['pid'] + concept_list)
-    for r in results:
+    while not results.empty():
+        r = results.get_nowait()
         pr = [r['p']]
         for c in concept_list:
             if r['c2f'][c]['f'] > 0:
