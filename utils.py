@@ -200,7 +200,6 @@ def multi_process_do(thread_obj, q, func, *args):
             break
         try:
             if thread_obj is not None:
-                logging.debug('thread obj: %s' % thread_obj)
                 func(thread_obj, p, *args)
             else:
                 func(p, *args)
