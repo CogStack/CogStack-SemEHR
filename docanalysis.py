@@ -629,7 +629,7 @@ def fix_escaped_issue(s):
     return new_s
 
 
-def extract_sample(pk_vals, concept, sample_sql_temp, dbcnn_file, container):
+def extract_sample(pk_vals, concept, sample_sql_temp, dbcnn_file, container, ontext_filter_fun=positive_patient_filter):
     """
     extract an sample
     :param pk_vals:
@@ -649,13 +649,17 @@ def extract_sample(pk_vals, concept, sample_sql_temp, dbcnn_file, container):
         ann_doc.load(anns)
         for a in ann_doc.annotations:
             if concept in a.study_concepts:
-                container.append({'content': r['text'], 'doc_table': r['src_table'], 'doc_col': r['src_col'],
-                                  'id': '_'.join(pk_vals),
-                                  'annotations': [{'start': a.start,
-                                                   'end': a.end,
-                                                   'concept': a.cui,
-                                                   'string_orig': a.str}]})
-                break
+                correct = len(a.ruled_by) == 0
+                if correct and ontext_filter_fun is not None:
+                    correct = ontext_filter_fun(a)
+                if correct:
+                    container.append({'content': r['text'], 'doc_table': r['src_table'], 'doc_col': r['src_col'],
+                                      'id': '_'.join(pk_vals),
+                                      'annotations': [{'start': a.start,
+                                                       'end': a.end,
+                                                       'concept': a.cui,
+                                                       'string_orig': a.str}]})
+                    break
 
 
 def proc_init_container():
