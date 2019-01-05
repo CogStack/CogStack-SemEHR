@@ -558,7 +558,7 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
     logging.info('post processing of ann docs done')
 
 
-def db_populate_patient_result(container, pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list,
+def db_populate_patient_result(pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, container,
                                ontext_filter_fun=None):
     """
     populate a row (per patient) in the result table
@@ -689,15 +689,15 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
     ret = load_study_ruler(study_folder, None, study_config)
     sa = ret['sa']
     concept_list = sorted([sc.name for sc in sa.study_concepts])
-    results = []
+    manager = multiprocessing.Manager()
+    results = manager.list()
     rows = []
     db.query_data(cohort_sql, rows, db.get_db_connection_by_setting(dbcnn_file))
     logging.info('querying results (cohort size:%s)...' % len(rows))
     utils.multi_process_tasking([r['pid'] for r in rows], db_populate_patient_result, num_procs=thread_num,
-                                args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, positive_patient_filter],
-                                thread_init_func=proc_init_container,
-                                thread_end_func=proc_final_collect,
-                                thread_end_args=[results])
+                                args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, results,
+                                      positive_patient_filter]
+                                )
     # populate result table
     c2pks = {}
     for c in concept_list:
