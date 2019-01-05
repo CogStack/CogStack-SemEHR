@@ -600,6 +600,7 @@ def db_populate_patient_result(container, pid, doc_ann_sql_temp, doc_ann_pks, db
             logging.error('parsing anns %s because of %s' % (fix_escaped_issue(r['anns']), str(e)))
     logging.info('pid %s done' % pid)
     container.append({'p': pid, 'c2f': c2f})
+    logging.debug('pid %s with %s, %s' % (pid, len(c2f), len(container)))
 
 
 def positive_patient_filter(ann):
