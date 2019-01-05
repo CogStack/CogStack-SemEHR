@@ -657,6 +657,10 @@ def extract_sample(pk_vals, concept, sample_sql_temp, dbcnn_file, container):
                 break
 
 
+def proc_init_container():
+    return []
+
+
 def proc_final_collect(container, results):
     logging.debug('collecting %s' % len(container))
     results += container
@@ -690,7 +694,7 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
     logging.info('querying results (cohort size:%s)...' % len(rows))
     utils.multi_process_tasking([r['pid'] for r in rows], db_populate_patient_result, num_procs=thread_num,
                                 args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list, positive_patient_filter],
-                                thread_init_func=lambda: [],
+                                thread_init_func=proc_init_container,
                                 thread_end_func=proc_final_collect,
                                 thread_end_args=[results])
     # populate result table
