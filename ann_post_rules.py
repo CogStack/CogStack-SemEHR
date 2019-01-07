@@ -100,8 +100,9 @@ class AnnRuleExecutor(object):
             elif r['offset'] == 100:
                 s_compare = string_orig
             s_compare = s_compare.replace('\n', ' ')
+            containing_pattern = r['containing_pattern'] if 'containing_pattern' in r else False
             for single_ptn in r['regs']:
-                if not single_ptn.startswith('^') and not single_ptn.endswith('$'):
+                if not containing_pattern and not single_ptn.startswith('^') and not single_ptn.endswith('$'):
                     single_ptn = '^' + single_ptn + '$'
                 try:
                     if r['case_sensitive']:
