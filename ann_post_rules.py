@@ -14,6 +14,7 @@ class Rule(object):
         self._is_containing = containing_pattern
         self._is_case_sensitive = case_sensitive
         self._reg_ptns = []
+        logging.debug('%s is containing? %s ' % (name, containing_pattern))
 
     @property
     def compare_type(self):
