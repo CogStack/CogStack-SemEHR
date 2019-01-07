@@ -14,7 +14,10 @@ class Rule(object):
         self._is_containing = containing_pattern
         self._is_case_sensitive = case_sensitive
         self._reg_ptns = []
-        logging.debug('%s is containing? %s ' % (name, containing_pattern))
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def compare_type(self):
@@ -40,7 +43,7 @@ class Rule(object):
                 reg_p = re.compile(ptn)
             else:
                 reg_p = re.compile(ptn, re.IGNORECASE)
-                self._reg_ptns.append(reg_p)
+            self._reg_ptns.append(reg_p)
         except Exception:
             logging.error('regs error: [%s]' % ptn)
             exit(1)
@@ -115,7 +118,7 @@ class AnnRuleExecutor(object):
                 if m is not None:
                     # print m.group(0)
                     matched.append(m.group(0))
-                    rule_name = r['rule_name']
+                    rule_name = r.name
                     filtered = True
                     break
         return filtered, matched, rule_name
@@ -139,7 +142,7 @@ class AnnRuleExecutor(object):
                 if m is not None:
                     # print m.group(0)
                     matched.append(m.group(0))
-                    rule_name = r['rule_name']
+                    rule_name = r.name
                     filtered = True
                     logging.debug('%s matched %s' % (s_compare, reg_p.pattern))
                     break
@@ -191,11 +194,12 @@ class AnnRuleExecutor(object):
 
 
 def test_filter_rules():
-    t = """ACaCac clincic for check up
+    t = """Appointeeship
+    ACaCac clincic for check up
     """
     e = AnnRuleExecutor()
     # e.add_filter_rule(1, [r'.{0,5}\s+yes'], case_sensitive=False)
-    e.load_rule_config('./studies/prathiv/pirathiv_rule_config.json')
+    e.load_rule_config('./studies/autoimmune.v3/sample_rule_config.json')
     # rules = utils.load_json_data('./studies/rules/negation_filters.json')
     # for r in rules:
     #     print r
@@ -207,13 +211,14 @@ def test_filter_rules():
 def test_osf_rules():
     t = "ADAD-A"
     e = AnnRuleExecutor()
-    e.load_rule_config('./studies/prathiv/pirathiv_rule_config.json')
+    e.load_rule_config('./studies/autoimmune.v3/sample_rule_config.json')
     # rules = utils.load_json_data('./studies/rules/osf_acroynm_filters.json')
     # e.add_original_string_filters(rules)
     print e.execute_original_string_rules(t)
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level='DEBUG')
     test_filter_rules()
     # [s, e] = AnnRuleExecutor.relocate_annotation_pos("""
     # i am a very long string
