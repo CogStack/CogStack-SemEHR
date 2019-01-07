@@ -105,7 +105,7 @@ class AnnRuleExecutor(object):
                 if not containing_pattern and not single_ptn.startswith('^') and not single_ptn.endswith('$'):
                     single_ptn = '^' + single_ptn + '$'
                 try:
-                    logging.debug('compiling %s' % reg_p.single_ptn)
+                    logging.debug('compiling %s' % single_ptn)
                     if r['case_sensitive']:
                         reg_p = re.compile(single_ptn)
                     else:
