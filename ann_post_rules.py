@@ -41,7 +41,7 @@ class Rule(object):
                 reg_p = re.compile(ptn, re.IGNORECASE)
                 self._reg_ptns.append(reg_p)
         except Exception:
-            logging.error('regs error: [%s]' % r['regs'])
+            logging.error('regs error: [%s]' % ptn)
             exit(1)
 
 
