@@ -112,7 +112,7 @@ class AnnRuleExecutor(object):
                 except Exception:
                     logging.error('regs error: [%s]' % r['regs'])
                     exit(1)
-                # print 'matching %s on %s' % (reg_p, s_compare)
+                logging.debug('matching %s on %s' % (reg_p, s_compare))
                 m = reg_p.match(s_compare)
                 if m is not None:
                     # print m.group(0)
