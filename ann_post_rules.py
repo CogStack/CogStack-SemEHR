@@ -67,7 +67,7 @@ class AnnRuleExecutor(object):
                     case_sensitive=case_sensitive)
         for p in reg_strs:
             rule.add_pattern(p)
-        self._filter_rules.append(p)
+        self._filter_rules.append(rule)
 
     @staticmethod
     def relocate_annotation_pos(t, s, e, string_orig):
