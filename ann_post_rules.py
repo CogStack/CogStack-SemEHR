@@ -105,6 +105,7 @@ class AnnRuleExecutor(object):
                 if not containing_pattern and not single_ptn.startswith('^') and not single_ptn.endswith('$'):
                     single_ptn = '^' + single_ptn + '$'
                 try:
+                    logging.debug('compiling %s' % reg_p.single_ptn)
                     if r['case_sensitive']:
                         reg_p = re.compile(single_ptn)
                     else:
@@ -112,7 +113,6 @@ class AnnRuleExecutor(object):
                 except Exception:
                     logging.error('regs error: [%s]' % r['regs'])
                     exit(1)
-                logging.debug('matching %s on %s' % (reg_p.pattern, s_compare[:100]))
                 m = reg_p.match(s_compare)
                 if m is not None:
                     # print m.group(0)
