@@ -7,6 +7,44 @@ _text_window = 150
 _head_text_window_size = 200
 
 
+class Rule(object):
+    def __init__(self, name, compare_type=-1, containing_pattern=False, case_sensitive=False):
+        self._name = name
+        self._compare_type = compare_type
+        self._is_containing = containing_pattern
+        self._is_case_sensitive = case_sensitive
+        self._reg_ptns = []
+
+    @property
+    def compare_type(self):
+        return self._compare_type
+
+    @property
+    def is_case_sensitive(self):
+        return self._is_case_sensitive
+
+    @property
+    def is_containing_patterns(self):
+        return self._is_containing
+
+    @property
+    def reg_patterns(self):
+        return self._reg_ptns
+
+    def add_pattern(self, ptn):
+        if not self.is_containing_patterns and not ptn.startswith('^') and not ptn.endswith('$'):
+            ptn = '^' + ptn + '$'
+        try:
+            if self.is_case_sensitive:
+                reg_p = re.compile(ptn)
+            else:
+                reg_p = re.compile(ptn, re.IGNORECASE)
+                self._reg_ptns.append(reg_p)
+        except Exception:
+            logging.error('regs error: [%s]' % r['regs'])
+            exit(1)
+
+
 class AnnRuleExecutor(object):
 
     def __init__(self):
@@ -23,10 +61,13 @@ class AnnRuleExecutor(object):
     def skip_terms(self, value):
         self._skip_terms = value
 
-    def add_filter_rule(self, token_offset, reg_strs, case_sensitive=False, rule_name='unnamed'):
-        self._filter_rules.append({'offset': token_offset, 'regs': reg_strs,
-                                   'case_sensitive': case_sensitive,
-                                   'rule_name': rule_name})
+    def add_filter_rule(self, token_offset, reg_strs, case_sensitive=False, rule_name='unnamed', containing_pattern=False):
+        rule = Rule(rule_name, compare_type=token_offset,
+                    containing_pattern=containing_pattern,
+                    case_sensitive=case_sensitive)
+        for p in reg_strs:
+            rule.add_pattern(p)
+        self._filter_rules.append(p)
 
     @staticmethod
     def relocate_annotation_pos(t, s, e, string_orig):
@@ -62,28 +103,20 @@ class AnnRuleExecutor(object):
         matched = []
         rule_name = ''
         for r in self._filter_rules:
-            s_compare = s_end if r['offset'] > 0 else s_before
-            if r['offset'] == 0:
+            s_compare = s_end if r.compare_type > 0 else s_before
+            if r.compare_type == 0:
                 s_compare = text[:_head_text_window_size]
-            elif r['offset'] == 100:
+            elif r.compare_type == 100:
                 s_compare = string_orig
             s_compare = s_compare.replace('\n', ' ')
-            try:
-                if r['case_sensitive']:
-                    reg_p = re.compile('|'.join(r['regs']))
-                else:
-                    reg_p = re.compile('|'.join(r['regs']), re.IGNORECASE)
-            except Exception:
-                print 'regs error: [%s]' % r['regs']
-                exit(1)
-            # print 'matching %s on %s' % (reg_p, s_compare)
-            m = reg_p.match(s_compare)
-            if m is not None:
-                # print m.group(0)
-                matched.append(m.group(0))
-                rule_name = r['rule_name']
-                filtered = True
-                break
+            for reg_p in r.reg_patterns:
+                m = reg_p.match(s_compare)
+                if m is not None:
+                    # print m.group(0)
+                    matched.append(m.group(0))
+                    rule_name = r['rule_name']
+                    filtered = True
+                    break
         return filtered, matched, rule_name
 
     def execute_context_text(self, text, s_before, s_end, string_orig):
@@ -94,25 +127,13 @@ class AnnRuleExecutor(object):
             for st in self.skip_terms:
                 if st.lower() == string_orig.lower():
                     return True, [st], 'skip terms'
-            s_compare = s_end if r['offset'] > 0 else s_before
-            if r['offset'] == 0:
+            s_compare = s_end if r.compare_type > 0 else s_before
+            if r.compare_type == 0:
                 s_compare = text[:_head_text_window_size]
-            elif r['offset'] == 100:
+            elif r.compare_type == 100:
                 s_compare = string_orig
             s_compare = s_compare.replace('\n', ' ')
-            containing_pattern = r['containing_pattern'] if 'containing_pattern' in r else False
-            for single_ptn in r['regs']:
-                if not containing_pattern and not single_ptn.startswith('^') and not single_ptn.endswith('$'):
-                    single_ptn = '^' + single_ptn + '$'
-                try:
-                    logging.debug('compiling %s' % single_ptn)
-                    if r['case_sensitive']:
-                        reg_p = re.compile(single_ptn)
-                    else:
-                        reg_p = re.compile(single_ptn, re.IGNORECASE)
-                except Exception:
-                    logging.error('regs error: [%s]' % r['regs'])
-                    exit(1)
+            for reg_p in r.reg_patterns:
                 m = reg_p.match(s_compare)
                 if m is not None:
                     # print m.group(0)
@@ -157,7 +178,8 @@ class AnnRuleExecutor(object):
         for rf in rule_config['active_rules']:
             for r in utils.load_json_data(join(r_path, rf)):
                 self.add_filter_rule(r['offset'], r['regs'], rule_name=rf,
-                                     case_sensitive=r['case_sensitive'] if 'case_sensitive' in r else False)
+                                     case_sensitive=r['case_sensitive'] if 'case_sensitive' in r else False,
+                                     containing_pattern=r['containing_pattern'] if 'containing_pattern' in r else False)
             logging.debug('%s loaded' % rf)
         if 'osf_rules' in rule_config:
             for osf in rule_config['osf_rules']:
