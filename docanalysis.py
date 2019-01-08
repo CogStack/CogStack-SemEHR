@@ -325,6 +325,7 @@ class SemEHRAnnDoc(object):
         return sent
 
     def get_prev_sent(self, s):
+        self._sentences = sorted(self._sentences, key=lambda x:x.start)
         for idx in xrange(len(self.sentences)):
             if self.sentences[idx] == s:
                 if idx > 0:
@@ -333,6 +334,7 @@ class SemEHRAnnDoc(object):
                     return None
 
     def get_next_sent(self, s):
+        self._sentences = sorted(self._sentences, key=lambda x:x.start)
         for idx in xrange(len(self.sentences)):
             if self.sentences[idx] == s:
                 if idx < len(self.sentences) - 1:
@@ -439,7 +441,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
                     if prev_s is not None:
                         s_before = text[prev_s.start + offset:prev_s.end + offset] + s_before
                     else:
-                        logging.debug('previous sentence not found %s' % prev_s.id)
+                        logging.debug('previous sentence not found %s' % sent.id)
                 s_end = context_text[offset_end:]
                 if context_text.endswith('?'):
                     next_s = ann_doc.get_next_sent(sent)
