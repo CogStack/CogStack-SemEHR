@@ -12,7 +12,7 @@
     ".*other patient.{0,60}",
     ".*staff member.{0,60}",
     ".*(to|with)\\s+.{0,30}\\s+(woman|man).{0,60}",
-    ".*(\\b)(sibling(s){0,1})\\b.{0,70}"
+    ".*(\\b)(sibling(s){0,1}|stepfather|stepmother)\\b.{0,70}"
   ]},
   {"offset": -1, "regs": [
     ".*people(\\s)+.{0,40}",
