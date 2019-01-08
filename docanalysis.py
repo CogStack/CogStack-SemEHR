@@ -427,6 +427,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
                 offset_start = ann.start - sent.start
                 offset_end = ann.end - sent.start
                 offset = 0
+                anchor_sent = sent
                 if context_text[offset_start:offset_end].lower() != ann.str.lower():
                     [s, e] = ann_post_rules.AnnRuleExecutor.relocate_annotation_pos(text,
                                                                                     ann.start, ann.end, ann.str)
@@ -440,6 +441,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
                     prev_s = ann_doc.get_prev_sent(sent)
                     if prev_s is not None:
                         s_before = text[prev_s.start + offset:prev_s.end + offset] + s_before
+                        anchor_sent = prev_s
                     else:
                         logging.debug('previous sentence not found %s' % sent.id)
                 s_end = context_text[offset_end:]
@@ -447,6 +449,15 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
                     next_s = ann_doc.get_next_sent(sent)
                     if next_s is not None:
                         s_end = s_end + text[next_s.start + offset:next_s.end + offset]
+                        anchor_sent = next_s
+                more_context_sents = {}
+                prev_s = ann_doc.get_prev_sent(anchor_sent)
+                if prev_s is not None:
+                    more_context_sents['prev'] = text[prev_s.start + offset:prev_s.end + offset]
+                next_s = ann_doc.get_next_sent(anchor_sent)
+                if next_s is not None:
+                    more_context_sents['next'] = text[next_s.start + offset:next_s.end + offset]
+
                 str_orig = ann.str if context_text[offset_start:offset_end].lower() != ann.str.lower() else \
                     context_text[offset_start:offset_end]
                 # logging.debug('%s' % context_text)
@@ -458,7 +469,8 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
                 if not ruled:
                     # post processing rules
                     ruled, case_instance, rule = \
-                        rule_executor.execute_context_text(text, s_before, s_end, str_orig)
+                        rule_executor.execute_context_text(text, s_before, s_end, str_orig,
+                                                           more_context_sents=more_context_sents)
                 if ruled:
                     ann.add_ruled_by(rule)
                     logging.info('%s [%s, %s] ruled by %s' % (str_orig, ann.start, ann.end, rule))

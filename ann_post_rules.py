@@ -8,12 +8,13 @@ _head_text_window_size = 200
 
 
 class Rule(object):
-    def __init__(self, name, compare_type=-1, containing_pattern=False, case_sensitive=False):
+    def __init__(self, name, compare_type=-1, containing_pattern=False, case_sensitive=False, more_context_sents=[]):
         self._name = name
         self._compare_type = compare_type
         self._is_containing = containing_pattern
         self._is_case_sensitive = case_sensitive
         self._reg_ptns = []
+        self._more_context_sents = more_context_sents
 
     @property
     def name(self):
@@ -22,6 +23,10 @@ class Rule(object):
     @property
     def compare_type(self):
         return self._compare_type
+
+    @property
+    def more_context_sents(self):
+        return self._more_context_sents
 
     @property
     def is_case_sensitive(self):
@@ -65,10 +70,11 @@ class AnnRuleExecutor(object):
     def skip_terms(self, value):
         self._skip_terms = value
 
-    def add_filter_rule(self, token_offset, reg_strs, case_sensitive=False, rule_name='unnamed', containing_pattern=False):
+    def add_filter_rule(self, token_offset, reg_strs, case_sensitive=False, rule_name='unnamed',
+                        containing_pattern=False, more_context_sents=[]):
         rule = Rule(rule_name, compare_type=token_offset,
                     containing_pattern=containing_pattern,
-                    case_sensitive=case_sensitive)
+                    case_sensitive=case_sensitive, more_context_sents=more_context_sents)
         for p in reg_strs:
             rule.add_pattern(p)
         self._filter_rules.append(rule)
@@ -123,7 +129,7 @@ class AnnRuleExecutor(object):
                     break
         return filtered, matched, rule_name
 
-    def execute_context_text(self, text, s_before, s_end, string_orig):
+    def execute_context_text(self, text, s_before, s_end, string_orig, more_context_sents=None):
         filtered = False
         matched = []
         rule_name = ''
@@ -136,6 +142,13 @@ class AnnRuleExecutor(object):
                 s_compare = text[:_head_text_window_size]
             elif r.compare_type == 100:
                 s_compare = string_orig
+
+            if more_context_sents is not None:
+                if len(r.more_context_sents) > 0:
+                    if '-1' in r.more_context_sents and 'prev' in more_context_sents:
+                        s_compare = '%s %s' % (more_context_sents['prev'], s_compare)
+                    if '1' in r.more_context_sents and 'next' in more_context_sents:
+                        s_compare = '%s %s' % (s_compare, more_context_sents['next'])
             s_compare = s_compare.replace('\n', ' ')
             for reg_p in r.reg_patterns:
                 m = reg_p.match(s_compare)
@@ -183,7 +196,8 @@ class AnnRuleExecutor(object):
             for r in utils.load_json_data(join(r_path, rf)):
                 self.add_filter_rule(r['offset'], r['regs'], rule_name=rf,
                                      case_sensitive=r['case_sensitive'] if 'case_sensitive' in r else False,
-                                     containing_pattern=r['containing_pattern'] if 'containing_pattern' in r else False)
+                                     containing_pattern=r['containing_pattern'] if 'containing_pattern' in r else False,
+                                     more_context_sents=r['more_context_sents'] if 'more_context_sents' in r else [])
             logging.debug('%s loaded' % rf)
         if 'osf_rules' in rule_config:
             for osf in rule_config['osf_rules']:

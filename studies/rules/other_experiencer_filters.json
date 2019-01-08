@@ -13,12 +13,12 @@
     ".*staff member.{0,60}",
     ".*(to|with)\\s+.{0,30}\\s+(woman|man).{0,60}",
     ".*(\\b)(sibling(s){0,1}|stepfather|stepmother)\\b.{0,70}"
-  ]},
+  ], "more_context_sents": [-1]},
   {"offset": -1, "regs": [
     ".*people(\\s)+.{0,40}",
     ".*someone with(\\s)+.{0,10}",
     ".*\\bFamily History.{0,10}"
-  ]},
+  ], "more_context_sents": [-1]},
   {"offset": 1, "regs": [
     ".{0,20}\\b(mother|family|family member|father|brother(s){0,1}|mate(s){0,1}|sister(s){0,1}|partner|QQQQQ|mum|dad|daughter|son(s){0,1}|friend(s){0,1}|friends|cousin(s){0,1}|niece(s){0,1}|niece(s){0,1})\\b.*"
     ]}
