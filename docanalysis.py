@@ -206,6 +206,10 @@ class SemEHRAnn(ContextedAnn):
     def study_concepts(self):
         return self._study_concepts
 
+    @study_concepts.setter
+    def study_concepts(self, value):
+        self._study_concepts = value
+
     def add_study_concept(self, value):
         if value not in self._study_concepts:
             self._study_concepts.append(value)
@@ -408,7 +412,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
     text = None
     for ann in ann_doc.annotations:
         is_a_concept = False
-        ann.study_concepts.clear()
+        ann.study_concepts = []
         if study_concepts is not None:
             for sc in study_concepts:
                 if ann.cui in sc.concept_closure:
@@ -789,5 +793,9 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
     logging.info('all results populated')
 
 
+def init_study_config(study_folder):
+    load_study_ruler(study_folder, None)
+
+
 if __name__ == "__main__":
-    pass
+    init_study_config('./studies/autoimmune.v3')
