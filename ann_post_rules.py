@@ -42,7 +42,7 @@ class Rule(object):
             if self.is_case_sensitive:
                 reg_p = re.compile(ptn)
             else:
-                reg_p = re.compile(ptn, re.IGNORECASE)
+                reg_p = re.compile('.*' + ptn + '.*', re.IGNORECASE)
             self._reg_ptns.append(reg_p)
         except Exception:
             logging.error('regs error: [%s]' % ptn)
@@ -194,7 +194,8 @@ class AnnRuleExecutor(object):
 
 
 def test_filter_rules():
-    t = """Appointeeship
+    t = """Sheet1
+    Application for Appointeeship/court
     ACaCac clincic for check up
     """
     e = AnnRuleExecutor()
@@ -205,7 +206,7 @@ def test_filter_rules():
     #     print r
     #     e.add_filter_rule(r['offset'], r['regs'], case_sensitive=True if 'case' in r and r['case'] is True else False)
     print 'working on [%s]' % t
-    print e.execute(t, 0, 3)
+    print e.execute_context_text(t, 'ACaCac', ' clinic', 'clincic')
 
 
 def test_osf_rules():
