@@ -61,6 +61,7 @@
     ".*told about.{0,30}",
     ".*(may|would)\\s+.{0,40}",
     ".*consider\\s+.{0,40}",
+    ".*\\bseem(s|ed){0,1}\\s+.{0,40}",
     ".*can cause\\s+.{0,100}",
     ".*(discussion|talk|talking)\\s+.{0,60}",
     ".*(delusion|delusions|delude)\\s+.{0,100}",
