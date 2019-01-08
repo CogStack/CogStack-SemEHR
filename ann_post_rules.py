@@ -145,6 +145,7 @@ class AnnRuleExecutor(object):
 
             if more_context_sents is not None:
                 if len(r.more_context_sents) > 0:
+                    logging.debug('rule %s more context %s, on %s' % (r.name, r.more_context_sents, more_context_sents))
                     if '-1' in r.more_context_sents and 'prev' in more_context_sents:
                         s_compare = '%s %s' % (more_context_sents['prev'], s_compare)
                     if '1' in r.more_context_sents and 'next' in more_context_sents:
