@@ -302,6 +302,7 @@ class SemEHRAnnDoc(object):
                                      int(ann['startNode']['offset']),
                                      int(ann['endNode']['offset']))
                         self._sentences.append(a)
+                        self._sentences = sorted(self._sentences, key=lambda x:x.start)
                         a.id = 'sent-%s' % len(self._sentences)
                     else:
                         self._others.append(ann)
@@ -322,6 +323,14 @@ class SemEHRAnnDoc(object):
             print 'sentence not found for %s' % ann.__dict__
             return None
         return sent
+
+    def get_prev_sent(self, s):
+        for idx in xrange(len(self.sentences)):
+            if self.sentences[idx] == s:
+                if idx > 0:
+                    return self.sentences[idx-1]
+                else:
+                    return None
 
     @property
     def annotations(self):
@@ -407,6 +416,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
                 context_text = text[sent.start:sent.end]
                 offset_start = ann.start - sent.start
                 offset_end = ann.end - sent.start
+                offset = 0
                 if context_text[offset_start:offset_end].lower() != ann.str.lower():
                     [s, e] = ann_post_rules.AnnRuleExecutor.relocate_annotation_pos(text,
                                                                                     ann.start, ann.end, ann.str)
@@ -415,6 +425,10 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
                                   (ann.start, ann.end, s, e, offset))
                     context_text = text[sent.start + offset:sent.end+offset]
                     logging.debug('context text: %s' % context_text)
+                if context_text.startswith('s '):
+                    prev_s = ann_doc.get_prev_sent(sent)
+                    if prev_s is not None:
+                        context_text = text[prev_s.start + offset:prev_s.end + offset] + context_text
                 s_before = context_text[:offset_start]
                 s_end = context_text[offset_end:]
                 str_orig = ann.str if context_text[offset_start:offset_end].lower() != ann.str.lower() else \
