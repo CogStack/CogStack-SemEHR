@@ -332,6 +332,14 @@ class SemEHRAnnDoc(object):
                 else:
                     return None
 
+    def get_next_sent(self, s):
+        for idx in xrange(len(self.sentences)):
+            if self.sentences[idx] == s:
+                if idx < len(self.sentences) - 1:
+                    return self.sentences[idx+1]
+                else:
+                    return None
+
     @property
     def annotations(self):
         return self._anns
@@ -431,6 +439,10 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
                     if prev_s is not None:
                         s_before = text[prev_s.start + offset:prev_s.end + offset] + s_before
                 s_end = context_text[offset_end:]
+                if context_text.endswith('?'):
+                    next_s = ann_doc.get_next_sent(sent)
+                    if next_s is not None:
+                        s_end = s_end + text[next_s.start + offset:next_s.end + offset]
                 str_orig = ann.str if context_text[offset_start:offset_end].lower() != ann.str.lower() else \
                     context_text[offset_start:offset_end]
                 # logging.debug('%s' % context_text)
