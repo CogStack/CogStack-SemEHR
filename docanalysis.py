@@ -408,6 +408,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
     text = None
     for ann in ann_doc.annotations:
         is_a_concept = False
+        ann.study_concepts.clear()
         if study_concepts is not None:
             for sc in study_concepts:
                 if ann.cui in sc.concept_closure:
