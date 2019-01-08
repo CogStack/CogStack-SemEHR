@@ -17,12 +17,12 @@
   ]
   },
   {"offset": 1, "regs": [
-    "\\s+\\-",
-    "\\s+.{0,30}(negative|neg)", "\\s+.{0,10}unlikely", "\\s+.{0,10}None Seen",
-    "\\s+.{0,30}non\\-reactive",
-    "\\s+.{0,40}ruled out",
-    "\\s+.{0,40}excluded",
-    "\\s+.{0,40}not clinically suspected",
-    "\\s+.{0,40}not detected"
+    "\\s+\\-.*",
+    "\\s+.{0,30}(negative|neg)\\b.*", "\\s+.{0,10}unlikely\\b.*", "\\s+.{0,10}None Seen\\b.*",
+    "\\s+.{0,30}non\\-reactive\\b.*",
+    "\\s+.{0,40}ruled out\\b.*",
+    "\\s+.{0,40}excluded\\b.*",
+    "\\s+.{0,40}not clinically suspected\\b.*",
+    "\\s+.{0,40}not detected\\b.*"
   ]}
 ]
