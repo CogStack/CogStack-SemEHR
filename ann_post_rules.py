@@ -150,6 +150,7 @@ class AnnRuleExecutor(object):
                         s_compare = '%s %s' % (more_context_sents['prev'], s_compare)
                     if '1' in r.more_context_sents and 'next' in more_context_sents:
                         s_compare = '%s %s' % (s_compare, more_context_sents['next'])
+                    logging.debug('s_compare [%s]' % s_compare)
             s_compare = s_compare.replace('\n', ' ')
             for reg_p in r.reg_patterns:
                 m = reg_p.match(s_compare)
