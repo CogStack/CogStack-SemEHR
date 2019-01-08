@@ -438,6 +438,8 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
                     prev_s = ann_doc.get_prev_sent(sent)
                     if prev_s is not None:
                         s_before = text[prev_s.start + offset:prev_s.end + offset] + s_before
+                    else:
+                        logging.debug('previous sentence not found %s' % prev_s.id)
                 s_end = context_text[offset_end:]
                 if context_text.endswith('?'):
                     next_s = ann_doc.get_next_sent(sent)
