@@ -75,11 +75,11 @@
   ]},
   {"offset": 1, "regs": [
     "\\s+risk",
-    "\\s+[^\\.,;\\n\\r]{0,30}\\?\\s+",
-    "\\s+.{0,10}unlikely",
+    "\\s+[^\\.,;\\n\\r]{0,30}\\?\\s+.*",
+    "\\s+.{0,10}unlikely\\b.*",
     ".*\\s+bloods to be done.{0,20}",
-    ".{0,40}screen",
-    ".{0,40}suspected",
-    ".{0,40}discussion"
+    ".{0,40}screen\\b.*",
+    ".{0,40}suspected\\b.*",
+    ".{0,40}discussion\\b.*"
   ]}
 ]
