@@ -436,7 +436,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
                     context_text = text[sent.start + offset:sent.end+offset]
                     logging.debug('context text: %s' % context_text)
                 s_before = context_text[:offset_start]
-                if context_text.startswith('s '):
+                if context_text.startswith('s ') or s_before == '' :
                     prev_s = ann_doc.get_prev_sent(sent)
                     if prev_s is not None:
                         s_before = text[prev_s.start + offset:prev_s.end + offset] + s_before
