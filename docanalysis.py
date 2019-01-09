@@ -406,13 +406,14 @@ class DBTextReader(TextReader):
         return rets[0]['text']
 
 
-def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer):
+def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer, reset_prev_concept=False):
     study_concepts = study_analyzer.study_concepts if study_analyzer is not None else None
     num_concepts = 0
     text = None
     for ann in ann_doc.annotations:
         is_a_concept = False
-        ann.study_concepts = []
+        if reset_prev_concept:
+            ann.study_concepts = []
         if study_concepts is not None:
             for sc in study_concepts:
                 if ann.cui in sc.concept_closure:
