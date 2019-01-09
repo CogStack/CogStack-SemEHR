@@ -65,7 +65,7 @@
     ".*\\bspecialist for\\b.{0,10}"
   ]},
   {"offset": 1, "regs": [
-    "\\s+(society|organisation|unit)\\b.*", "\\s+care\\b.*", "[\\s\\n]+team\\b.*", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}\\b.*",
+    "\\s+(society|organisation|unit)\\b.*", "\\s+care\\b.*", "[\\s\\n]+team(s){0,1}\\b.*", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}\\b.*",
     "\\s+help centre\\b.*", "\\s+group\\b.*", "\\s+health scare\\b.*", "\\s+department\\b.*",
     "\\s+risk\\b.*",
     "\\s+as to intervention\\b.*",
