@@ -51,7 +51,7 @@ RUN mv bio-yodie-1.2.1 bio-yodie-1-2-1
 
 RUN cd /opt/gcp/gcp-2.5-18658/lib
 WORKDIR '/opt/gcp/gcp-2.5-18658/lib'
-RUN curl -L 'https://cogstack.rosalind.kcl.ac.uk/exports/customised_handlers.tar.gz' > customised_handlers.tar.gz && tar xzvf customised_handlers.tar.gz && cp customised_handlers/* ./ && rm -fr customised_handlers
+RUN curl -L 'https://cogstack.rosalind.kcl.ac.uk/exports/customised_handlers.tar.gz' > customised_handlers.tar.gz && tar xzvf customised_handlers.tar.gz && cp customised_handlers/* ./ && rm -fr customised_handlers && rm -f customised_handlers.tar.gz
 
 ########
 # python & libraries for SemEHR
@@ -62,6 +62,9 @@ RUN apt-get install -y \
     wget \
     python-setuptools \
     python-dev \
+    libxml2-dev \
+    libxslt-dev \
+    zlib1g-dev \
     build-essential
 
 RUN pip install requests
@@ -78,12 +81,15 @@ RUN apt-get -y install python-mysqldb
 RUN apt-get -y install unixodbc unixodbc-dev libmysqlclient-dev freetds-dev tdsodbc
 RUN pip install pyodbc
 
+# mysql odbc
+RUN curl -L 'https://cdn.mysql.com//Downloads/Connector-ODBC/8.0/mysql-connector-odbc-8.0.13-linux-ubuntu18.04-x86-64bit.tar.gz' > mysql-connector-odbc-8.0.13-linux-ubuntu18.04-x86-64bit.tar.gz && tar xzvf mysql-connector-odbc-8.0.13-linux-ubuntu18.04-x86-64bit.tar.gz && cp mysql-connector-odbc-8.0.13-linux-ubuntu18.04-x86-64bit/lib/* /usr/lib && mysql-connector-odbc-8.0.13-linux-ubuntu18.04-x86-64bit/bin/myodbc-installer -d -n MySQL -a -t DRIVER=/usr/lib/libmyodbc8w.so && rm -fr mysql-connector-odbc-8.0.13-linux-ubuntu18.04-x86-64bit && rm -f mysql-connector-odbc-8.0.13-linux-ubuntu18.04-x86-64bit.tar.gz
+
 ########
 # SemEHR
 ########
 RUN mkdir /opt/semehr
-RUN cd /opt/semehr
 WORKDIR '/opt/semehr'
+RUN cd /opt/semehr
 RUN git clone https://github.com/CogStack/CogStack-SemEHR.git
 RUN cd /opt/semehr/CogStack-SemEHR
 WORKDIR '/opt/semehr/CogStack-SemEHR'
