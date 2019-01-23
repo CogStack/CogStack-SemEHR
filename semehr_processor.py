@@ -15,6 +15,8 @@ from elasticsearch import Elasticsearch
 import cohortanalysis as cohort
 import docanalysis
 import logging
+from analysis import cohort_analysis_helper
+from analysis.semquery import SemEHRES
 
 
 class ProcessSetting(object):
@@ -356,15 +358,33 @@ def do_semehr_doc_anns_analysis(settings):
         thread_num = 10
     process_mode = settings.get_attr(['doc_ann_analysis', 'process_mode'])
     if process_mode is not None and process_mode != 'sql':
-        docanalysis.process_doc_anns(anns_folder=anns_folder,
-                                     full_text_folder=text_folder,
-                                     rule_config_file=rule_config,
-                                     output_folder=output_folder,
-                                     study_folder=study_folder,
-                                     full_text_fn_ptn=full_text_file_pattern,
-                                     fn_pattern=output_file_pattern,
-                                     thread_num=thread_num
-                                     )
+        if settings.get_attr(['doc_ann_analysis', 'es_host']) is not None:
+            es = SemEHRES.get_instance_by_setting(settings.get_attr(['doc_ann_analysis', 'es_host']),
+                                          settings.get_attr(['doc_ann_analysis', 'es_index']),
+                                          settings.get_attr(['doc_ann_analysis', 'es_doc_type']),
+                                          settings.get_attr(['doc_ann_analysis', 'es_concept_type']),
+                                          settings.get_attr(['doc_ann_analysis', 'es_patient_type']))
+            docanalysis.process_doc_anns(anns_folder=anns_folder,
+                                         full_text_folder=text_folder,
+                                         rule_config_file=rule_config,
+                                         output_folder=output_folder,
+                                         study_folder=study_folder,
+                                         full_text_fn_ptn=full_text_file_pattern,
+                                         fn_pattern=output_file_pattern,
+                                         thread_num=thread_num,
+                                         es_inst=es,
+                                         es_text_field=settings.get_attr(['doc_ann_analysis', 'full_text_field'])
+                                         )
+        else:
+            docanalysis.process_doc_anns(anns_folder=anns_folder,
+                                         full_text_folder=text_folder,
+                                         rule_config_file=rule_config,
+                                         output_folder=output_folder,
+                                         study_folder=study_folder,
+                                         full_text_fn_ptn=full_text_file_pattern,
+                                         fn_pattern=output_file_pattern,
+                                         thread_num=thread_num
+                                         )
     else:
         ann_list_sql = settings.get_attr(['doc_ann_analysis', 'ann_list_sql'])
         primary_keys = settings.get_attr(['doc_ann_analysis', 'primary_keys'])
@@ -402,6 +422,24 @@ def populate_cohort_results(settings):
                                           study_folder, output_folder, sample_sql_temp,
                                           thread_num=thread_num, sampling=sampling,
                                           sample_size=sample_size)
+
+
+def es_get_cohort_docs(settings):
+    pids = utils.read_text_file(settings.get_attr(['cohort_docs', 'es_cohort_file']))
+    es = SemEHRES.get_instance_by_setting(settings.get_attr(['cohort_docs', 'es_host']),
+                                          settings.get_attr(['cohort_docs', 'es_index']),
+                                          settings.get_attr(['cohort_docs', 'es_doc_type']),
+                                          settings.get_attr(['cohort_docs', 'es_concept_type']),
+                                          settings.get_attr(['cohort_docs', 'es_patient_type']))
+    patiet_id_field = settings.get_attr(['cohort_docs', 'patiet_id_field'])
+
+    docs = []
+    for pid in pids:
+        container = []
+        cohort_analysis_helper.query_collect_patient_docs({'_id': pid}, es, '*', patiet_id_field, container)
+        if len(container) > 0:
+            docs += [{'docid': d} for d in container[0]['docs']]
+    return docs
 
 
 def process_semehr(config_file):
@@ -443,6 +481,10 @@ def process_semehr(config_file):
         logging.info('[SemEHR-step] retrieving docs by using the template [%s]' % sql_template)
         data_rows = get_docs_for_processing(job_status, sql_template, ps.get_attr(['new_docs', 'dbconn_setting_file']))
         logging.info('total docs num is %s' % len(data_rows))
+    elif ps.get_attr(['job', 'cohort_docs']) == 'yes':
+        logging.info('[SemEHR-step] retrieving docs by cohort [%s]' %  ps.get_attr(['cohort_docs', 'es_cohort_file']))
+        data_rows = es_get_cohort_docs(ps)        
+        logging.info('total docs num is %s' % len(data_rows))        
 
     try:
     # if True:
