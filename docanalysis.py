@@ -406,6 +406,19 @@ class DBTextReader(TextReader):
         return rets[0]['text']
 
 
+class ESTextReader(TextReader):
+    def __init__(self, es, full_text_field):
+        self._es = es
+        self._text_field = full_text_field
+
+    def read_full_text(self, text_key):
+        doc = self._es.get_doc_detail(text_key)
+        if doc is not None:
+            return doc[self._text_field]
+        else:
+            return None
+
+
 def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer, reset_prev_concept=False):
     study_concepts = study_analyzer.study_concepts if study_analyzer is not None else None
     num_concepts = 0
@@ -578,7 +591,7 @@ def load_study_ruler(study_folder, rule_config_file, study_config='study.json'):
 def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_folder,
                      study_folder=None,
                      study_config='study.json', full_text_fn_ptn='%s.txt', fn_pattern='se_ann_%s.json',
-                     thread_num=10):
+                     thread_num=10, es_inst=None, es_text_field=''):
     """
     multiple threading process doc anns
     :param anns_folder:
@@ -589,9 +602,15 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
     :param study_config:
     :param full_text_fn_ptn:
     :param fn_pattern:
+    :param thread_num:
+    :param es_inst: semquery.SemEHRES instance
+    :param es_text_field: the full text filed name in the es index
     :return:
     """
-    text_reader = FileTextReader(full_text_folder, full_text_fn_ptn)
+    if es_inst is None:
+        text_reader = FileTextReader(full_text_folder, full_text_fn_ptn)
+    else:
+        text_reader = ESTextReader(es_inst, es_text_field)
     ret = load_study_ruler(study_folder, rule_config_file, study_config)
     sa = ret['sa']
     ruler = ret['ruler']
