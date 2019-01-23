@@ -570,6 +570,7 @@ def analyse_doc_anns(ann_doc_path, rule_executor, text_reader, output_folder, fn
 
 
 def load_study_ruler(study_folder, rule_config_file, study_config='study.json'):
+    sa = None
     if study_folder is not None and study_folder != '':
         r = utils.load_json_data(join(study_folder, study_config))
 
