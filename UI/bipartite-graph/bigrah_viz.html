@@ -15,12 +15,18 @@
 	stroke:none;
 	fill-opacity:0.5;
 }
+h2{width:960px;text-align: center}
+p{margin-left: 20px;width: 960px;font-size: 110%;}
 </style>
 <title>bipartite graph viz</title>
 <body>
-<h2>patient to diseases/syndromes</h2>
+<h2>patient to diseases/syndromes bipartite graph</h2>
+<p>This is a bipartite graph: left nodes are patients and right ones are diseases. It only shows top 20 most frequent (#patients sufferred) diseases/syndromes.
+Similarly, the patients showed are those (top 20) with largest numbers of multimorbidities. <p/>
+Mouse over the nodes to show relevant associations.
+</p>
 <script src="https://d3js.org/d3.v4.min.js"></script>
-<script src="http://vizjs.org/viz.v1.1.0.min.js"></script>
+<script src="js/viz.v1.1.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.js"></script>
 <script src="js/data.js"></script>
 <script>
@@ -80,16 +86,27 @@ function generateColorMap(data){
 	return colors;
 }
 
-var topK = 10;
+function simplyLabel(data){
+    for(var i=0;i<data.length;i++){
+        var arr = data[i][1].split("//");
+        var n = arr[0].trim();
+        var s = arr[1].trim();
+        data[i] = [data[i][0], s, data[i][2]]
+    }
+}
+
+var topK = 30;
 var filterDim = 1;
-var diseaseFilter = {'Disease': 0, 'Relapse': 0, 'Best Disease': 0, 'Simian AIDS': 0}
+var diseaseFilter = {'disease': 0, 'relapse': 0, 'best disease': 0, 'said': 0, 'primary disease': 0, 'posterior': 0,
+    'anterior': 0}
+simplyLabel(data);
 data = filterDataByDim(getTopKNodes(data, filterDim, topK, diseaseFilter), filterDim);
 data = filterDataByDim(getTopKNodes(data, 0, 20, null), 0, "others");
 console.log(data);
 
 var color = generateColorMap(data);
 
-var svg = d3.select("body").append("svg").attr("width", 960).attr("height", 800);
+var svg = d3.select("body").append("svg").attr("width", 960).attr("height", 800).attr("class", "svg");
 var g = svg.append("g").attr("transform","translate(200,50)");
 
 var bp=viz.bP()
