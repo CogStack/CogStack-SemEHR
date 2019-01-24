@@ -18,11 +18,56 @@
 </style>
 <title>bipartite graph viz</title>
 <body>
+<h2>patient to diseases/syndromes</h2>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="http://vizjs.org/viz.v1.1.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.js"></script>
 <script src="js/data.js"></script>
 <script>
+
+function getTopKNodes(data, dim, k, ignoreNames){
+    var n2f = {};
+    for(var i=0;i<data.length;i++){
+        var d = data[i][dim];
+        if (ignoreNames && d in ignoreNames){
+            continue;
+        }
+        if (d in n2f){
+            n2f[d] += 1;
+        }else{
+            n2f[d] = 1;
+        }
+    }
+    var dims = [];
+    for (var n in n2f){
+        dims.push([n, n2f[n]]);
+    }
+    dims = dims.sort(function(a, b){
+        return b[1] - a[1];
+    });
+    return dims.slice(0, Math.min(k, dims.length));
+}
+
+function filterDataByDim(dimValFreq, dim, defaultNode){
+    var topDimDict = {};
+    for(var i=0;i<dimValFreq.length;i++){
+        topDimDict[dimValFreq[i][0]] = 0;
+    }
+    var newData = [];
+    for(var i=0;i<data.length;i++){
+        var d = data[i][dim];
+        if (d in topDimDict){
+            var r = data[i];
+            // r[2] = 1;
+            newData.push(r);
+        }else if(defaultNode){
+            var r = [data[i][dim == 1? 0:1], data[i][2]];
+            r.splice(dim, 0, defaultNode);
+            newData.push(r);
+        }
+    }
+    return newData;
+}
 
 function generateColorMap(data){
 	var colors = {};
@@ -35,6 +80,13 @@ function generateColorMap(data){
 	return colors;
 }
 
+var topK = 10;
+var filterDim = 1;
+var diseaseFilter = {'Disease': 0, 'Relapse': 0, 'Best Disease': 0, 'Simian AIDS': 0}
+data = filterDataByDim(getTopKNodes(data, filterDim, topK, diseaseFilter), filterDim);
+data = filterDataByDim(getTopKNodes(data, 0, 20, null), 0, "others");
+console.log(data);
+
 var color = generateColorMap(data);
 
 var svg = d3.select("body").append("svg").attr("width", 960).attr("height", 800);
@@ -44,7 +96,7 @@ var bp=viz.bP()
 		.data(data)
 		.min(12)
 		.pad(2)
-		.height(600)
+		.height(700)
 		.width(500)
 		.barSize(35)
 		.fill(
@@ -64,7 +116,7 @@ g.selectAll(".mainBars").append("text").attr("class","label")
 	.attr("text-anchor",d=>(d.part=="primary"? "end": "start"));
 	
 g.selectAll(".mainBars").append("text").attr("class","perc")
-	.attr("x",d=>(d.part=="primary"? -100: 180))
+	.attr("x",d=>(d.part=="primary"? -100: 200))
 	.attr("y",d=>+6)
 	.text(function(d){ return d3.format("0.0%")(d.percent)})
 	.attr("text-anchor",d=>(d.part=="primary"? "end": "start"));
