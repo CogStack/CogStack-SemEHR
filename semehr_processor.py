@@ -440,7 +440,7 @@ def es_get_cohort_docs(settings):
         cohort_analysis_helper.query_collect_patient_docs({'_id': pid}, es, '*', patiet_id_field, container)
         if len(container) > 0:
             docs += [{'docid': d} for d in container[0]['docs']]
-            for d in docs:
+            for d in container[0]['docs']:
                 docs2p[d] = pid
     return docs, docs2p
 
@@ -451,7 +451,7 @@ def collect_cohort_doc_results(settings, doc2pid):
     semantic_types = settings.get_attr(['cohort_doc_collection', 'semantic_types'])
     result_file_path = settings.get_attr(['cohort_doc_collection', 'result_file_path'])
     graph_file_path = settings.get_attr(['cohort_doc_collection', 'graph_file_path'])
-    dc = docanalysis.DocCohort({'001': 'brc01'}, processed_ann_path, doc_id_pattern=ann_doc_pattern)
+    dc = docanalysis.DocCohort(doc2pid, processed_ann_path, doc_id_pattern=ann_doc_pattern)
     dc.collect_semantic_types = semantic_types
     dc.collect_result(result_file_path, graph_file_path)
 
