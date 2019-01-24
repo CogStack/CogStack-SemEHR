@@ -463,7 +463,7 @@ class DocCohort(object):
             else:
                 logging.error('doc %s not in cohort map' % r['d'])
         utils.save_json_array(ret, output_file)
-        utils.save(DocCohort.result_to_graph(ret), graph_file_path)
+        utils.save_json_array(DocCohort.result_to_graph(ret), graph_file_path)
         logging.info('result collected')
 
     @staticmethod
