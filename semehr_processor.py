@@ -434,12 +434,26 @@ def es_get_cohort_docs(settings):
     patiet_id_field = settings.get_attr(['cohort_docs', 'patiet_id_field'])
 
     docs = []
+    docs2p = {}
     for pid in pids:
         container = []
         cohort_analysis_helper.query_collect_patient_docs({'_id': pid}, es, '*', patiet_id_field, container)
         if len(container) > 0:
             docs += [{'docid': d} for d in container[0]['docs']]
-    return docs
+            for d in docs:
+                docs2p[d] = pid
+    return docs, docs2p
+
+
+def collect_cohort_doc_results(settings, doc2pid):
+    processed_ann_path = settings.get_attr(['cohort_doc_collection', 'se_result_path'])
+    ann_doc_pattern = settings.get_attr(['cohort_doc_collection', 'ann_doc_pattern'])
+    semantic_types = settings.get_attr(['cohort_doc_collection', 'semantic_types'])
+    result_file_path = settings.get_attr(['cohort_doc_collection', 'result_file_path'])
+    graph_file_path = settings.get_attr(['cohort_doc_collection', 'graph_file_path'])
+    dc = docanalysis.DocCohort({'001': 'brc01'}, processed_ann_path, doc_id_pattern=ann_doc_pattern)
+    dc.collect_semantic_types = semantic_types
+    dc.collect_result(result_file_path, graph_file_path)
 
 
 def process_semehr(config_file):
@@ -476,6 +490,7 @@ def process_semehr(config_file):
     job_status.job_start()
 
     data_rows = []
+    doc2pid = {}
     if ps.get_attr(['job', 'load_docs']) == 'yes':
         sql_template = ps.get_attr(['new_docs', 'sql_query'])
         logging.info('[SemEHR-step] retrieving docs by using the template [%s]' % sql_template)
@@ -483,7 +498,7 @@ def process_semehr(config_file):
         logging.info('total docs num is %s' % len(data_rows))
     elif ps.get_attr(['job', 'cohort_docs']) == 'yes':
         logging.info('[SemEHR-step] retrieving docs by cohort [%s]' %  ps.get_attr(['cohort_docs', 'es_cohort_file']))
-        data_rows = es_get_cohort_docs(ps)        
+        data_rows, doc2pid = es_get_cohort_docs(ps)
         logging.info('total docs num is %s' % len(data_rows))        
 
     try:
@@ -585,6 +600,12 @@ def process_semehr(config_file):
             logging.info('[SemEHR-step]doing SemEHR cohort result extraction...')
             populate_cohort_results(settings=ps)
             logging.info('[SemEHR-step-end] populate_cohort_result step done')
+
+        # 6. do collect cohort doc based results for a research study
+        if ps.get_attr(['job', 'cohort_doc_collection']) == 'yes':
+            logging.info('[SemEHR-step]doing SemEHR cohort doc based collection...')
+            collect_cohort_doc_results(settings=ps)
+            logging.info('[SemEHR-step-end] collect_cohort_doc_results step done')
 
         job_status.set_status(True)
         job_status.save()

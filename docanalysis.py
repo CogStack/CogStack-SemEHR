@@ -1,5 +1,6 @@
 import utils
 from os.path import join, isfile, split
+from os import listdir
 import logging
 import study_analyzer
 import sqldbutils as db
@@ -417,6 +418,77 @@ class ESTextReader(TextReader):
             return doc[self._text_field]
         else:
             return None
+
+
+class DocCohort(object):
+    def __init__(self, d2p, processed_anns_folder, doc_id_pattern=r'(.*).json'):
+        self._d2p = d2p
+        self._doc_pth = processed_anns_folder
+        self._did_pattern = doc_id_pattern
+        self._stys = None
+
+    @property
+    def collect_semantic_types(self):
+        return self._stys
+
+    @collect_semantic_types.setter
+    def collect_semantic_types(self, value):
+        self._stys = value
+
+    def collect_result(self, output_file, graph_file_path):
+        files = [f for f in listdir(self._doc_pth) if isfile(join(self._doc_pth, f))]
+        f_did = []
+        for f in files:
+            sr = re.search(self._did_pattern, f, re.IGNORECASE)
+            if sr:
+                f_did.append((f, sr.group(1)))
+        results = []
+        logging.info('collecting results ...')
+        utils.multi_thread_tasking(lst=f_did, num_threads=10, process_func=DocCohort.collect_doc_anns_by_types,
+                                   args=[self._doc_pth, self.collect_semantic_types, results])
+        logging.info('total anns collected %s' % len(results))
+        ret = {'concepts': {}, 'p2c': {}}
+        for r in results:
+            if r['d'] in self._d2p:
+                p = self._d2p[r['d']]
+                if p not in ret['p2c']:
+                    ret['p2c'][p] = {}
+                pd = ret['p2c'][p]
+                if r['cui'] not in ret['concepts']:
+                    ret['concepts'][r['cui']] = r['pref']
+                if r['cui'] not in pd:
+                    pd[r['cui']] = 1
+                else:
+                    pd[r['cui']] += 1
+            else:
+                logging.error('doc %s not in cohort map' % r['d'])
+        utils.save_json_array(ret, output_file)
+        utils.save(DocCohort.result_to_graph(ret), graph_file_path)
+        logging.info('result collected')
+
+    @staticmethod
+    def collect_doc_anns_by_types(doc_tuple, dir, sem_types, container):
+        doc = utils.load_json_data(join(dir, doc_tuple[0]))
+        ann_doc = SemEHRAnnDoc(file_key=doc_tuple[1])
+        ann_doc.load(doc, doc_tuple[1])
+        for a in ann_doc.annotations:
+            if a.sty in sem_types \
+                    and a.negation == 'Affirmed' and a.experiencer == 'Patient' \
+                    and len(a.ruled_by) == 0:
+                container.append({'d': doc_tuple[1], 'cui': a.cui, 'pref': a.pref})
+            else:
+                logging.debug('%s not in %s' % (a.sty, sem_types))
+
+    @staticmethod
+    def result_to_graph(result):
+        p2c = result['p2c']
+        c2lbl = result['concepts']
+        g = []
+        for p in p2c:
+            c2f = p2c[p]
+            for c in c2f:
+                g.append([p, c2lbl[c], c2f[c]])
+        return sorted(g, key=lambda x: x[1].lower())
 
 
 def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer, reset_prev_concept=False):
