@@ -604,7 +604,7 @@ def process_semehr(config_file):
         # 6. do collect cohort doc based results for a research study
         if ps.get_attr(['job', 'cohort_doc_collection']) == 'yes':
             logging.info('[SemEHR-step]doing SemEHR cohort doc based collection...')
-            collect_cohort_doc_results(settings=ps)
+            collect_cohort_doc_results(settings=ps, doc2pid=doc2pid)
             logging.info('[SemEHR-step-end] collect_cohort_doc_results step done')
 
         job_status.set_status(True)
