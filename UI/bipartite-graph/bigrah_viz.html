@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+.mainBars rect{
+  shape-rendering: auto;
+  fill-opacity: 0;
+  stroke-width: 0.5px;
+  stroke: rgb(0, 0, 0);
+  stroke-opacity: 0;
+}
+.subBars{
+	shape-rendering:crispEdges;
+}
+.edges{
+	stroke:none;
+	fill-opacity:0.5;
+}
+</style>
+<title>bipartite graph viz</title>
+<body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="http://vizjs.org/viz.v1.1.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.js"></script>
+<script src="js/data.js"></script>
+<script>
+
+function generateColorMap(data){
+	var colors = {};
+	for(var i=0;i<data.length;i++){
+		colors[(data[i][0])] = 1;
+	}
+	for(var k in colors){
+		colors[k] = randomColor({luminosity: 'dark'});
+	}
+	return colors;
+}
+
+var color = generateColorMap(data);
+
+var svg = d3.select("body").append("svg").attr("width", 960).attr("height", 800);
+var g = svg.append("g").attr("transform","translate(200,50)");
+
+var bp=viz.bP()
+		.data(data)
+		.min(12)
+		.pad(2)
+		.height(600)
+		.width(500)
+		.barSize(35)
+		.fill(
+			d=>color[d.primary]
+			);
+			
+g.call(bp);
+
+g.selectAll(".mainBars")
+	.on("mouseover",mouseover)
+	.on("mouseout",mouseout)
+
+g.selectAll(".mainBars").append("text").attr("class","label")
+	.attr("x",d=>(d.part=="primary"? -30: 30))
+	.attr("y",d=>+6)
+	.text(d=>d.key)
+	.attr("text-anchor",d=>(d.part=="primary"? "end": "start"));
+	
+g.selectAll(".mainBars").append("text").attr("class","perc")
+	.attr("x",d=>(d.part=="primary"? -100: 180))
+	.attr("y",d=>+6)
+	.text(function(d){ return d3.format("0.0%")(d.percent)})
+	.attr("text-anchor",d=>(d.part=="primary"? "end": "start"));
+
+function mouseover(d){
+	bp.mouseover(d);
+	g.selectAll(".mainBars")
+	.select(".perc")
+	.text(function(d){ return d3.format("0.0%")(d.percent)})
+}
+function mouseout(d){
+	bp.mouseout(d);
+	g.selectAll(".mainBars")
+		.select(".perc")
+	.text(function(d){ return d3.format("0.0%")(d.percent)})
+}
+d3.select(self.frameElement).style("height", "800px");
+</script>
+</body>
+</html>
