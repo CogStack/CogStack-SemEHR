@@ -74,7 +74,7 @@
   "job":{
     "load_docs": "no",
     "copy_docs": "no",
-    "yodie": "no",
+    "yodie": "yes",
     "semehr-concept": "no",
     "semehr-patients": "no",
     "action_trans": "no",
