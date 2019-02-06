@@ -64,7 +64,8 @@
     "output_folder": "/data/semehr_results",
     "study_folder": "./studies/test_study",
     "full_text_fn_ptn": "%s.txt",
-    "output_fn_pattern": "se_ann_%s.json"
+    "output_fn_pattern": "se_ann_%s.json",
+    "process_mode": "doc"
   },
   "logging":{
     "file": "/data/semehr.log",
@@ -73,7 +74,7 @@
   "job":{
     "load_docs": "no",
     "copy_docs": "no",
-    "yodie": "yes",
+    "yodie": "no",
     "semehr-concept": "no",
     "semehr-patients": "no",
     "action_trans": "no",

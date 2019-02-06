@@ -56,6 +56,7 @@ RUN curl -L 'https://cogstack.rosalind.kcl.ac.uk/exports/customised_handlers.tar
 ########
 # python & libraries for SemEHR
 ########
+RUN apt-get update
 RUN apt-get install -y \
     python \
     python-pip \
