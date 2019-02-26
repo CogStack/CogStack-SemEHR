@@ -183,6 +183,9 @@ class SemEHRES(object):
     def index_med_profile(self, doc_type, data, patient_id):
         self._es_instance.index(index=self._index, doc_type=doc_type, body=data, id=str(patient_id), timeout='30s')
 
+    def index_new_doc(self, index, doc_type, data, doc_id):
+        self._es_instance.index(index=index, doc_type=doc_type, body=data, id=doc_id, timeout='30s')
+
     @staticmethod
     def get_instance():
         global _es_instance
