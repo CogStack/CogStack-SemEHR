@@ -624,11 +624,30 @@ def analyse_db_doc_anns(sql, ann_sql, pks, update_template, full_text_sql, dbcnn
                                       update_status_template])
 
 
-def analyse_doc_anns(ann_doc_path, rule_executor, text_reader, output_folder, fn_pattern='se_ann_%s.json',
-                     study_analyzer=None):
+def analyse_doc_anns_file(ann_doc_path, rule_executor, text_reader, output_folder,
+                          fn_pattern='se_ann_%s.json', es_inst=None, es_output_index=None, es_output_doc='doc',
+                          study_analyzer=None):
     p, fn = split(ann_doc_path)
     file_key = fn[:fn.index('.')]
     json_doc = utils.load_json_data(ann_doc_path)
+    return analyse_doc_anns(json_doc, file_key, rule_executor, text_reader, output_folder,
+                            fn_pattern, es_inst, es_output_index, es_output_doc,
+                            study_analyzer)
+
+
+def analyse_doc_anns_line(line, rule_executor, text_reader, output_folder,
+                          fn_pattern='se_ann_%s.json', es_inst=None, es_output_index=None, es_output_doc='doc',
+                          study_analyzer=None):
+    json_doc = utils.load_json_data(line)
+    file_key = json_doc['docId']
+    return analyse_doc_anns(json_doc, file_key, rule_executor, text_reader, output_folder,
+                            fn_pattern, es_inst, es_output_index, es_output_doc,
+                            study_analyzer)
+
+
+def analyse_doc_anns(json_doc, file_key, rule_executor, text_reader, output_folder,
+                     fn_pattern='se_ann_%s.json', es_inst=None, es_output_index=None, es_output_doc='doc',
+                     study_analyzer=None):
     ann_doc = SemEHRAnnDoc()
     ann_doc.load(json_doc, file_key=file_key)
     text = text_reader.read_full_text(ann_doc.file_key)
@@ -637,7 +656,11 @@ def analyse_doc_anns(ann_doc_path, rule_executor, text_reader, output_folder, fn
         return
     reader = WrapperTextReader(text)
     process_doc_rule(ann_doc, rule_executor, reader, None, study_analyzer)
-    utils.save_json_array(ann_doc.serialise_json(), join(output_folder, fn_pattern % ann_doc.file_key))
+    if es_inst is None:
+        utils.save_json_array(ann_doc.serialise_json(), join(output_folder, fn_pattern % ann_doc.file_key))
+    else:
+        es_inst.index_new_doc(index=es_output_index, doc_type=es_output_doc,
+                              data=ann_doc.serialise_json(), doc_id=file_key)
     return ann_doc.serialise_json()
 
 
@@ -664,7 +687,8 @@ def load_study_ruler(study_folder, rule_config_file, study_config='study.json'):
 def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_folder,
                      study_folder=None,
                      study_config='study.json', full_text_fn_ptn='%s.txt', fn_pattern='se_ann_%s.json',
-                     thread_num=10, es_inst=None, es_text_field=''):
+                     thread_num=10, es_inst=None, es_text_field='', combined_anns=None,
+                     es_output_index=None, es_output_doc='doc'):
     """
     multiple threading process doc anns
     :param anns_folder:
@@ -690,11 +714,22 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
 
     # for ff in [f for f in listdir(anns_folder) if isfile(join(anns_folder, f))]:
     #     analyse_doc_anns(join(anns_folder, ff), ruler, text_reader, output_folder, fn_pattern, sa)
-    utils.multi_thread_process_files(dir_path=anns_folder,
-                                     file_extension='json',
-                                     num_threads=thread_num,
-                                     process_func=analyse_doc_anns,
-                                     args=[ruler, text_reader, output_folder, fn_pattern, sa])
+    if combined_anns is None:
+        utils.multi_thread_process_files(dir_path=anns_folder,
+                                         file_extension='json',
+                                         num_threads=thread_num,
+                                         process_func=analyse_doc_anns_file,
+                                         args=[ruler, text_reader, output_folder, fn_pattern,
+                                               es_inst, es_output_index, es_output_doc,
+                                               sa])
+    else:
+        ann_files = [f for f in listdir(anns_folder) if isfile(join(anns_folder, f))]
+        for ann in ann_files:
+            utils.multi_thread_large_file_tasking(join(anns_folder, ann), 10, analyse_doc_anns_line,
+                                                  args=[ruler, text_reader, output_folder, fn_pattern,
+                                                        es_inst, es_output_index, es_output_doc,
+                                                        sa])
+
     logging.info('post processing of ann docs done')
 
 
@@ -891,4 +926,4 @@ def init_study_config(study_folder):
 
 
 if __name__ == "__main__":
-    init_study_config('./studies/autoimmune.v3')
+    init_study_config('./studies/autoimmune.v3.control')

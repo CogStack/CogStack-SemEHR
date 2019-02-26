@@ -352,6 +352,9 @@ def do_semehr_doc_anns_analysis(settings):
     rule_config = settings.get_attr(['doc_ann_analysis', 'rule_config_path'])
     output_folder = settings.get_attr(['doc_ann_analysis', 'output_folder'])
     study_folder = settings.get_attr(['doc_ann_analysis', 'study_folder'])
+    combined_anns = settings.get_attr(['doc_ann_analysis', 'combined_anns'])
+    es_output_index = settings.get_attr(['doc_ann_analysis', 'es_output_index'])
+    es_output_doc = settings.get_attr(['doc_ann_analysis', 'es_output_doc'])
     output_file_pattern = settings.get_attr(['doc_ann_analysis', 'output_fn_pattern'])
     thread_num = settings.get_attr(['doc_ann_analysis', 'thread_num'])
     if thread_num is None:
@@ -373,7 +376,9 @@ def do_semehr_doc_anns_analysis(settings):
                                          fn_pattern=output_file_pattern,
                                          thread_num=thread_num,
                                          es_inst=es,
-                                         es_text_field=settings.get_attr(['doc_ann_analysis', 'full_text_field'])
+                                         es_text_field=settings.get_attr(['doc_ann_analysis', 'full_text_field']),
+                                         combined_anns=combined_anns,
+                                         es_output_index=es_output_index, es_output_doc=es_output_doc
                                          )
         else:
             docanalysis.process_doc_anns(anns_folder=anns_folder,
