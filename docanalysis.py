@@ -638,7 +638,7 @@ def analyse_doc_anns_file(ann_doc_path, rule_executor, text_reader, output_folde
 def analyse_doc_anns_line(line, rule_executor, text_reader, output_folder,
                           fn_pattern='se_ann_%s.json', es_inst=None, es_output_index=None, es_output_doc='doc',
                           study_analyzer=None):
-    json_doc = utils.load_json_data(line)
+    json_doc = json.loads(line)
     file_key = json_doc['docId']
     return analyse_doc_anns(json_doc, file_key, rule_executor, text_reader, output_folder,
                             fn_pattern, es_inst, es_output_index, es_output_doc,
