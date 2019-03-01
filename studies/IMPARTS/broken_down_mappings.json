@@ -1,0 +1,479 @@
+{
+  "Neonatal aspiration syndromes": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0349468"
+    },
+    "concepts": [
+      "C0349468"
+    ]
+  },
+  "Anxiety Disorders": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0003469"
+    },
+    "concepts": [
+      "C0003469"
+    ]
+  },
+  "Fear of heights": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0233701"
+    },
+    "concepts": [
+      "C0233701"
+    ]
+  },
+  "Anniversary Reaction": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0003099"
+    },
+    "concepts": [
+      "C0003099"
+    ]
+  },
+  "Phobia, School": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0031570"
+    },
+    "concepts": [
+      "C0031570"
+    ]
+  },
+  "Unipolar Depression": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0041696"
+    },
+    "concepts": [
+      "C0041696"
+    ]
+  },
+  "Chronic depression": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0581391"
+    },
+    "concepts": [
+      "C0581391"
+    ]
+  },
+  "Agoraphobia with panic attacks": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0154457"
+    },
+    "concepts": [
+      "C0154457"
+    ]
+  },
+  "Phobia, Specific": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0236801"
+    },
+    "concepts": [
+      "C0236801"
+    ]
+  },
+  "Claustrophobia": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0008909"
+    },
+    "concepts": [
+      "C0008909"
+    ]
+  },
+  "Delayed Onset Post-Traumatic Stress Disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C1136393"
+    },
+    "concepts": [
+      "C1136393"
+    ]
+  },
+  "Manic episode": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0349208"
+    },
+    "concepts": [
+      "C0349208"
+    ]
+  },
+  "Seasonal Affective Disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0085159"
+    },
+    "concepts": [
+      "C0085159"
+    ]
+  },
+  "Anxiety neurosis (finding)": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C1279420"
+    },
+    "concepts": [
+      "C1279420"
+    ]
+  },
+  "Affective psychoses, other": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0154439"
+    },
+    "concepts": [
+      "C0154439"
+    ]
+  },
+  "Atypical manic disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0154436"
+    },
+    "concepts": [
+      "C0154436"
+    ]
+  },
+  "Feeling low or worried": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C2708721"
+    },
+    "concepts": [
+      "C2708721"
+    ]
+  },
+  "Psychotic Mood Disorders": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0086640"
+    },
+    "concepts": [
+      "C0086640"
+    ]
+  },
+  "Anxiety States, Neurotic": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0376280"
+    },
+    "concepts": [
+      "C0376280"
+    ]
+  },
+  "Depression, Postpartum": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0221074"
+    },
+    "concepts": [
+      "C0221074"
+    ]
+  },
+  "Phobia, Social": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0031572"
+    },
+    "concepts": [
+      "C0031572"
+    ]
+  },
+  "depression": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0011581"
+    },
+    "concepts": [
+      "C0011581"
+    ]
+  },
+  "Depression, Bipolar": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0005587"
+    },
+    "concepts": [
+      "C0005587"
+    ]
+  },
+  "Manic Disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0024713"
+    },
+    "concepts": [
+      "C0024713"
+    ]
+  },
+  "Fear of crowds": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0701849"
+    },
+    "concepts": [
+      "C0701849"
+    ]
+  },
+  "Zoophobia": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0233711"
+    },
+    "concepts": [
+      "C0233711"
+    ]
+  },
+  "Melancholia": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0025193"
+    },
+    "concepts": [
+      "C0025193"
+    ]
+  },
+  "Panic Attacks": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0086769"
+    },
+    "concepts": [
+      "C0086769"
+    ]
+  },
+  "Major Depressive Disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C1269683"
+    },
+    "concepts": [
+      "C1269683"
+    ]
+  },
+  "Depressive Syndrome": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0086133"
+    },
+    "concepts": [
+      "C0086133"
+    ]
+  },
+  "Mood Disorders": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0525045"
+    },
+    "concepts": [
+      "C0525045"
+    ]
+  },
+  "Post-Traumatic Stress Disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0038436"
+    },
+    "concepts": [
+      "C0038436"
+    ]
+  },
+  "Major depression, single episode": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0024517"
+    },
+    "concepts": [
+      "C0024517"
+    ]
+  },
+  "Reactive depression": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0011579"
+    },
+    "concepts": [
+      "C0011579"
+    ]
+  },
+  "Phobic anxiety disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0349231"
+    },
+    "concepts": [
+      "C0349231"
+    ]
+  },
+  "Obsessive-Compulsive Disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0028768"
+    },
+    "concepts": [
+      "C0028768"
+    ]
+  },
+  "Panic Disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0030319"
+    },
+    "concepts": [
+      "C0030319"
+    ]
+  },
+  "Adjustment Disorders": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0001546"
+    },
+    "concepts": [
+      "C0001546"
+    ]
+  },
+  "Atypical depressive disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0154437"
+    },
+    "concepts": [
+      "C0154437"
+    ]
+  },
+  "patient mental state": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0679835"
+    },
+    "concepts": [
+      "C0679835"
+    ]
+  },
+  "Chronic Post-Traumatic Stress Disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0730525"
+    },
+    "concepts": [
+      "C0730525"
+    ]
+  },
+  "clinical depression": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C2362914"
+    },
+    "concepts": [
+      "C2362914"
+    ]
+  },
+  "Affective Disorders, Psychotic": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0001723"
+    },
+    "concepts": [
+      "C0001723"
+    ]
+  },
+  "bipolar depression depressed phase": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C1171527"
+    },
+    "concepts": [
+      "C1171527"
+    ]
+  },
+  "Bipolar Disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0005586"
+    },
+    "concepts": [
+      "C0005586"
+    ]
+  },
+  "Transient Situational Disturbance": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C1522512"
+    },
+    "concepts": [
+      "C1522512"
+    ]
+  },
+  "Chronic hypomanic personality disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0154459"
+    },
+    "concepts": [
+      "C0154459"
+    ]
+  },
+  "Acute Post-Traumatic Stress Disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0747767"
+    },
+    "concepts": [
+      "C0747767"
+    ]
+  },
+  "Cyclothymic Disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0010598"
+    },
+    "concepts": [
+      "C0010598"
+    ]
+  },
+  "Depression, Reactive, Psychotic": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0011580"
+    },
+    "concepts": [
+      "C0011580"
+    ]
+  },
+  "Fetal Distress": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0015930"
+    },
+    "concepts": [
+      "C0015930"
+    ]
+  },
+  "Agoraphobia": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0001818"
+    },
+    "concepts": [
+      "C0001818"
+    ]
+  },
+  "Depressive personality disorder": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0302874"
+    },
+    "concepts": [
+      "C0302874"
+    ]
+  }
+}
