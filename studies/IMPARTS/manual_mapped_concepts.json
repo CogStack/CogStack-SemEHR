@@ -47,5 +47,27 @@
       "C2362914",
       "C2708721"
     ]
+  },
+  "ess_PHQ": {
+      "tc": {
+            "closure": 2,
+            "mapped": "PHQ"
+      },
+      "concepts":[
+            "PHQ",
+            "PHQ9",
+            "\"PHQ-9\""
+      ]
+  },
+  "ess_GAD": {
+      "tc": {
+            "closure": 2,
+            "mapped": "GAD"
+      },
+      "concepts":[
+            "GAD",
+            "GAD7",
+            "\"GAD-7\""
+      ]
   }
 }
