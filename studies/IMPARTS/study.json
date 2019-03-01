@@ -1,10 +1,12 @@
 {
-  "cohort": "dyson",
+  "cohort": "-",
   "sql_config": "",
   "db_conn": "",
   "umls_key": "./resources/HW_UMLS_KEY.txt",
   "do_preprocessing": true,
   "rule_setting_file": "./studies/IMPARTS/imparts_rule_config.json",
   "do_one_iter": false,
-  "sem_idx_setting_file": ""
+  "sem_idx_setting_file": "./index_settings/sem_idx_setting.json",
+  "query_patients_file": "./studies/IMPARTS/imparts_nov2018_cohort.txt",
+  "filter_obj_setting": "./studies/IMPARTS/pt_filter.json"
 }
