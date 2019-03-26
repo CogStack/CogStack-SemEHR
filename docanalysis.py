@@ -697,7 +697,7 @@ def load_study_ruler(study_folder, rule_config_file, study_config='study.json'):
 def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_folder,
                      study_folder=None,
                      study_config='study.json', full_text_fn_ptn='%s.txt', fn_pattern='se_ann_%s.json',
-                     thread_num=10, es_inst=None, es_text_field='', combined_anns=None,
+                     thread_num=10, es_inst=None, es_text_field='', patient_id_field='', combined_anns=None,
                      es_output_index=None, es_output_doc='doc'):
     """
     multiple threading process doc anns
@@ -717,7 +717,7 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
     if es_inst is None:
         text_reader = FileTextReader(full_text_folder, full_text_fn_ptn)
     else:
-        text_reader = ESTextReader(es_inst, es_text_field)
+        text_reader = ESTextReader(es_inst, es_text_field, patient_id_field=patient_id_field)
     ret = load_study_ruler(study_folder, rule_config_file, study_config)
     sa = ret['sa']
     ruler = ret['ruler']

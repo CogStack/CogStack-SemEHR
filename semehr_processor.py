@@ -377,6 +377,7 @@ def do_semehr_doc_anns_analysis(settings):
                                          thread_num=thread_num,
                                          es_inst=es,
                                          es_text_field=settings.get_attr(['doc_ann_analysis', 'full_text_field']),
+                                         patient_id_field=settings.get_attr(['doc_ann_analysis', 'patielt_id_field']),
                                          combined_anns=combined_anns,
                                          es_output_index=es_output_index, es_output_doc=es_output_doc
                                          )
