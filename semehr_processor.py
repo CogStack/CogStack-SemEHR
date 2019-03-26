@@ -447,7 +447,7 @@ def es_get_cohort_docs(settings):
             docs += [{'docid': d} for d in container[0]['docs']]
             for d in container[0]['docs']:
                 docs2p[d] = pid
-    return docs, docs2p
+    return docs, docs2p, pids
 
 
 def collect_cohort_doc_results(settings, doc2pid):
@@ -459,6 +459,28 @@ def collect_cohort_doc_results(settings, doc2pid):
     dc = docanalysis.DocCohort(doc2pid, processed_ann_path, doc_id_pattern=ann_doc_pattern)
     dc.collect_semantic_types = semantic_types
     dc.collect_result(result_file_path, graph_file_path)
+
+
+def patient_level_indexing(settings, pids):
+    es = SemEHRES.get_instance_by_setting(settings.get_attr(['patient_index', 'es_host']),
+                                          settings.get_attr(['patient_index', 'es_index']),
+                                          settings.get_attr(['patient_index', 'es_doc_type']),
+                                          settings.get_attr(['patient_index', 'es_concept_type']),
+                                          settings.get_attr(['patient_index', 'es_patient_type']))
+    doc_level_index = settings.get_attr(['patient_index', 'doc_level_index'])
+    doc_ann_type = settings.get_attr(['patient_index', 'doc_ann_type'])
+    doc_index = settings.get_attr(['patient_index', 'doc_index'])
+    doc_pid_field_name = settings.get_attr(['patient_index', 'doc_pid_field_name'])
+    doc_text_field_name = settings.get_attr(['patient_index', 'doc_text_field_name'])
+    patient_index = settings.get_attr(['patient_index', 'patient_index'])
+    patient_doct_type = settings.get_attr(['patient_index', 'patient_doct_type'])
+    doc_type = settings.get_attr(['patient_index', 'doc_type'])
+    ann_field_name = settings.get_attr(['patient_index', 'ann_field_name'])
+    for pid in pids:
+        es.index_patient(doc_level_index, pid, doc_ann_type,
+                         doc_index, doc_type, doc_pid_field_name, doc_text_field_name,
+                         patient_index, patient_doct_type,
+                         ann_field_name=ann_field_name)
 
 
 def process_semehr(config_file):
@@ -496,6 +518,7 @@ def process_semehr(config_file):
 
     data_rows = []
     doc2pid = {}
+    pids = []
     if ps.get_attr(['job', 'load_docs']) == 'yes':
         sql_template = ps.get_attr(['new_docs', 'sql_query'])
         logging.info('[SemEHR-step] retrieving docs by using the template [%s]' % sql_template)
@@ -503,7 +526,7 @@ def process_semehr(config_file):
         logging.info('total docs num is %s' % len(data_rows))
     elif ps.get_attr(['job', 'cohort_docs']) == 'yes':
         logging.info('[SemEHR-step] retrieving docs by cohort [%s]' %  ps.get_attr(['cohort_docs', 'es_cohort_file']))
-        data_rows, doc2pid = es_get_cohort_docs(ps)
+        data_rows, doc2pid, pids = es_get_cohort_docs(ps)
         logging.info('total docs num is %s' % len(data_rows))        
 
     try:
@@ -599,6 +622,12 @@ def process_semehr(config_file):
             logging.info('[SemEHR-step]doing SemEHR annotation analysis...')
             do_semehr_doc_anns_analysis(settings=ps)
             logging.info('[SemEHR-step-end] doc_analysis step done')
+
+        # 4.5 do SemEHR patient level index
+        if ps.get_attr(['job', 'patient_index']) == 'yes':
+            logging.info('[SemEHR-step]doing patient level indexing...')
+            patient_level_indexing(settings=ps, pids=pids)
+            logging.info('[SemEHR-step-end] patient level indexing done')
 
         # 5. do populate results for a research study
         if ps.get_attr(['job', 'populate_cohort_result']) == 'yes':
