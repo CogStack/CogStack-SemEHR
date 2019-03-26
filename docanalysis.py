@@ -408,14 +408,15 @@ class DBTextReader(TextReader):
 
 
 class ESTextReader(TextReader):
-    def __init__(self, es, full_text_field):
+    def __init__(self, es, full_text_field, patient_id_field=None):
         self._es = es
         self._text_field = full_text_field
+        self._pid_field = patient_id_field
 
     def read_full_text(self, text_key):
         doc = self._es.get_doc_detail(text_key)
         if doc is not None:
-            return doc[self._text_field]
+            return {'text': doc[self._text_field], 'pid': doc[self._pid_field]}
         else:
             return None
 
@@ -650,7 +651,13 @@ def analyse_doc_anns(json_doc, file_key, rule_executor, text_reader, output_fold
                      study_analyzer=None):
     ann_doc = SemEHRAnnDoc()
     ann_doc.load(json_doc, file_key=file_key)
-    text = text_reader.read_full_text(ann_doc.file_key)
+    read_obj = text_reader.read_full_text(ann_doc.file_key)
+    patient_id = None
+    if isinstance(read_obj, dict):
+        text = read_obj['text']
+        patient_id = read_obj['pid']
+    else:
+        text = read_obj
     if text is None:
         logging.error('file [%s] full text not found' % ann_doc.file_key)
         return
@@ -659,8 +666,11 @@ def analyse_doc_anns(json_doc, file_key, rule_executor, text_reader, output_fold
     if es_inst is None:
         utils.save_json_array(ann_doc.serialise_json(), join(output_folder, fn_pattern % ann_doc.file_key))
     else:
+        data = ann_doc.serialise_json()
+        data['doc_id'] = file_key
+        data['patient_id'] = patient_id
         es_inst.index_new_doc(index=es_output_index, doc_type=es_output_doc,
-                              data=ann_doc.serialise_json(), doc_id=file_key)
+                              data=data, doc_id=file_key)
     return ann_doc.serialise_json()
 
 
