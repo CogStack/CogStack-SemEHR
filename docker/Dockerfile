@@ -107,6 +107,8 @@ RUN mkdir /data/
 RUN mkdir /data/output_docs
 RUN mkdir /data/input_docs
 RUN mkdir /data/smehr_results
+RUN mkdir /data/ui
+RUN cp ./UI /data/ui -R
 
 ########
 # entrypoint
