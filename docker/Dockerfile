@@ -91,24 +91,22 @@ RUN curl -L 'https://cdn.mysql.com//Downloads/Connector-ODBC/8.0/mysql-connector
 RUN mkdir /opt/semehr
 WORKDIR '/opt/semehr'
 RUN cd /opt/semehr
-RUN git clone https://github.com/CogStack/CogStack-SemEHR.git
-RUN cd /opt/semehr/CogStack-SemEHR
-WORKDIR '/opt/semehr/CogStack-SemEHR'
+# RUN git clone https://github.com/CogStack/CogStack-SemEHR.git
+RUN mkdir /opt/semehr/CogStack-SemEHR
 
 
 ENV semehr_path '/opt/semehr/CogStack-SemEHR'
-ENV PATH "$PATH:$semehr_path"
+ENV PATH "$PATH:$semehr_path:/opt/semehr/"
 ENV CLASSPATH "$GATE_HOME/bin"
 
-RUN cp ./docker/semehr.sh ./
+# RUN cp ./docker/semehr.sh ./
+RUN curl -L 'https://cogstack.rosalind.kcl.ac.uk/exports/semehr.sh.txt' > semehr.sh
 RUN chmod a+x semehr.sh
 
 RUN mkdir /data/
 RUN mkdir /data/output_docs
 RUN mkdir /data/input_docs
 RUN mkdir /data/smehr_results
-RUN mkdir /data/ui
-RUN cp ./UI /data/ui -R
 
 ########
 # entrypoint
