@@ -473,7 +473,7 @@ class DocCohort(object):
         ann_doc = SemEHRAnnDoc(file_key=doc_tuple[1])
         ann_doc.load(doc, doc_tuple[1])
         for a in ann_doc.annotations:
-            if a.sty in sem_types \
+            if (sem_types is not None and a.sty in sem_types) \
                     and a.negation == 'Affirmed' and a.experiencer == 'Patient' \
                     and len(a.ruled_by) == 0:
                 container.append({'d': doc_tuple[1], 'cui': a.cui, 'pref': a.pref})
