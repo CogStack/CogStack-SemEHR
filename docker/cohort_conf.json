@@ -11,5 +11,6 @@
   "patient_id_file": "",
   "dest": "file",
   "threads": "20",
-  "db_conf_file": ""
+  "db_conf_file": "",
+  "sql_template": "insert into ..."
 }
