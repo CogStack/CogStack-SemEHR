@@ -12,19 +12,22 @@ class CohortHelper(object):
         self._conf = None
         self._patient_ids = []
         self.load_config()
+        self._dest = 'file'
 
     def load_config(self):
         self._conf = utils.load_json_data(self._cohort_conf)
+        self._dest = self._conf['dest']
         self.load_cohort(self._conf['patient_id_file'])
 
     def load_cohort(self, patient_id_file):
         lines = utils.read_text_file(patient_id_file)
         self._patient_ids = [l.split('\t')[0] for l in lines]
 
-    def extract_cohort_docs(self):
+    def extract_cohort_docs(self, use_combo_fn_name=True):
         db_conf_file = self._cohort_conf
         db_conf = None
         if 'linux_dsn_setting' in self._conf and self._conf['linux_dsn_setting']:
+            # need dsn settings
             db_conf = self.populate_linux_odbc_setting()
             db_conf_file = None
             logging.info('using dsn %s' % db_conf['dsn'])
@@ -42,11 +45,30 @@ class CohortHelper(object):
             logging.debug(q)
             docs = []
             db.query_data(q, docs, db.get_db_connection_by_setting(db_conf_file, db_conf))
-            for d in docs:
-                utils.save_string(d['doc_content'], join(out_put_folder, file_pattern % d['doc_id']))
+            if self._dest == 'sql':
+                # save docs to database
+                self.save_docs_to_db(docs)
+            else:
+                # save docs to files
+                for d in docs:
+                    fn = ('%s_%s' % (d['doc_id'], d['patient_id'])) if use_combo_fn_name else ('%s' % d['doc_id'])
+                    utils.save_string(d['doc_content'], join(out_put_folder, file_pattern % fn))
+            logging.info('%s docs saved to destination [%s]' % (len(docs), self._dest))
         logging.info('query finished, docs saved to %s' % out_put_folder)
 
+    def save_docs_to_db(self, docs):
+        utils.multi_thread_tasking(docs, process_func=CohortHelper.do_save_doc_to_db,
+                                   num_threads=10 if 'threads' not in self._conf else self._conf['threads'],
+                                   args=[self._conf['sql_template'],
+                                         db.get_db_connection_by_setting(self._conf['db_conf_file'])])
+
     def populate_linux_odbc_setting(self, template_file='./docker/linux_odbc_init_temp.sh'):
+        """
+        to access ms sql from linux, odbc settings need to be configured before dsn based
+        access. this function automates such configuration
+        :param template_file: the template bash file
+        :return: dsn settings for python odbc access
+        """
         s = utils.read_text_file_as_string(template_file)
         ret = s.format(**{'host': self._conf['server'], 'port': self._conf['port'],
                           'database': self._conf['database']})
@@ -60,6 +82,11 @@ class CohortHelper(object):
         return {'dsn': 'semehrdns', 'user': self._conf['user'],
                 'password': self._conf['password'],
                 'database': self._conf['database']}
+
+    @staticmethod
+    def do_save_doc_to_db(d, sql_temp, db_conf):
+        sql = sql_temp.format(*d)
+        db.query_data(sql, dbconn=db_conf)
 
 
 if __name__ == "__main__":
