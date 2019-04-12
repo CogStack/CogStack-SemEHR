@@ -63,7 +63,7 @@ class CohortHelper(object):
         utils.multi_thread_tasking(docs, process_func=CohortHelper.do_save_doc_to_db,
                                    num_threads=10 if 'threads' not in self._conf else self._conf['threads'],
                                    args=[self._conf['sql_template'],
-                                         db.get_db_connection_by_setting(self._conf['db_conf_file'])])
+                                         self._conf['db_conf_file']])
 
     def populate_linux_odbc_setting(self, template_file='./docker/linux_odbc_init_temp.sh'):
         """
@@ -87,10 +87,10 @@ class CohortHelper(object):
                 'database': self._conf['database']}
 
     @staticmethod
-    def do_save_doc_to_db(d, sql_temp, db_conf):
+    def do_save_doc_to_db(d, sql_temp, db_conf_file):
         d['doc_content'] = db.escape_string(d['doc_content'])
         sql = sql_temp.format(**d)
-        db.query_data(sql, [], dbconn=db_conf)
+        db.query_data(sql, [], dbconn=db.get_db_connection_by_setting(db_conf_file))
 
 
 if __name__ == "__main__":
