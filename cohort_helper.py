@@ -90,7 +90,7 @@ class CohortHelper(object):
     def do_save_doc_to_db(d, sql_temp, db_conf_file):
         d['doc_content'] = db.escape_string(d['doc_content'])
         sql = sql_temp.format(**d)
-        db.query_data(sql, [], dbconn=db.get_db_connection_by_setting(db_conf_file))
+        db.query_data(sql, None, dbconn=db.get_db_connection_by_setting(db_conf_file))
 
 
 if __name__ == "__main__":
