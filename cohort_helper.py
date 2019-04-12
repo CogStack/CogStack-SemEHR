@@ -52,6 +52,8 @@ class CohortHelper(object):
             else:
                 # save docs to files
                 for d in docs:
+                    if d['doc_content'] is None:
+                        continue
                     fn = ('%s_%s' % (d['doc_id'], d['patient_id'])) if use_combo_fn_name else ('%s' % d['doc_id'])
                     utils.save_string(d['doc_content'], join(out_put_folder, file_pattern % fn))
             logging.info('%s docs saved to destination [%s]' % (len(docs), self._dest))
