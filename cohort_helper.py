@@ -11,8 +11,8 @@ class CohortHelper(object):
         self._cohort_conf = conf_file
         self._conf = None
         self._patient_ids = []
-        self.load_config()
         self._dest = 'file'
+        self.load_config()
 
     def load_config(self):
         self._conf = utils.load_json_data(self._cohort_conf)
