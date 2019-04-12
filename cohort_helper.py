@@ -94,6 +94,8 @@ class CohortHelper(object):
 
 
 if __name__ == "__main__":
+    reload(sys)
+    sys.setdefaultencoding('cp1252')
     if len(sys.argv) != 2:
         print 'syntax: python cohort_helper.py JSON_CONF_FILE_PATH'
     else:
