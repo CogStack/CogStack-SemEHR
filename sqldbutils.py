@@ -28,6 +28,12 @@ def get_db_connection_by_setting(setting_file=None, setting_obj=None):
                                       settings['password'],
                                       settings['database'],
                                       settings['mysql_sock_file'])
+    elif 'db_type' in settings and settings['db_type'] == 'mysql':
+        return get_mysqldb_connection(settings['server'],
+                                      settings['user'],
+                                      settings['password'],
+                                      settings['database'])
+
     if 'trusted_connection' in settings:
         con_string = 'driver=%s;server=%s;trusted_connection=yes;DATABASE=%s;' % (settings['driver'],
                                                                          settings['server'],
@@ -55,6 +61,15 @@ def get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock='/var/lib/my
                          passwd=my_pwd,  # your password
                          db=my_db,
                          unix_socket=my_sock)  # name of the data base
+    cursor = db.cursor()
+    return {'cnxn': db, 'cursor': cursor}
+
+
+def get_mysqldb_host_connection(my_host, my_user, my_pwd, my_db):
+    db = MySQLdb.connect(host=my_host,  # your host, usually localhost
+                         user=my_user,  # your username
+                         passwd=my_pwd,  # your password
+                         db=my_db)  # name of the data base
     cursor = db.cursor()
     return {'cnxn': db, 'cursor': cursor}
 
