@@ -89,7 +89,7 @@ class CohortHelper(object):
     @staticmethod
     def do_save_doc_to_db(d, sql_temp, db_conf):
         sql = sql_temp.format(**d)
-        db.query_data(sql, dbconn=db_conf)
+        db.query_data(sql, [], dbconn=db_conf)
 
 
 if __name__ == "__main__":
