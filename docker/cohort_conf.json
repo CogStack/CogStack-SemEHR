@@ -8,5 +8,8 @@
   "database": "",
   "out_put_folder": "/data/input_docs/",
   "doc_query_temp": "select doc_content, doc_id from doc_table where patient_id in ({patient_ids})",
-  "patient_id_file": ""
+  "patient_id_file": "",
+  "dest": "file",
+  "threads": "20",
+  "db_conf_file": ""
 }
