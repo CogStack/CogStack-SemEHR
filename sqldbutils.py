@@ -69,8 +69,10 @@ def get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock='/var/lib/my
 def get_mysqldb_host_connection(my_host, my_user, my_pwd, my_db):
     db = MySQLdb.connect(host=my_host,  # your host, usually localhost
                          user=my_user,  # your username
-                         passwd=my_pwd,  # your password
-                         db=my_db)  # name of the data base
+                         passwd=my_pwd, # your password
+                         db=my_db,      # name of the data base
+                         use_unicode=True,
+                         charseet='utf8')
     cursor = db.cursor()
     return {'cnxn': db, 'cursor': cursor}
 
