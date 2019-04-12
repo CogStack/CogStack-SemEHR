@@ -1,6 +1,7 @@
 import utils as imutil
 import pyodbc
 import MySQLdb
+import logging
 
 
 #SQL db setting
@@ -85,16 +86,19 @@ def query_data(query, container, dbconn=None):
         conn_dic = get_db_connection()
     else:
         conn_dic = dbconn
-
-    conn_dic['cursor'].execute(query)
-    if container is not None:
-        rows = conn_dic['cursor'].fetchall()
-        columns = [column[0] for column in conn_dic['cursor'].description]
-        for row in rows:
-            container.append(dict(zip(columns, row)))
-    else:
-        conn_dic['cnxn'].commit()
-    release_db_connection(conn_dic)
+    try:
+        conn_dic['cursor'].execute(query)
+        if container is not None:
+            rows = conn_dic['cursor'].fetchall()
+            columns = [column[0] for column in conn_dic['cursor'].description]
+            for row in rows:
+                container.append(dict(zip(columns, row)))
+        else:
+            conn_dic['cnxn'].commit()
+    except Exception, e:
+        logging.error('error [%s] doing [%s]' % (e, query))
+    finally:
+        release_db_connection(conn_dic)
 
 
 def escape_string(s):
