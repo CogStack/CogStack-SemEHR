@@ -3,8 +3,8 @@
 COHORTCONF=/data/cohort.json
 
 cd "$semehr_path"
-echo "update repo..."
-git pull
+#echo "update repo..."
+#git pull
 
 if [[ ! -f "$COHORTCONF" ]]; then
     echo "cohort configuration file not found at $COHORTCONF"
