@@ -30,7 +30,7 @@ def get_db_connection_by_setting(setting_file=None, setting_obj=None):
                                       settings['database'],
                                       settings['mysql_sock_file'])
     elif 'db_type' in settings and settings['db_type'] == 'mysql':
-        return get_mysqldb_connection(settings['server'],
+        return get_mysqldb_host_connection(settings['server'],
                                       settings['user'],
                                       settings['password'],
                                       settings['database'])
@@ -72,7 +72,8 @@ def get_mysqldb_host_connection(my_host, my_user, my_pwd, my_db):
                          passwd=my_pwd, # your password
                          db=my_db,      # name of the data base
                          use_unicode=True,
-                         charseet='utf8')
+                         charset='utf8')
+    db.set_character_set('utf8')
     cursor = db.cursor()
     return {'cnxn': db, 'cursor': cursor}
 
