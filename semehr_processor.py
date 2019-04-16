@@ -462,10 +462,23 @@ def collect_cohort_doc_results(settings, doc2pid):
     dc.collect_result(result_file_path, graph_file_path)
 
 
+def do_patient_indexing(pid, es, doc_level_index, doc_ann_type,
+                        doc_index, doc_type, doc_pid_field_name, doc_text_field_name,
+                        patient_index, patient_doct_type,
+                        ann_field_name, ignore_exist=False):
+    if ignore_exist:
+        if es.get_doc_detail(pid) is not None:
+            return
+    es.index_patient(doc_level_index, pid, doc_ann_type,
+                     doc_index, doc_type, doc_pid_field_name, doc_text_field_name,
+                     patient_index, patient_doct_type,
+                     ann_field_name=ann_field_name)
+
+
 def patient_level_indexing(settings, pids):
     es = SemEHRES.get_instance_by_setting(settings.get_attr(['patient_index', 'es_host']),
-                                          settings.get_attr(['patient_index', 'es_index']),
-                                          settings.get_attr(['patient_index', 'es_doc_type']),
+                                          settings.get_attr(['patient_index', 'patient_index']),
+                                          settings.get_attr(['patient_index', 'patient_doct_type']),
                                           settings.get_attr(['patient_index', 'es_concept_type']),
                                           settings.get_attr(['patient_index', 'es_patient_type']))
     doc_level_index = settings.get_attr(['patient_index', 'doc_level_index'])
@@ -477,11 +490,25 @@ def patient_level_indexing(settings, pids):
     patient_doct_type = settings.get_attr(['patient_index', 'patient_doct_type'])
     doc_type = settings.get_attr(['patient_index', 'doc_type'])
     ann_field_name = settings.get_attr(['patient_index', 'ann_field_name'])
-    for pid in pids:
-        es.index_patient(doc_level_index, pid, doc_ann_type,
-                         doc_index, doc_type, doc_pid_field_name, doc_text_field_name,
-                         patient_index, patient_doct_type,
-                         ann_field_name=ann_field_name)
+    num_procs = 10 if settings.get_attr(['patient_index', 'num_procs']) is None else \
+        settings.get_attr(['patient_index', 'num_procs'])
+    ignore_exist = True if settings.get_attr(['patient_index', 'ignore_exist']) is None else \
+        settings.get_attr(['patient_index', 'ignore_exist'])
+
+    utils.multi_process_tasking(
+        lst=pids,
+        num_procs=num_procs,
+        process_func=do_patient_indexing,
+        args=[es, doc_level_index, doc_ann_type,
+              doc_index, doc_type, doc_pid_field_name, doc_text_field_name,
+              patient_index, patient_doct_type,
+              ann_field_name, ignore_exist])
+    # for pid in pids:
+    #     es.index_patient(doc_level_index, pid, doc_ann_type,
+    #                      doc_index, doc_type, doc_pid_field_name, doc_text_field_name,
+    #                      patient_index, patient_doct_type,
+    #                      ann_field_name=ann_field_name)​
+
 
 
 def process_semehr(config_file):
