@@ -529,7 +529,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer, r
                     context_text = text[sent.start + offset:sent.end+offset]
                     logging.debug('context text: %s' % context_text)
                 s_before = context_text[:offset_start]
-                if context_text.startswith('s ') or s_before == '' :
+                if context_text.startswith('s '): # or s_before == '' :
                     prev_s = ann_doc.get_prev_sent(sent)
                     if prev_s is not None:
                         s_before = text[prev_s.start + offset:prev_s.end + offset] + s_before
@@ -735,10 +735,12 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
     else:
         ann_files = [f for f in listdir(anns_folder) if isfile(join(anns_folder, f))]
         for ann in ann_files:
-            utils.multi_thread_large_file_tasking(join(anns_folder, ann), 10, analyse_doc_anns_line,
-                                                  args=[ruler, text_reader, output_folder, fn_pattern,
-                                                        es_inst, es_output_index, es_output_doc,
-                                                        sa])
+            utils.multi_process_large_file_tasking(
+                large_file=join(anns_folder, ann),
+                process_func=analyse_doc_anns_line,
+                args=[ruler, text_reader, output_folder, fn_pattern,
+                      es_inst, es_output_index, es_output_doc,
+                      sa])
 
     logging.info('post processing of ann docs done')
 
