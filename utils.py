@@ -258,5 +258,45 @@ def multi_process_tasking(lst, process_func, num_procs=multiprocessing.cpu_count
         callback_func(*tuple(args))
 
 
+def multi_process_large_file_tasking(large_file, process_func, num_procs=multiprocessing.cpu_count()*2,
+                                     proc_desc='processed', args=None, multi=None,
+                                     file_filter_func=None, callback_func=None,
+                                     thread_wise_objs=None,
+                                     thread_init_func=None, thread_end_func=None,
+                                     file_encoding='utf-8', thread_end_args=[]):
+    num_tasks = 1000
+    pdf_queque = multiprocessing.JoinableQueue(num_tasks)
+    num_lines = 0
+    with codecs.open(large_file, encoding=file_encoding) as lf:
+        for line in lf:
+            num_lines += 1
+            pdf_queque.put(line)
+    thread_num = min(num_tasks, num_procs)
+    arr = [process_func] if args is None else [process_func] + args
+    arr.insert(0, pdf_queque)
+    thread_objs = []
+    for i in range(thread_num):
+        tarr = arr[:]
+        thread_obj = None
+        if thread_wise_objs is not None and isinstance(thread_wise_objs, list):
+            thread_obj = thread_wise_objs[i]
+        if thread_obj is None and thread_init_func is not None:
+            thread_obj = thread_init_func()
+            thread_objs.append(thread_obj)
+        tarr.insert(0, thread_obj)
+        p = multiprocessing.Process(target=multi_process_do, args=tuple(tarr))
+        p.start()
+
+    for i in range(thread_num):
+        pdf_queque.put('EMPTY-NOW')
+    pdf_queque.join()
+    if thread_end_func is not None:
+        for to in thread_objs:
+            if to is not None:
+                thread_end_func(to, *tuple(thread_end_args))
+    if callback_func is not None:
+        callback_func(*tuple(args))
+
+
 if __name__ == "__main__":
     pass
