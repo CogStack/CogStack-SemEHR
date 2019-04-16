@@ -266,11 +266,6 @@ def multi_process_large_file_tasking(large_file, process_func, num_procs=multipr
                                      file_encoding='utf-8', thread_end_args=[]):
     num_tasks = 1000
     pdf_queque = multiprocessing.JoinableQueue(num_tasks)
-    num_lines = 0
-    with codecs.open(large_file, encoding=file_encoding) as lf:
-        for line in lf:
-            num_lines += 1
-            pdf_queque.put(line)
     thread_num = min(num_tasks, num_procs)
     arr = [process_func] if args is None else [process_func] + args
     arr.insert(0, pdf_queque)
@@ -287,6 +282,11 @@ def multi_process_large_file_tasking(large_file, process_func, num_procs=multipr
         p = multiprocessing.Process(target=multi_process_do, args=tuple(tarr))
         p.start()
 
+    num_lines = 0
+    with codecs.open(large_file, encoding=file_encoding) as lf:
+        for line in lf:
+            num_lines += 1
+            pdf_queque.put(line)
     for i in range(thread_num):
         pdf_queque.put('EMPTY-NOW')
     pdf_queque.join()
