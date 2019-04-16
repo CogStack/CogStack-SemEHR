@@ -572,7 +572,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer, r
     return num_concepts
 
 
-def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, text_reader, sa, ruler, update_status_template):
+def db_doc_process(cnn, row, sql_template, pks, update_template, dbcnn_file, text_reader, sa, ruler, update_status_template):
     sql = sql_template.format(*[row[k] for k in pks])
     rets = []
     db.query_data(sql, rets, db.get_db_connection_by_setting(dbcnn_file))
@@ -587,7 +587,7 @@ def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, text_rea
                 update_query = update_template.format(*([db.escape_string(json.dumps(ann_doc.serialise_json()))] +
                                                         [row[k] for k in pks]))
                 # logging.debug('update ann: %s' % update_query)
-                db.query_data(update_query, None, db.get_db_connection_by_setting(dbcnn_file))
+                db.query_data(update_query, None, dbconn=cnn)
                 logging.info('ann %s updated' % row)
             else:
                 no_concepts = True
@@ -595,7 +595,7 @@ def db_doc_process(row, sql_template, pks, update_template, dbcnn_file, text_rea
             no_concepts = True
         if no_concepts and update_status_template is not None:
             q = update_status_template.format(*[row[k] for k in pks])
-            db.query_data(q, None, db.get_db_connection_by_setting(dbcnn_file))
+            db.query_data(q, None, dbconn=cnn)
             logging.debug('no concepts found/update %s' % q)
 
 
@@ -620,9 +620,15 @@ def analyse_db_doc_anns(sql, ann_sql, pks, update_template, full_text_sql, dbcnn
     rows = []
     db.query_data(sql, rows, db.get_db_connection_by_setting(dbcnn_file))
     reader = DBTextReader(full_text_sql, dbcnn_file)
+    cnns = []
+    for i in xrange(thread_num):
+        cnns.append(db.get_db_connection_by_setting(dbcnn_file))
     utils.multi_process_tasking(rows, db_doc_process, num_procs=thread_num,
                                 args=[ann_sql, pks, update_template, dbcnn_file, reader, sa, ruler,
-                                      update_status_template])
+                                      update_status_template],
+                                thread_wise_objs=cnns)
+    for i in xrange(thread_num):
+        db.release_db_connection(cnns[i])
 
 
 def analyse_doc_anns_file(ann_doc_path, rule_executor, text_reader, output_folder,

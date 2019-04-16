@@ -101,7 +101,8 @@ def query_data(query, container, dbconn=None):
     except Exception, e:
         logging.error('error [%s] doing [%s]' % (e, query))
     finally:
-        release_db_connection(conn_dic)
+        if dbconn is None:
+            release_db_connection(conn_dic)
 
 
 def escape_string(s):
