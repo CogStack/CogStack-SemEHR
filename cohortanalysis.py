@@ -11,7 +11,7 @@ from ann_post_rules import AnnRuleExecutor
 import re
 from analysis.semquery import SemEHRES
 import analysis.cohort_analysis_helper as chelper
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 db_conn_type = 'mysql'
@@ -272,17 +272,22 @@ def patient_timewindow_filter(fo, doc_id, pid):
     if d is None:
         print '%s/%s not found in full index' % (doc_id, pid)
         return True
+    if 'document_field_filter' in fo:
+        for field in fo['document_field_filter']:
+            if field in d:
+                if d[field] in fo['document_field_filter'][field]:
+                    return True
     win = fo['p2win'][pid]
     if win is None:
         return False
     d_date = datetime.strptime(d[fo['date_field']][0:19], fo['date_format'])
     print d_date, win
-    t0 = datetime.strptime(win['t0'], fo['pt_date_format'])
+    t0 = datetime.strptime(win['t0'], fo['pt_date_format']) #+ timedelta(days=1)
     t1 = datetime.strptime(win['t1'], fo['pt_date_format'])
-    if t0 < d_date <= t1:
+    if t0 <= d_date <= t1:
         return False
     else:
-        print '%s filtered [%s]' % (doc_id, d_date) 
+        print '%s filtered [%s]' % (doc_id, d_date)
         return True
 
 
@@ -562,7 +567,7 @@ def action_transparentise(cohort_name, db_conn_file,
     for batch in batches:
         print 'working on %s/%s batch' % (i, len(batches))
         try:
-            do_action_trans_docs(batch, 
+            do_action_trans_docs(batch,
                                  nlp,
                                  doc_ann_sql_template,
                                  doc_content_sql_template,
@@ -637,10 +642,10 @@ def generate_result_in_one_iteration(cohort_name, study_analyzer, out_file,
     dutil.query_data(anns_iter_sql.format(**{'cohort_id': cohort_name,
                                              'extra_constrains':
                                                  ' \n '.join(
-                                                  [generate_skip_term_constrain(study_analyzer, skip_term_sql)]
-                                                  + [] if (study_analyzer.study_options is None or
-                                                           study_analyzer.study_options['extra_constrains'] is None)
-                                                  else study_analyzer.study_options['extra_constrains'])}),
+                                                     [generate_skip_term_constrain(study_analyzer, skip_term_sql)]
+                                                     + [] if (study_analyzer.study_options is None or
+                                                              study_analyzer.study_options['extra_constrains'] is None)
+                                                     else study_analyzer.study_options['extra_constrains'])}),
                      rows_container,
                      dbconn=dutil.get_db_connection_by_setting(db_conn_file))
     for r in rows_container:
