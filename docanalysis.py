@@ -901,7 +901,7 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
     db.query_data(cohort_sql, rows, db.get_db_connection_by_setting(dbcnn_file))
     logging.info('querying results (cohort size:%s)...' % len(rows))
     utils.multi_process_tasking([r['pid'] for r in rows], db_populate_patient_result, num_procs=thread_num,
-                                args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, sa.study_concepts,
+                                args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list,
                                       cui2concept,
                                       positive_patient_filter],
                                 thread_init_func=proc_init_container,
