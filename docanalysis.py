@@ -752,6 +752,7 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
 
 
 def db_populate_patient_result(container, pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list,
+                               cui2concept,
                                ontext_filter_fun=None):
     """
     populate a row (per patient) in the result table
@@ -760,6 +761,7 @@ def db_populate_patient_result(container, pid, doc_ann_sql_temp, doc_ann_pks, db
     :param doc_ann_pks:
     :param dbcnn_file:
     :param concept_list:
+    :param cui2concept:
     :param container:
     :return:
     """
@@ -777,7 +779,9 @@ def db_populate_patient_result(container, pid, doc_ann_sql_temp, doc_ann_pks, db
             ann_doc = SemEHRAnnDoc()
             ann_doc.load(anns)
             for a in ann_doc.annotations:
-                for c in a.study_concepts:
+                # for c in a.study_concepts:
+                if a.cui in cui2concept:
+                    c = cui2concept[a.cui]
                     logging.debug('%s found in %s, ruled_by=%s, concepts:%s' % (c, '-'.join([r[k] for k in doc_ann_pks]),
                                                                    a.ruled_by, a.study_concepts))
                     if c in c2f:
@@ -888,12 +892,17 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
     ret = load_study_ruler(study_folder, None, study_config)
     sa = ret['sa']
     concept_list = sorted([sc.name for sc in sa.study_concepts])
+    cui2concept = {}
+    for sc in sa.study_concepts:
+        for c in sc.concept_closure:
+            cui2concept[c] = sc.name
     results = []
     rows = []
     db.query_data(cohort_sql, rows, db.get_db_connection_by_setting(dbcnn_file))
     logging.info('querying results (cohort size:%s)...' % len(rows))
     utils.multi_process_tasking([r['pid'] for r in rows], db_populate_patient_result, num_procs=thread_num,
-                                args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list,
+                                args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, sa.study_concepts,
+                                      cui2concept,
                                       positive_patient_filter],
                                 thread_init_func=proc_init_container,
                                 thread_end_func=proc_final_collect,
