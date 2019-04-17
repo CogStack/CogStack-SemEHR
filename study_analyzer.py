@@ -273,7 +273,28 @@ def load_study_settings(folder, umls_instance,
         sa = StudyAnalyzer.deserialise(join(folder, 'study_analyzer.pickle'))
     else:
         sa = StudyAnalyzer(fn)
-        if isfile(join(folder, 'exact_concepts_mappings.json')):
+        if isfile(join(folder, 'label2concept.tsv')):
+            # using tsv file if exists
+            logging.info('loading study concepts from tsv file...')
+            lines = utils.read_text_file(join(folder, 'label2concept.tsv'))
+            scs = []
+            for l in lines:
+                arr = l.split('\t')
+                if len(arr) != 2:
+                    logging.error('line [%s] not parsable' % l)
+                    continue
+                t = arr[0]
+                c = arr[1]
+                sc = StudyConcept(t, [t])
+                sc.concept_closure = set([c])
+                tc = {}
+                tc[t] = {'closure': 1, 'mapped': c}
+                sc.term_to_concept = tc
+                scs.append(sc)
+                logging.debug('study concept [%s]: %s, %s' % (sc.name, sc.term_to_concept, sc.concept_closure))
+            sa.study_concepts = scs
+            logging.info('study concepts loaded')
+        elif isfile(join(folder, 'exact_concepts_mappings.json')):
             concept_mappings = utils.load_json_data(join(folder, 'exact_concepts_mappings.json'))
             concept_to_closure = None
             # concept_to_closure = \
