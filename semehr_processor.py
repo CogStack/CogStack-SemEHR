@@ -507,8 +507,7 @@ def patient_level_indexing(settings, pids):
     #     es.index_patient(doc_level_index, pid, doc_ann_type,
     #                      doc_index, doc_type, doc_pid_field_name, doc_text_field_name,
     #                      patient_index, patient_doct_type,
-    #                      ann_field_name=ann_field_name)​
-
+    #                      ann_field_name=ann_field_name)
 
 
 def process_semehr(config_file):
