@@ -529,6 +529,17 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer, r
                     context_text = text[sent.start + offset:sent.end+offset]
                     logging.debug('context text: %s' % context_text)
                 s_before = context_text[:offset_start]
+
+                # gate has an issue with splitting sentences with a question mark in the middle
+                # which is quite often in clinical notes to specify not sure for a condition
+                # so, if the previous sentence ends with a question mark, then bring it in for ruling
+                prev_s = ann_doc.get_prev_sent(sent)
+                if prev_s is not None:
+                    prev_s_text = text[prev_s.start + offset:prev_s.end + offset]
+                    if prev_s_text.endswith('?') or prev_s_text.lower().endswith('e.g.'):
+                        s_before = prev_s_text + s_before
+                        anchor_sent = prev_s
+
                 if context_text.startswith('s '): # or s_before == '' :
                     prev_s = ann_doc.get_prev_sent(sent)
                     if prev_s is not None:
