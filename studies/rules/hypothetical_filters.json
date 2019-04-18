@@ -78,7 +78,7 @@
     ".*\\s+belief.{0,40}",
     ".*\\s+blood for.{0,90}",
     ".*\\s+bloods including{0,120}",
-    ".*\\s+look(ed|ing){0,1}\\b+for\\b+.{0,20}evidence(s){0,1}.{0,120}",
+    ".*\\s+look(ed|ing){0,1}\\s+for\\s+.{0,20}evidence(s){0,1}.{0,120}",
     ".*\\s+not accepting.{0,50}"
   ]},
   {"offset": 1, "regs": [
