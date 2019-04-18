@@ -13,15 +13,15 @@
     ".*ruling out.{0,20}",
     ".*hasn't got.{0,20}",
     ".*negative virology.{0,80}",
-    ".*(exclude|excude|exclusion|(r\\/o)).{0,20}"
+    ".*(excluded|exclude|excude|exclusion|(r\\/o)).{0,120}"
   ]
   },
   {"offset": 1, "regs": [
     "\\s+\\-.*",
     "\\s+.{0,30}(negative|neg)\\b.*", "\\s+.{0,10}unlikely\\b.*", "\\s+.{0,10}None Seen\\b.*",
     "\\s+.{0,30}non\\-reactive\\b.*",
-    "\\s+.{0,40}ruled out\\b.*",
-    "\\s+.{0,40}excluded\\b.*",
+    "\\s+.{0,70}ruled out\\b.*",
+    "\\s+.{0,70}excluded\\b.*",
     "\\s+.{0,40}not clinically suspected\\b.*",
     "\\s+.{0,40}not detected\\b.*"
   ]}

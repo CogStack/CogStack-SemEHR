@@ -12,7 +12,8 @@
     ".*\\brisk score.*",
     ".*\\brisk factor.*",
     ".*turn to(\\s)+.{0,5}",
-    ".*possibl(y|e)(\\s)+.{0,20}",
+    ".*possibl(y|e)(\\s)+.{0,50}",
+    ".*possibility(\\s)+.{0,120}",
     ".*Probable\\s+",
     ".*hypochondriac\\s+",
     ".*(fear(ed){0,1}|signs of|investigate(d){0,1}|saying|possibility|suspect|suspicion|suspicious|suspected|delusional|uncertainty|uncertain|false positive)(\\s)+.{0,40}",
@@ -72,15 +73,19 @@
     ".*\\s+resembl.{0,40}",
     ".*\\s+examin.{0,40}",
     ".*\\s+belief.{0,40}",
-    ".*\\s+blood for.{0,90}"
+    ".*\\s+blood for.{0,90}",
+    ".*\\s+bloods including{0,120}"
   ]},
   {"offset": 1, "regs": [
     "\\s+risk",
     "\\s+[^\\.,;\\n\\r]{0,30}\\?\\s+.*",
     "\\s+.{0,10}unlikely\\b.*",
-    ".*\\s+bloods to be done.{0,20}",
+    "\\s+.{0,50}likely\\b.*",
+    ".*\\s+bloods to be done.*",
     ".{0,40}screen\\b.*",
     ".{0,40}suspected\\b.*",
+    ".{0,40}result(s){0,1}\\b.*",
+    ".{0,80}possibilities\\b.*",
     ".{0,40}discussion\\b.*"
   ]}
 ]
