@@ -826,7 +826,7 @@ def fix_escaped_issue(s):
     return new_s
 
 
-def extract_sample(pk_vals, concept, sample_sql_temp, dbcnn_file, container, ontext_filter_fun=positive_patient_filter):
+def extract_sample(pk_vals, concept, cui2concept, sample_sql_temp, dbcnn_file, container, ontext_filter_fun=positive_patient_filter):
     """
     extract an sample
     :param pk_vals:
@@ -845,7 +845,7 @@ def extract_sample(pk_vals, concept, sample_sql_temp, dbcnn_file, container, ont
         ann_doc = SemEHRAnnDoc()
         ann_doc.load(anns)
         for a in ann_doc.annotations:
-            if concept in a.study_concepts:
+            if a.cui in cui2concept and concept == cui2concept[a.cui]:
                 correct = len(a.ruled_by) == 0
                 if correct and ontext_filter_fun is not None:
                     correct = ontext_filter_fun(a)
@@ -929,6 +929,7 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
         for c in c2pks:
             pks = c2pks[c]
             sample_pks = []
+            logging.info('doc cache size: %s' % len(pks))
             if len(pks) <= sample_size:
                 sample_pks = pks
             else:
@@ -938,7 +939,7 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
                     del pks[index]
             samples = []
             utils.multi_thread_tasking(sample_pks, thread_num, extract_sample,
-                                       args=[c, sample_sql_temp, dbcnn_file, samples])
+                                       args=[c, cui2concept, sample_sql_temp, dbcnn_file, samples])
             sampled_result[c] = samples
             logging.info('%s sampled (%s) results' % (c, len(samples)))
 
