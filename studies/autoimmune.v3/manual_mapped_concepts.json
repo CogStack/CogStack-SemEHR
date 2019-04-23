@@ -1,0 +1,263 @@
+{
+  "Restless legs syndrome": {
+    "tc": {
+      "closure": 3,
+      "mapped": "C2931830"
+    },
+    "concepts": [
+      "C2931830",
+      "C1876177",
+      "C0035258"
+    ]
+  },
+  "Narcolepsy": {
+    "tc": {
+      "closure": 3,
+      "mapped": "C0751362"
+    },
+    "concepts": [
+      "C0751362",
+      "C0027404",
+      "C2931865"
+    ]
+  },
+  "Hashimoto's thyroiditis": {
+    "tc": {
+      "closure": 4,
+      "mapped": "C0920350"
+    },
+    "concepts": [
+      "C0920350",
+      "C0393639",
+      "C0677607",
+      "C0040147"
+    ]
+  },
+  "Crohn's": {
+    "tc": {
+      "closure": 8,
+      "mapped": "C0941061"
+    },
+    "concepts": [
+      "C0941061",
+      "C0941060",
+      "C0941287",
+      "C0010346",
+      "C2931133",
+      "C0949272",
+      "C0156147",
+      "C0267380"
+    ]
+  },
+  "Multiple sclerosis": {
+    "tc": {
+      "closure": 2,
+      "mapped": "C0026769"
+    },
+    "concepts": [
+      "C0026769",
+      "C0751324"
+    ]
+  },
+  "Rheumatoid arthritis": {
+    "tc": {
+      "closure": 2,
+      "mapped": "C0235762"
+    },
+    "concepts": [
+      "C0235762",
+      "C0003873"
+    ]
+  },
+  "Juvenile diabetes": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0011854"
+    },
+    "concepts": [
+      "C0011854"
+    ]
+  },
+  "Ulcerative colitis": {
+    "tc": {
+      "closure": 5,
+      "mapped": "C0941057"
+    },
+    "concepts": [
+      "C0941057",
+      "C0009324",
+      "C0941059",
+      "C0941058",
+      "C2931173"
+    ]
+  },
+  "Rheumatic fever": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0035436"
+    },
+    "concepts": [
+      "C0035436"
+    ]
+  },
+  "Giant cell arteritis": {
+    "tc": {
+      "closure": 6,
+      "mapped": "C0751547"
+    },
+    "concepts": [
+      "C0751547",
+      "C0751545",
+      "C0039483",
+      "C1956390",
+      "C1956391",
+      "C2931873"
+    ]
+  },
+  "Autoimmune hepatitis": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0241910"
+    },
+    "concepts": [
+      "C0241910"
+    ]
+  },
+  "Vesiculobullous dermatosis": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0033860"
+    },
+    "concepts": [
+      "C0033860"
+    ]
+  },
+  "Neuromyelitis optica": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0027873"
+    },
+    "concepts": [
+      "C0027873"
+    ]
+  },
+  "CIDP": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0393819"
+    },
+    "concepts": [
+      "C0393819"
+    ]
+  },
+  "SLE": {
+    "tc": {
+      "closure": 5,
+      "mapped": "C0024143"
+    },
+    "concepts": [
+      "C0024143",
+      "C0542297",
+      "C0409979",
+      "C0024141",
+      "C0521471"
+    ]
+  },
+  "Polyarteritis nodosa": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0031036"
+    },
+    "concepts": [
+      "C0031036"
+    ]
+  },
+  "Graves' disease": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0018213"
+    },
+    "concepts": [
+      "C0018213"
+    ]
+  },
+  "Primary biliary cirrhosis": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0008312"
+    },
+    "concepts": [
+      "C0008312"
+    ]
+  },
+  "Coeliac": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0007570"
+    },
+    "concepts": [
+      "C0007570"
+    ]
+  },
+  "Myositis": {
+    "tc": {
+      "closure": 15,
+      "mapped": "C0027121"
+    },
+    "concepts": [
+      "C0027121",
+      "C0554591",
+      "C0544796",
+      "C0263984",
+      "C0406645",
+      "C0011633",
+      "C0016037",
+      "C0751357",
+      "C2931639",
+      "C0221056",
+      "C0263666",
+      "C2609059",
+      "C2931785",
+      "C0751356",
+      "C0085655"
+    ]
+  },
+  "Polymyalgia rheumatica": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0032533"
+    },
+    "concepts": [
+      "C0032533"
+    ]
+  },
+  "Sarcoidosis": {
+    "tc": {
+      "closure": 2,
+      "mapped": "C0036202"
+    },
+    "concepts": [
+      "C0036202",
+      "C0393485"
+    ]
+  },
+  "Peripheral neuropathy": {
+    "tc": {
+      "closure": 2,
+      "mapped": "C0751340"
+    },
+    "concepts": [
+      "C0751340",
+      "C0026896"
+    ]
+  },
+  "Alopecia areata": {
+    "tc": {
+      "closure": 1,
+      "mapped": "C0002170"
+    },
+    "concepts": [
+      "C0002170"
+    ]
+  }
+}
