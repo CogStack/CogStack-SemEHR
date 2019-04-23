@@ -39,7 +39,7 @@
     ".*if\\s+.{0,20}(has|have|had)(\\s)+.{0,30}",
     ".*worries about(\\s)+.{0,5}",
     ".*afraid of(\\s)+.{0,20}",
-    ".*fears(\\s)+.{0,40}",
+    ".*(fearing|fears)(\\s)+.{0,80}",
     ".*having(\\s)+.{0,5}",
     ".*frightening(\\s)+.{0,5}",
     ".*checking(\\s)+.{0,5}",

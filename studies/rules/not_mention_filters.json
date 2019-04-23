@@ -79,6 +79,7 @@
     "\\s+help centre\\b.*", "\\s+group\\b.*", "\\s+health scare\\b.*", "\\s+department\\b.*",
     "\\s+help line\\b.*",
     "\\s+people\\b.*",
+    "\\s+psychotherapist\\b.*",
     "\\s+(national ){0,1}hospital\\b.*",
     "\\s+risk\\b.*",
     "\\s+as to intervention\\b.*",
