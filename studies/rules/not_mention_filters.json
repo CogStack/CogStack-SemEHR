@@ -73,13 +73,15 @@
     ".*(explain|explanation)\\s+.{0,80}",
     ".*\\s+double.{0,5}",
     ".*(research|researcher).{0,30}",
-    ".*\\s+secretary for.{0,10}"
+    ".*\\s+secretary for.{0,10}",
+    ".*\\s+Breakthrough.{0,10}"
   ]},
   {"offset": 1, "regs": [
     "\\s+(society|organisation|unit)\\b.*", "\\s+care\\b.*", "[\\s\\n]+team(s){0,1}\\b.*", "\\s+[^\\r\\n\\.]{0,30}service(s){0,1}\\b.*",
     "\\s+help centre\\b.*", "\\s+group\\b.*", "\\s+health scare\\b.*", "\\s+department\\b.*",
     "\\s+help line\\b.*",
     "\\s+people\\b.*",
+    "\\s+appointment\\b.*",
     "\\s+psychotherapist\\b.*",
     "\\s+(national ){0,1}hospital\\b.*",
     "\\s+risk\\b.*",
