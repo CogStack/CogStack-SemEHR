@@ -72,6 +72,7 @@
     ".*(wished|hopeful)(\\s)+.{0,80}",
     ".*(explain|explanation)\\s+.{0,80}",
     ".*\\s+double.{0,5}",
+    ".*(research|researcher).{0,30}",
     ".*\\s+secretary for.{0,10}"
   ]},
   {"offset": 1, "regs": [

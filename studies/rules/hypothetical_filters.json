@@ -7,8 +7,7 @@
     ".*suggestive of(\\s)+.{0,10}",
     ".*fearful of(\\s)+.{0,20}",
     ".*perceive .{1,20} as(\\s)+.{0,20}",
-    ".*risk(s){0,1} (of|for)(\\s)+.{0,70}",
-    ".*risks.{0,20}",
+    ".*risk(s){0,1}(\\s)+.{0,70}",
     ".*\\brisk score.*",
     ".*\\brisk factor.*",
     ".*turn to(\\s)+.{0,5}",
@@ -30,6 +29,7 @@
     ".*in case(\\s)+.{0,15}",
     ".*in (the ){0,1}event of(\\s)+.{0,15}",
     ".*believe(s|d){0,1}(\\s)+.{0,15}",
+    ".*believing\\s+.{0,85}",
     ".*ideas of having(\\s)+.{0,15}",
     ".*concerned about having(\\s)+.{0,15}",
     ".*(concerned|presumed)(\\s)+.{0,70}",
@@ -40,6 +40,8 @@
     ".*worries about(\\s)+.{0,5}",
     ".*afraid of(\\s)+.{0,20}",
     ".*(fearing|fears)(\\s)+.{0,80}",
+    ".*(speaks|spoke)(\\s)+.{0,80}",
+    ".*(speaks|spoke)(\\s)+.{0,80}",
     ".*having(\\s)+.{0,5}",
     ".*frightening(\\s)+.{0,5}",
     ".*checking(\\s)+.{0,5}",
@@ -92,6 +94,8 @@
     ".{0,40}suspected\\b.*",
     ".{0,40}result(s){0,1}\\b.*",
     ".{0,80}possibilities\\b.*",
-    ".{0,40}discussion\\b.*"
+    ".{0,40}discussion\\b.*",
+    ".{0,20}fear(s){0,1}\\b.*",
+    ".{0,80}would be\\b.*"
   ]}
 ]
