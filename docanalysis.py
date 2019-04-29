@@ -1,5 +1,5 @@
 import utils
-from os.path import join, isfile, split
+from os.path import join, isfile, split, splitext
 from os import listdir
 import logging
 import study_analyzer
@@ -646,7 +646,7 @@ def analyse_doc_anns_file(ann_doc_path, rule_executor, text_reader, output_folde
                           fn_pattern='se_ann_%s.json', es_inst=None, es_output_index=None, es_output_doc='doc',
                           study_analyzer=None):
     p, fn = split(ann_doc_path)
-    file_key = fn[:fn.index('.')]
+    file_key = splitext(fn)[0]
     json_doc = utils.load_json_data(ann_doc_path)
     return analyse_doc_anns(json_doc, file_key, rule_executor, text_reader, output_folder,
                             fn_pattern, es_inst, es_output_index, es_output_doc,
