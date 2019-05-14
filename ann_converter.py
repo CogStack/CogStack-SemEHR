@@ -7,6 +7,7 @@ import json
 from os.path import join
 import logging
 import sys
+import ann_post_rules
 
 
 class AnnConverter(object):
@@ -31,7 +32,7 @@ class AnnConverter(object):
         return '%s%s(%s)' % (str_context, ann.pref, ann.cui)
 
     @staticmethod
-    def to_eHOST(ann_doc, file_pattern='%s.txt', id_pattern='smehr-%s-%s'):
+    def to_eHOST(ann_doc, full_text=None, file_pattern='%s.txt', id_pattern='smehr-%s-%s'):
         elem_annotations = ET.Element("annotations")
         elem_annotations.set('textSource', file_pattern % ann_doc.file_key)
         idx = 0
@@ -45,8 +46,14 @@ class AnnConverter(object):
             elem_annotator.set('id', 'semehr')
             elem_annotator.text = 'semehr'
             elem_span = ET.SubElement(elem_ann, "span")
-            elem_span.set('start', '%s' % ann.start)
-            elem_span.set('end', '%s' % ann.end)
+            s = ann.start
+            e = ann.end
+            if full_text is not None:
+                if full_text[s:e].lower() != ann.str.lower():
+                    [s, e] = ann_post_rules.AnnRuleExecutor.relocate_annotation_pos(full_text,
+                                                                                    s, e, ann.str)
+            elem_span.set('start', '%s' % s)
+            elem_span.set('end', '%s' % e)
             elem_spanText = ET.SubElement(elem_ann, "spannedText")
             elem_spanText.text = ann.str
             elem_date = ET.SubElement(elem_ann, "creationDate")
@@ -67,12 +74,12 @@ class AnnConverter(object):
         sql = sql_temp.format(**pks)
         results = []
         logging.info('doing [%s]...' % sql)
+        file_key = '_'.join([pks[k] for k in pks])
         dbutils.query_data(sql, results, dbutils.get_db_connection_by_setting(db_conn))
         if len(results) > 0:
             text = results[0]['text']
             anns = json.loads(results[0]['anns'])
-            file_key = '_'.join([pks[k] for k in pks])
-            xml = AnnConverter.to_eHOST(AnnConverter.load_ann(anns, file_key))
+            xml = AnnConverter.to_eHOST(AnnConverter.load_ann(anns, file_key), full_text=text)
             utils.save_string(xml, join(ann_folder, ann_file_pattern % file_key))
             utils.save_string(text, join(full_text_folder, full_text_file_pattern % file_key))
             logging.info('doc [%s] done' % file_key)
