@@ -64,19 +64,20 @@ class AnnConverter(object):
     def convert_text_ann_from_db(sql_temp, pks, db_conn, full_text_folder, ann_folder,
                                  full_text_file_pattern='%s.txt',
                                  ann_file_pattern='%s.txt.knowtator.xml'):
-        sql = sql_temp.format(*[k for k in pks])
+        sql = sql_temp.format(**pks)
         results = []
+        logging.info('doing [%s]...' % sql)
         dbutils.query_data(sql, results, dbutils.get_db_connection_by_setting(db_conn))
         if len(results) > 0:
             text = results[0]['text']
             anns = json.loads(results[0]['anns'])
-            file_key = '_'.join(pks)
+            file_key = '_'.join([pks[k] for k in pks])
             xml = AnnConverter.to_eHOST(AnnConverter.load_ann(anns, file_key))
             utils.save_string(xml, join(ann_folder, ann_file_pattern % file_key))
             utils.save_string(text, join(full_text_folder, full_text_file_pattern % file_key))
-            logging.info('doc [%s] done' % '_'.join(pks))
+            logging.info('doc [%s] done' % file_key)
         else:
-            logging.info('doc/anns [%s] not found' % '_'.join(pks))
+            logging.info('doc/anns [%s] not found' % file_key)
 
     @staticmethod
     def get_db_docs_for_converting(setting_file):
@@ -90,7 +91,8 @@ class AnnConverter(object):
         dbutils.query_data(sql, results, dbutils.get_db_connection_by_setting(db_conn))
         ds = []
         for r in results:
-            ds.append([r[k] for k in r])
+            ds.append(r)
+        logging.info('total docs %s' % len(ds))
         for d in ds:
             AnnConverter.convert_text_ann_from_db(sql_temp=doc_ann_sql_temp,
                                                   pks=d,
@@ -100,6 +102,7 @@ class AnnConverter(object):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level='INFO', format='%(name)s %(asctime)s %(levelname)s %(message)s')
     if len(sys.argv) != 2:
         print 'the syntax is [python ann_converter.py SETTING_FILE_PATH]'
     else:
