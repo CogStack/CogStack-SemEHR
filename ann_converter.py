@@ -4,10 +4,12 @@ import datetime
 import utils
 import sqldbutils as dbutils
 import json
-from os.path import join
+from os.path import join, isfile
+from os import listdir
 import logging
 import sys
 import ann_post_rules
+import re
 
 
 class AnnConverter(object):
@@ -87,8 +89,7 @@ class AnnConverter(object):
             logging.info('doc/anns [%s] not found' % file_key)
 
     @staticmethod
-    def get_db_docs_for_converting(setting_file):
-        settings = utils.load_json_data(setting_file)
+    def get_db_docs_for_converting(settings):
         sql = settings['sql']
         db_conn = settings['db_conn']
         doc_ann_sql_temp = settings['sql_temp']
@@ -106,6 +107,42 @@ class AnnConverter(object):
                                                   db_conn=db_conn,
                                                   full_text_folder=full_text_folder,
                                                   ann_folder=ann_folder)
+
+    @staticmethod
+    def convert_text_ann_from_files(full_text_folder, ann_folder, output_folder,
+                                    full_text_file_pattern='(%s).txt',
+                                    ann_file_pattern='se_ann_%s.json',
+                                    output_file_pattern='%s.txt.knowtator.xml'):
+        text_files = [f for f in listdir(full_text_folder) if isfile(join(full_text_folder, f))]
+        p = re.compile(full_text_file_pattern)
+        for f in text_files:
+            m = p.match(f)
+            if m is not None:
+                fk = m.group(1)
+                text = utils.read_text_file_as_string(join(full_text_folder, f))
+                anns = utils.load_json_data(join(ann_folder, ann_file_pattern % fk))
+                xml = AnnConverter.to_eHOST(AnnConverter.load_ann(anns, fk), full_text=text)
+                utils.save_string(xml, join(output_folder, output_file_pattern % fk))
+                logging.info('doc [%s] done' % fk)
+
+    @staticmethod
+    def get_files_for_converting(settings):
+        AnnConverter.convert_text_ann_from_files(
+            settings['full_text_folder'],
+            settings['ann_folder'],
+            settings['output_folder'],
+            settings['full_text_file_pattern'],
+            settings['ann_file_pattern'],
+            settings['output_file_pattern']
+        )
+
+    @staticmethod
+    def convvert_anns(setting_file):
+        settings = utils.load_json_data(setting_file)
+        if settings['source'] == 'db':
+            AnnConverter.get_db_docs_for_converting(settings)
+        else:
+            AnnConverter.get_files_for_converting(settings)
 
 
 if __name__ == "__main__":
