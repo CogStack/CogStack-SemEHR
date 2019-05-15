@@ -109,6 +109,8 @@ class AnnConverter(object):
 
 
 if __name__ == "__main__":
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
     logging.basicConfig(level='INFO', format='%(name)s %(asctime)s %(levelname)s %(message)s')
     if len(sys.argv) != 2:
         print 'the syntax is [python ann_converter.py SETTING_FILE_PATH]'
