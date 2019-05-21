@@ -32,7 +32,12 @@ class AnnConverter(object):
         if hasattr(ann, 'ruled_by'):
             if ann.ruled_by is not None and len(ann.ruled_by) >0:
                 str_context += 'ruled_'
-        return '%s%s(%s)' % (str_context, ann.pref, ann.cui)
+        pref = ''
+        if hasattr(ann, 'pref'):
+            pref = ann.pref
+        elif hasattr(ann, 'minor_type'):
+            pref = ann.minor_type
+        return '%s%s(%s)' % (str_context, pref, ann.cui)
 
     @staticmethod
     def to_eHOST(ann_doc, full_text=None, file_pattern='%s.txt', id_pattern='smehr-%s-%s',
