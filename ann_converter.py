@@ -29,8 +29,9 @@ class AnnConverter(object):
             str_context += ann.temporality + '_'
         if ann.experiencer != 'Patient':
             str_context += ann.experiencer + '_'
-        if ann.ruled_by is not None and len(ann.ruled_by) >0:
-            str_context += 'ruled_'
+        if hasattr(ann, 'ruled_by'):
+            if ann.ruled_by is not None and len(ann.ruled_by) >0:
+                str_context += 'ruled_'
         return '%s%s(%s)' % (str_context, ann.pref, ann.cui)
 
     @staticmethod
