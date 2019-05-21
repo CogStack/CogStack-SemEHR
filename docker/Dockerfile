@@ -8,22 +8,24 @@ MAINTAINER Honghan Wu "honghan.wu@gmail.com"
 # Pre-reqs
 ########
 RUN apt-get update \
-&& apt-get -y install software-properties-common \
-&& add-apt-repository ppa:webupd8team/java
+&& apt-get -y install software-properties-common
+# && add-apt-repository ppa:webupd8team/java
 
 RUN apt-get update
-RUN echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
+# RUN echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
 
 RUN apt-get install -y \
 	ant \
 	curl \
-	oracle-java8-installer \
+#	oracle-java8-installer \
+	openjdk-11-jdk \
 	subversion \
 	unzip \
 	vim \
 	git
 
-ENV JAVA_HOME /usr/lib/jvm/java-8-oracle/
+# ENV JAVA_HOME /usr/lib/jvm/java-8-oracle/
+ENV JAVA_HOME /usr/lib/jvm/open-jdk/
 
 
 ########
