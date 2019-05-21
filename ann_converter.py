@@ -37,7 +37,12 @@ class AnnConverter(object):
             pref = ann.pref
         elif hasattr(ann, 'minor_type'):
             pref = ann.minor_type
-        return '%s%s(%s)' % (str_context, pref, ann.cui)
+        cui = ''
+        if hasattr(ann, 'cui'):
+            cui = ann.cui
+        elif hasattr(ann, 'major_type'):
+            cui = ann.major_type
+        return '%s%s(%s)' % (str_context, pref, cui)
 
     @staticmethod
     def to_eHOST(ann_doc, full_text=None, file_pattern='%s.txt', id_pattern='smehr-%s-%s',
