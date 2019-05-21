@@ -52,8 +52,13 @@ class AnnConverter(object):
             e = ann.end
             if full_text is not None:
                 if full_text[s:e].lower() != ann.str.lower():
+                    os = s
+                    oe = e
                     [s, e] = ann_post_rules.AnnRuleExecutor.relocate_annotation_pos(full_text,
                                                                                     s, e, ann.str)
+                    logging.info('%s,%s => %s,%s' % (os, oe, s, e))
+                # else:
+                #    logging.info('string matches, no reloaction needed [%s] [%s]' % (full_text[s:e].lower(), ann.str.lower()))
             elem_span.set('start', '%s' % s)
             elem_span.set('end', '%s' % e)
             elem_spanText = ET.SubElement(elem_ann, "spannedText")
@@ -79,7 +84,7 @@ class AnnConverter(object):
         file_key = '_'.join([pks[k] for k in pks])
         dbutils.query_data(sql, results, dbutils.get_db_connection_by_setting(db_conn))
         if len(results) > 0:
-            text = results[0]['text']
+            text = results[0]['text'].replace('\r', '\n')
             anns = json.loads(results[0]['anns'])
             xml = AnnConverter.to_eHOST(AnnConverter.load_ann(anns, file_key), full_text=text)
             utils.save_string(xml, join(ann_folder, ann_file_pattern % file_key))
@@ -116,6 +121,7 @@ class AnnConverter(object):
         text_files = [f for f in listdir(full_text_folder) if isfile(join(full_text_folder, f))]
         p = re.compile(full_text_file_pattern)
         for f in text_files:
+            logging.info('working on [%s]' % f)
             m = p.match(f)
             if m is not None:
                 fk = m.group(1)
@@ -123,6 +129,7 @@ class AnnConverter(object):
                 anns = utils.load_json_data(join(ann_folder, ann_file_pattern % fk))
                 xml = AnnConverter.to_eHOST(AnnConverter.load_ann(anns, fk), full_text=text)
                 utils.save_string(xml, join(output_folder, output_file_pattern % fk))
+                utils.save_string(text.replace('\r', ' '), join(full_text_folder, f))
                 logging.info('doc [%s] done' % fk)
 
     @staticmethod
@@ -152,4 +159,4 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         print 'the syntax is [python ann_converter.py SETTING_FILE_PATH]'
     else:
-        AnnConverter.get_db_docs_for_converting(sys.argv[1])
+        AnnConverter.convvert_anns(sys.argv[1])
