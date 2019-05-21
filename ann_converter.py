@@ -34,11 +34,19 @@ class AnnConverter(object):
         return '%s%s(%s)' % (str_context, ann.pref, ann.cui)
 
     @staticmethod
-    def to_eHOST(ann_doc, full_text=None, file_pattern='%s.txt', id_pattern='smehr-%s-%s'):
+    def to_eHOST(ann_doc, full_text=None, file_pattern='%s.txt', id_pattern='smehr-%s-%s',
+                 ann_to_convert=None):
         elem_annotations = ET.Element("annotations")
         elem_annotations.set('textSource', file_pattern % ann_doc.file_key)
         idx = 0
-        for ann in ann_doc.annotations:
+        anns = []
+        if ann_to_convert is None:
+            ann_to_convert = ['annotations', 'phenotypes']
+        if 'annotations' in ann_to_convert:
+            anns += ann_doc.annotations
+        if 'phenotypes' in ann_to_convert:
+            anns += ann_doc.phenotypes
+        for ann in anns:
             idx += 1
             mention_id = id_pattern % (ann_doc.file_key, idx)
             elem_ann = ET.SubElement(elem_annotations, "annotation")
@@ -117,7 +125,8 @@ class AnnConverter(object):
     def convert_text_ann_from_files(full_text_folder, ann_folder, output_folder,
                                     full_text_file_pattern='(%s).txt',
                                     ann_file_pattern='se_ann_%s.json',
-                                    output_file_pattern='%s.txt.knowtator.xml'):
+                                    output_file_pattern='%s.txt.knowtator.xml',
+                                    ann_to_convert=None):
         text_files = [f for f in listdir(full_text_folder) if isfile(join(full_text_folder, f))]
         p = re.compile(full_text_file_pattern)
         for f in text_files:
@@ -127,7 +136,8 @@ class AnnConverter(object):
                 fk = m.group(1)
                 text = utils.read_text_file_as_string(join(full_text_folder, f))
                 anns = utils.load_json_data(join(ann_folder, ann_file_pattern % fk))
-                xml = AnnConverter.to_eHOST(AnnConverter.load_ann(anns, fk), full_text=text)
+                xml = AnnConverter.to_eHOST(AnnConverter.load_ann(anns, fk), full_text=text,
+                                            ann_to_convert=ann_to_convert)
                 utils.save_string(xml, join(output_folder, output_file_pattern % fk))
                 utils.save_string(text.replace('\r', ' '), join(full_text_folder, f))
                 logging.info('doc [%s] done' % fk)
@@ -140,7 +150,8 @@ class AnnConverter(object):
             settings['output_folder'],
             settings['full_text_file_pattern'],
             settings['ann_file_pattern'],
-            settings['output_file_pattern']
+            settings['output_file_pattern'],
+            settings['ann_to_convert']
         )
 
     @staticmethod
