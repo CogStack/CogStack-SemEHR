@@ -270,7 +270,7 @@ def label_analyse(sql_template_file, db_cnf, output_file=None):
         s += output
     if output_file is not None:
         print 'saving output to %s...' % output_file
-        utils.save_string(output, output_file)
+        utils.save_string(s, output_file)
 
 
 def concept_analyse(concept_id, condition_label_sql, wrong_label_sql, db_cnf):
