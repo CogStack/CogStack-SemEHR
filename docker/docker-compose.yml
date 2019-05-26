@@ -5,6 +5,7 @@ services:
     build: ./
     volumes:
       - semehr_data:/data
+      - semehr_repo:/opt/semehr/CogStack-SemEHR
       - bioyodie_resource:/opt/gcp/bio-yodie-1-2-1/bio-yodie-resources
 
   db:
@@ -31,5 +32,6 @@ services:
 volumes:
   db_data: {}
   semehr_data: {}
+  semehr_repo: {}
   bioyodie_resource: {}
   ui_folder: {}
