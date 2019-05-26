@@ -1,6 +1,6 @@
 {
   "env": {
-    "java_home": "/usr/lib/jvm/java-8-oracle/",
+    "java_home": "/usr/lib/jvm/java-11-openjdk-amd64/",
     "gcp_home": "/opt/gcp/gcp-2.5-18658",
     "gate_home": "/opt/gcp/gate",
     "yodie_path": "/opt/gcp/",
