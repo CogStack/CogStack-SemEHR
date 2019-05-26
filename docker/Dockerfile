@@ -40,6 +40,7 @@ RUN cd /opt/gcp
 #at this moment, bio-yodie requires this particular subversion of GCP
 RUN svn co http://svn.code.sf.net/p/gate/code/gcp/trunk@18658 gcp-2.5-18658
 RUN cd /opt/gcp/gcp-2.5-18658 && ant
+ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64/
 ENV GCP_HOME '/opt/gcp/gcp-2.5-18658'
 
 RUN curl -L 'http://netix.dl.sourceforge.net/project/gate/gate/8.1/gate-8.1-build5169-ALL.zip' > gate-8.1-build5169-ALL.zip && unzip gate-8.1-build5169-ALL.zip && mv gate-8.1-build5169-ALL gate && rm gate-8.1-build5169-ALL.zip
