@@ -1,0 +1,35 @@
+version: '3.3'
+
+services:
+  semehr:
+    build: ./
+    volumes:
+      - semehr_data:/data
+      - bioyodie_resource:/opt/gcp/bio-yodie-1-2-1/bio-yodie-resources
+
+  db:
+    image: mysql:latest
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: somepassword
+      MYSQL_DATABASE: semehr
+      MYSQL_USER: someuser
+      MYSQL_PASSWORD: anotherpassword
+
+  web:
+    image: httpd:latest
+    depends_on:
+      - semehr
+    volumes:
+      - ui_folder:/usr/local/apache2/htdocs/
+    restart: always
+    ports:
+      - "8080:80"
+
+volumes:
+  db_data: {}
+  semehr_data: {}
+  bioyodie_resource: {}
+  ui_folder: {}

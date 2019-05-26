@@ -13,6 +13,10 @@ from subprocess import Popen, STDOUT
 from entity_centric_es import EntityCentricES, do_index_100k_anns, do_index_100k_patients, JSONSerializerPython2
 from elasticsearch import Elasticsearch
 import cohortanalysis as cohort
+import docanalysis
+import logging
+from analysis import cohort_analysis_helper
+from analysis.semquery import SemEHRES
 
 
 class ProcessSetting(object):
@@ -178,11 +182,13 @@ def actionable_transparise(settings):
                                  action_trans_model_file)
 
 
-def produce_yodie_config(settings):
+def produce_yodie_config(settings, data_rows, docid_path):
     """
     generate bio-yodie configuration xml file
-    :param settings:
-    :return:
+    :param settings: the config instance
+    :param data_rows: data arrays
+    :param docid_path: the file path to save docids
+    :return: number of docs to be processed
     """
     batch = ET.Element("batch")
     task_id = settings.get_attr(['job', 'job_id'])
@@ -201,6 +207,7 @@ def produce_yodie_config(settings):
 
     input = ET.SubElement(batch, "input")
     input.set('encoding', 'UTF-8')
+    num_docs = len(data_rows)
     if settings.get_attr(['yodie', 'input_source']) == "sql":
         input.set('class', 'kcl.iop.brc.core.kconnect.crisfeeder.CRISDocInputHandler')
         input.set('dbSettingImportant', 'true')
@@ -210,6 +217,17 @@ def produce_yodie_config(settings):
         input.set('user', input_db['user'])
         input.set('password', input_db['password'])
         input.set('get_doc_sql_prefix', input_db['get_doc_sql_prefix'])
+        logging.info('using docs from sql server [%s]' % settings.get_attr(['yodie', 'input_dbconn_setting_file']))
+    elif settings.get_attr(['yodie', 'input_source']) == "files":
+        dir_path = settings.get_attr(['yodie', 'input_doc_file_path'])
+        num_docs = len([f for f in listdir(dir_path) if isfile(join(dir_path, f))])
+        input.set('class', 'gate.cloud.io.file.FileInputHandler')
+        input.set('dir', dir_path)
+        documents = ET.SubElement(batch, "documents")
+        documentEnumerator = ET.SubElement(documents, "documentEnumerator")
+        documentEnumerator.set('class', 'gate.cloud.io.file.FileDocumentEnumerator')
+        documentEnumerator.set('dir', settings.get_attr(['yodie', 'input_doc_file_path']))
+        logging.info('using docs from folder [%s]' % dir_path)
     else:
         input.set('class', 'kcl.iop.brc.core.kconnect.crisfeeder.ESDocInputHandler')
         input.set('es_doc_url', '%s/%s/%s' % (
@@ -218,6 +236,7 @@ def produce_yodie_config(settings):
         input.set('main_text_field', '%s' % settings.get_attr(['semehr', 'full_text_text_field']))
         input.set('doc_guid_field', '%s' % settings.get_attr(['semehr', 'full_text_doc_id']))
         input.set('doc_created_date_field', '%s' % settings.get_attr(['semehr', 'full_text_doc_date']))
+        logging.info('using docs from elasticsearch [%s]' % settings.get_attr(['semehr', 'full_text_index']))
 
     output = ET.SubElement(batch, "output")
     if settings.get_attr(['yodie', 'output_destination']) == "sql":
@@ -229,20 +248,38 @@ def produce_yodie_config(settings):
         output.set('user', output_db['user'])
         output.set('password', output_db['password'])
         output.set('output_table', '%s' % settings.get_attr(['yodie', 'output_table']))
+        if settings.get_attr(['yodie', 'annotationOutputSettings']) is not None:
+            output.set('annotationOutputSettings', settings.get_attr(['yodie', 'annotationOutputSettings']))
+        if settings.get_attr(['yodie', 'docBasedOutput']) is not None:
+            output.set('docBasedOutput', settings.get_attr(['yodie', 'docBasedOutput']))
+        if settings.get_attr(['yodie', 'docAnnSQLTemplate']) is not None:
+            output.set('docAnnSQLTemplate', settings.get_attr(['yodie', 'docAnnSQLTemplate']))
+        if settings.get_attr(['yodie', 'singleAnnSQLTemplate']) is not None:
+            output.set('singleAnnSQLTemplate', settings.get_attr(['yodie', 'singleAnnSQLTemplate']))
         if settings.get_attr(['yodie', 'output_concept_filter_file']) is not None:
             output.set('concept_filter', '%s' % settings.get_attr(['yodie', 'output_concept_filter_file']))
+        logging.info('saving annotations to sql [%s]' % settings.get_attr(['yodie', 'output_dbconn_setting_file']))
     else:
         output.set('class', 'kcl.iop.brc.core.kconnect.outputhandler.YodieOutputHandler')
         output.set('output_folder', '%s' % settings.get_attr(['yodie', 'output_file_path']))
+        output.set('file_based', '%s' % settings.get_attr(['yodie', 'use_file_based']))
+        logging.info('saving annotations to folder [%s]' % settings.get_attr(['yodie', 'output_file_path']))
 
-    documents = ET.SubElement(batch, "documents")
-    documentEnumerator = ET.SubElement(documents, "documentEnumerator")
-    documentEnumerator.set('class', 'kcl.iop.brc.core.kconnect.crisfeeder.PlainTextEnumerator')
-    documentEnumerator.set('doc_id_file', '%s/%s_docids.txt' % (
-    settings.get_attr(['yodie', 'input_doc_file_path']), settings.get_attr(['job', 'job_id'])))
+    if settings.get_attr(['yodie', 'input_source']) != "files":
+        logging.info('doing yodie with %s documents, saved to %s...' %
+                     (str(len(data_rows)), docid_path))
+        # save doc ids to text file for input to bioyodie
+        logging.info('saving doc ids to [%s]' % docid_path)
+        utils.save_string('\n'.join([str(r['docid']) for r in data_rows]), docid_path)
+        documents = ET.SubElement(batch, "documents")
+        documentEnumerator = ET.SubElement(documents, "documentEnumerator")
+        documentEnumerator.set('class', 'kcl.iop.brc.core.kconnect.crisfeeder.PlainTextEnumerator')
+        documentEnumerator.set('doc_id_file', '%s/%s_docids.txt' % (
+            settings.get_attr(['yodie', 'input_doc_file_path']), settings.get_attr(['job', 'job_id'])))
 
     tree = ET.ElementTree(batch)
     tree.write("%s" % settings.get_attr(['yodie', 'config_xml_path']), xml_declaration=True)
+    return num_docs
 
 
 def clear_folder(folder):
@@ -274,21 +311,26 @@ def do_semehr_index(settings, patients, doc_to_patient):
     es.index_name = settings.get_attr(['semehr', 'index'])
     es.concept_doc_type = settings.get_attr(['semehr', 'concept_doc_type'])
     es.entity_doc_type = settings.get_attr(['semehr', 'entity_doc_type'])
+    es.doc_level_index = settings.get_attr(['semehr', 'doc_level_index'])
 
     f_yodie_anns = settings.get_attr(['yodie', 'output_file_path'])
     ann_files = [f for f in listdir(f_yodie_anns) if isfile(join(f_yodie_anns, f))]
 
     if settings.get_attr(['job', 'semehr-concept']) == 'yes':
-        print 'working on files : %s' % ann_files
+        logging.info('[SemEHR-step] starting semehr-concept process')
+        logging.debug('working on files : %s' % ann_files)
         # index concepts
         concept_index = settings.get_attr(['semehr', 'concept_index'])
         for ann in ann_files:
             utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 10, do_index_100k_anns,
                                                   args=[es, doc_to_patient, concept_index])
+        logging.info('[SemEHR-step-end]concept/document level indexing done')
+
     if settings.get_attr(['job', 'semehr-patients']) == 'yes':
+        logging.info('[SemEHR-step] indexing annotations at patient level')
         # index patients
         es_doc_url = settings.get_attr(['semehr', 'es_doc_url'])
-        es_full_text = Elasticsearch([es_doc_url], serializer=JSONSerializerPython2())
+        es_full_text = Elasticsearch([es_doc_url], serializer=JSONSerializerPython2(), verify_certs=False)
         ft_index_name = settings.get_attr(['semehr', 'full_text_index'])
         ft_doc_type = settings.get_attr(['semehr', 'full_text_doc_type'])
         ft_entity_field = settings.get_attr(['semehr', 'full_text_patient_field'])
@@ -300,6 +342,172 @@ def do_semehr_index(settings, patients, doc_to_patient):
                                          ft_doc_type,
                                          ft_entity_field,
                                          ft_fulltext_field])
+        logging.info('[SemEHR-step-end]patient level indexing done')
+
+
+def do_semehr_doc_anns_analysis(settings):
+    anns_folder = settings.get_attr(['doc_ann_analysis', 'ann_docs_path'])
+    text_folder = settings.get_attr(['doc_ann_analysis', 'full_text_folder'])
+    full_text_file_pattern = settings.get_attr(['doc_ann_analysis', 'full_text_fn_ptn'])
+    rule_config = settings.get_attr(['doc_ann_analysis', 'rule_config_path'])
+    output_folder = settings.get_attr(['doc_ann_analysis', 'output_folder'])
+    study_folder = settings.get_attr(['doc_ann_analysis', 'study_folder'])
+    combined_anns = settings.get_attr(['doc_ann_analysis', 'combined_anns'])
+    es_output_index = settings.get_attr(['doc_ann_analysis', 'es_output_index'])
+    es_output_doc = settings.get_attr(['doc_ann_analysis', 'es_output_doc'])
+    output_file_pattern = settings.get_attr(['doc_ann_analysis', 'output_fn_pattern'])
+    thread_num = settings.get_attr(['doc_ann_analysis', 'thread_num'])
+    if thread_num is None:
+        thread_num = 10
+    process_mode = settings.get_attr(['doc_ann_analysis', 'process_mode'])
+    if process_mode is not None and process_mode != 'sql':
+        if settings.get_attr(['doc_ann_analysis', 'es_host']) is not None:
+            es = SemEHRES.get_instance_by_setting(settings.get_attr(['doc_ann_analysis', 'es_host']),
+                                          settings.get_attr(['doc_ann_analysis', 'es_index']),
+                                          settings.get_attr(['doc_ann_analysis', 'es_doc_type']),
+                                          settings.get_attr(['doc_ann_analysis', 'es_concept_type']),
+                                          settings.get_attr(['doc_ann_analysis', 'es_patient_type']))
+            docanalysis.process_doc_anns(anns_folder=anns_folder,
+                                         full_text_folder=text_folder,
+                                         rule_config_file=rule_config,
+                                         output_folder=output_folder,
+                                         study_folder=study_folder,
+                                         full_text_fn_ptn=full_text_file_pattern,
+                                         fn_pattern=output_file_pattern,
+                                         thread_num=thread_num,
+                                         es_inst=es,
+                                         es_text_field=settings.get_attr(['doc_ann_analysis', 'full_text_field']),
+                                         patient_id_field=settings.get_attr(['doc_ann_analysis', 'patielt_id_field']),
+                                         combined_anns=combined_anns,
+                                         es_output_index=es_output_index, es_output_doc=es_output_doc
+                                         )
+        else:
+            docanalysis.process_doc_anns(anns_folder=anns_folder,
+                                         full_text_folder=text_folder,
+                                         rule_config_file=rule_config,
+                                         output_folder=output_folder,
+                                         study_folder=study_folder,
+                                         full_text_fn_ptn=full_text_file_pattern,
+                                         fn_pattern=output_file_pattern,
+                                         thread_num=thread_num
+                                         )
+    else:
+        ann_list_sql = settings.get_attr(['doc_ann_analysis', 'ann_list_sql'])
+        primary_keys = settings.get_attr(['doc_ann_analysis', 'primary_keys'])
+        ann_inst_sql = settings.get_attr(['doc_ann_analysis', 'ann_inst_sql'])
+        full_text_sql = settings.get_attr(['doc_ann_analysis', 'full_text_sql'])
+        update_query_template = settings.get_attr(['doc_ann_analysis', 'update_query_template'])
+        update_status_template = settings.get_attr(['doc_ann_analysis', 'update_status_template'])
+        dbconn_file = settings.get_attr(['doc_ann_analysis', 'dbconn_file'])
+        docanalysis.analyse_db_doc_anns(ann_list_sql, ann_inst_sql, primary_keys, update_query_template,
+                                        full_text_sql, dbconn_file,
+                                        thread_num=thread_num,
+                                        study_folder=study_folder,
+                                        rule_config_file=rule_config,
+                                        update_status_template=update_status_template
+                                        )
+
+
+def populate_cohort_results(settings):
+    cohort_sql = settings.get_attr(['populate_cohort_result', 'cohort_sql'])
+    doc_ann_sql_temp = settings.get_attr(['populate_cohort_result', 'doc_ann_sql_temp'])
+    doc_ann_pks = settings.get_attr(['populate_cohort_result', 'doc_ann_pks'])
+    dbcnn_file = settings.get_attr(['populate_cohort_result', 'dbconn_file'])
+    study_folder = settings.get_attr(['populate_cohort_result', 'study_folder'])
+    output_folder = settings.get_attr(['populate_cohort_result', 'output_folder'])
+    sample_sql_temp = settings.get_attr(['populate_cohort_result', 'sample_sql_temp'])
+    thread_num = settings.get_attr(['populate_cohort_result', 'thread_num'])
+    sampling = settings.get_attr(['populate_cohort_result', 'sampling'])
+    if sampling is None:
+        sampling = True
+    if sampling:
+        sample_size = settings.get_attr(['populate_cohort_result', 'sample_size'])
+    if sample_size is None:
+        sample_size = 20
+    docanalysis.db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_file,
+                                          study_folder, output_folder, sample_sql_temp,
+                                          thread_num=thread_num, sampling=sampling,
+                                          sample_size=sample_size)
+
+
+def es_get_cohort_docs(settings):
+    pids = utils.read_text_file(settings.get_attr(['cohort_docs', 'es_cohort_file']))
+    es = SemEHRES.get_instance_by_setting(settings.get_attr(['cohort_docs', 'es_host']),
+                                          settings.get_attr(['cohort_docs', 'es_index']),
+                                          settings.get_attr(['cohort_docs', 'es_doc_type']),
+                                          settings.get_attr(['cohort_docs', 'es_concept_type']),
+                                          settings.get_attr(['cohort_docs', 'es_patient_type']))
+    patiet_id_field = settings.get_attr(['cohort_docs', 'patiet_id_field'])
+
+    docs = []
+    docs2p = {}
+    for pid in pids:
+        container = []
+        cohort_analysis_helper.query_collect_patient_docs({'_id': pid}, es, '*', patiet_id_field, container)
+        if len(container) > 0:
+            docs += [{'docid': d} for d in container[0]['docs']]
+            for d in container[0]['docs']:
+                docs2p[d] = pid
+    return docs, docs2p, pids
+
+
+def collect_cohort_doc_results(settings, doc2pid):
+    processed_ann_path = settings.get_attr(['cohort_doc_collection', 'se_result_path'])
+    ann_doc_pattern = settings.get_attr(['cohort_doc_collection', 'ann_doc_pattern'])
+    semantic_types = settings.get_attr(['cohort_doc_collection', 'semantic_types'])
+    result_file_path = settings.get_attr(['cohort_doc_collection', 'result_file_path'])
+    graph_file_path = settings.get_attr(['cohort_doc_collection', 'graph_file_path'])
+    dc = docanalysis.DocCohort(doc2pid, processed_ann_path, doc_id_pattern=ann_doc_pattern)
+    dc.collect_semantic_types = semantic_types
+    dc.collect_result(result_file_path, graph_file_path)
+
+
+def do_patient_indexing(pid, es, doc_level_index, doc_ann_type,
+                        doc_index, doc_type, doc_pid_field_name, doc_text_field_name,
+                        patient_index, patient_doct_type,
+                        ann_field_name, ignore_exist=False):
+    if ignore_exist:
+        if es.get_doc_detail(pid) is not None:
+            return
+    es.index_patient(doc_level_index, pid, doc_ann_type,
+                     doc_index, doc_type, doc_pid_field_name, doc_text_field_name,
+                     patient_index, patient_doct_type,
+                     ann_field_name=ann_field_name)
+
+
+def patient_level_indexing(settings, pids):
+    es = SemEHRES.get_instance_by_setting(settings.get_attr(['patient_index', 'es_host']),
+                                          settings.get_attr(['patient_index', 'patient_index']),
+                                          settings.get_attr(['patient_index', 'patient_doct_type']),
+                                          settings.get_attr(['patient_index', 'es_concept_type']),
+                                          settings.get_attr(['patient_index', 'es_patient_type']))
+    doc_level_index = settings.get_attr(['patient_index', 'doc_level_index'])
+    doc_ann_type = settings.get_attr(['patient_index', 'doc_ann_type'])
+    doc_index = settings.get_attr(['patient_index', 'doc_index'])
+    doc_pid_field_name = settings.get_attr(['patient_index', 'doc_pid_field_name'])
+    doc_text_field_name = settings.get_attr(['patient_index', 'doc_text_field_name'])
+    patient_index = settings.get_attr(['patient_index', 'patient_index'])
+    patient_doct_type = settings.get_attr(['patient_index', 'patient_doct_type'])
+    doc_type = settings.get_attr(['patient_index', 'doc_type'])
+    ann_field_name = settings.get_attr(['patient_index', 'ann_field_name'])
+    num_procs = 10 if settings.get_attr(['patient_index', 'num_procs']) is None else \
+        settings.get_attr(['patient_index', 'num_procs'])
+    ignore_exist = True if settings.get_attr(['patient_index', 'ignore_exist']) is None else \
+        settings.get_attr(['patient_index', 'ignore_exist'])
+
+    utils.multi_process_tasking(
+        lst=pids,
+        num_procs=num_procs,
+        process_func=do_patient_indexing,
+        args=[es, doc_level_index, doc_ann_type,
+              doc_index, doc_type, doc_pid_field_name, doc_text_field_name,
+              patient_index, patient_doct_type,
+              ann_field_name, ignore_exist])
+    # for pid in pids:
+    #     es.index_patient(doc_level_index, pid, doc_ann_type,
+    #                      doc_index, doc_type, doc_pid_field_name, doc_text_field_name,
+    #                      patient_index, patient_doct_type,
+    #                      ann_field_name=ann_field_name)
 
 
 def process_semehr(config_file):
@@ -314,24 +522,45 @@ def process_semehr(config_file):
     # read the configuration
     ps = ProcessSetting(config_file)
 
+    # setting log configuration
+    log_level = 'INFO' if ps.get_attr(['logging', 'level']) is None else ps.get_attr(['logging', 'level'])
+    log_format = '%(name)s %(asctime)s %(levelname)s %(message)s' if ps.get_attr(['logging', 'format']) is None \
+        else ps.get_attr(['logging', 'format'])
+    log_file = None if ps.get_attr(['logging', 'file']) is None else ps.get_attr(['logging', 'file'])
+    logging.basicConfig(level=log_level, format=log_format)
+    if log_file is not None:
+        formatter = logging.Formatter(log_format)
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(log_level)
+        file_handler.setFormatter(formatter)
+        logging.getLogger().addHandler(file_handler)
+        logging.info('logging to %s' % log_file)
+
     # initialise the jobstatus class instance
     job_file = join(ps.get_attr(['job', 'job_status_file_path']),
                     'semehr_job_status_%s.json' % ps.get_attr(['job', 'job_id']))
-    print 'using job status file %s' % job_file
+    logging.info('[SemEHR-step] using job status file %s' % job_file)
     job_status = JobStatus(job_file)
     job_status.job_start()
 
     data_rows = []
+    doc2pid = {}
+    pids = []
     if ps.get_attr(['job', 'load_docs']) == 'yes':
         sql_template = ps.get_attr(['new_docs', 'sql_query'])
-        print 'retrieving docs by using the template [%s]' % sql_template
+        logging.info('[SemEHR-step] retrieving docs by using the template [%s]' % sql_template)
         data_rows = get_docs_for_processing(job_status, sql_template, ps.get_attr(['new_docs', 'dbconn_setting_file']))
-        print 'total docs num is %s' % len(data_rows)
+        logging.info('total docs num is %s' % len(data_rows))
+    elif ps.get_attr(['job', 'cohort_docs']) == 'yes':
+        logging.info('[SemEHR-step] retrieving docs by cohort [%s]' %  ps.get_attr(['cohort_docs', 'es_cohort_file']))
+        data_rows, doc2pid, pids = es_get_cohort_docs(ps)
+        logging.info('total docs num is %s' % len(data_rows))        
 
-    # try:
-    if True:
+    try:
+    # if True:
         # 0. copy docs
         if ps.get_attr(['job', 'copy_docs']) == 'yes':
+            logging.info('[SemEHR-step] copy docs')
             docs = [str(r['docid']) for r in data_rows]
             utils.multi_thread_tasking(docs, ps.get_attr(['doc_copy', 'thread_num']),
                                        do_copy_doc,
@@ -340,56 +569,65 @@ def process_semehr(config_file):
                                              ps.get_attr(['doc_copy', 'src_doc_type']),
                                              ps.get_attr(['doc_copy', 'dest_index']),
                                              ps.get_attr(['doc_copy', 'dest_doc_type'])])
+            logging.info('[SemEHR-step-end]copying docs done')
 
         if ps.get_attr(['job', 'yodie']) == 'yes':
             docid_path = '%s/%s_docids.txt' % (
                 ps.get_attr(['yodie', 'input_doc_file_path']), ps.get_attr(['job', 'job_id']))
-            print 'working on yodie with %s documents, saved to %s...' % (str(len(data_rows)), docid_path)
-            # save doc ids to text file for input to bioyodie
-            print 'saving doc ids to [%s]' % docid_path
-            utils.save_string('\n'.join([str(r['docid']) for r in data_rows]), docid_path)
+            logging.info('[SemEHR-step] doing yodie')
             # 1. do bio-yodie pipeline
             # 1.1 prepare the configuration file
-            produce_yodie_config(ps)
-            # 1.2 set the env variables
-            set_sys_env(ps)
-            # 1.3 clear ann output folder
-            print 'clearing %s ...' % ps.get_attr(['yodie', 'output_file_path'])
-            clear_folder(ps.get_attr(['yodie', 'output_file_path']))
-            # 1.3 run bio-yodie
-            os.chdir(ps.get_attr(['yodie', 'gcp_run_path']))
-            if ps.get_attr(['yodie', 'os']) == 'win':
-                cmd = ' '.join(['java',
-                                "-Dgate.home=%s" % ps.get_attr(['env', 'gate_home']),
-                                "-Dgcp.home=%s" % ps.get_attr(['env', 'gcp_home']),
-                                "-Djava.protocol.handler.pkgs=gate.cloud.util.protocols",
-                                "-cp .;{SCRIPTDIR}/conf;{SCRIPTDIR}/gcp.jar;{SCRIPTDIR}/lib/*;"
-                                "{GATE_HOME}/bin/gate.jar;{GATE_HOME}/lib/*".format(
-                                    **{"SCRIPTDIR":ps.get_attr(['env', 'gcp_home']),
-                                       "GATE_HOME":ps.get_attr(['env', 'gate_home'])}),
-                                '-Dat.ofai.gate.modularpipelines.configFile="%s/bio-yodie-1-2-1/main-bio/main-bio.config.yaml" '
-                                % ps.get_attr(['env', 'yodie_path']),
-                                "-Xmx%s" % ps.get_attr(['yodie', 'memory']),
-                                "gate.cloud.batch.BatchRunner",
-                                "-t %s" % ps.get_attr(['yodie', 'thread_num']),
-                                "-b %s" % ps.get_attr(['yodie', 'config_xml_path'])
-                                ])
+            num_docs = produce_yodie_config(ps, data_rows, docid_path)
+            if num_docs == 0:
+                logging.info('[SemEHR-step-end] nothing to process, NLP step done')
             else:
-                cmd = ' '.join(['gcp-direct.sh',
-                                "-t %s" % ps.get_attr(['yodie', 'thread_num']),
-                                "-Xmx%s" % ps.get_attr(['yodie', 'memory']),
-                                "-b %s" % ps.get_attr(['yodie', 'config_xml_path']),
-                                '-Dat.ofai.gate.modularpipelines.configFile="%s/bio-yodie-1-2-1/main-bio/main-bio.config.yaml" '
-                                % ps.get_attr(['env', 'yodie_path']),
-                                ])
-            print cmd
-            p = Popen(cmd, shell=True, stderr=STDOUT)
-            p.wait()
+                logging.info('total number of docs %s' % num_docs)
+                # 1.2 set the env variables
+                set_sys_env(ps)
+                # 1.3 clear ann output folder
+                logging.info('clearing %s ...' % ps.get_attr(['yodie', 'output_file_path']))
+                clear_folder(ps.get_attr(['yodie', 'output_file_path']))
+                # 1.3 run bio-yodie
+                os.chdir(ps.get_attr(['yodie', 'gcp_run_path']))
+                if ps.get_attr(['yodie', 'os']) == 'win':
+                    cmd = ' '.join(['java',
+                                    "-Dgate.home=%s" % ps.get_attr(['env', 'gate_home']),
+                                    "-Dgcp.home=%s" % ps.get_attr(['env', 'gcp_home']),
+                                    "-Djava.protocol.handler.pkgs=gate.cloud.util.protocols",
+                                    "-cp .;{SCRIPTDIR}/conf;{SCRIPTDIR}/gcp.jar;{SCRIPTDIR}/lib/*;"
+                                    "{GATE_HOME}/bin/gate.jar;{GATE_HOME}/lib/*".format(
+                                        **{"SCRIPTDIR":ps.get_attr(['env', 'gcp_home']),
+                                           "GATE_HOME":ps.get_attr(['env', 'gate_home'])}),
+                                    '-Dat.ofai.gate.modularpipelines.configFile="%s/bio-yodie-1-2-1/main-bio/main-bio.config.yaml" '
+                                    % ps.get_attr(['env', 'yodie_path']),
+                                    "-Xmx%s" % ps.get_attr(['yodie', 'memory']),
+                                    "gate.cloud.batch.BatchRunner",
+                                    "-t %s" % ps.get_attr(['yodie', 'thread_num']),
+                                    "-b %s" % ps.get_attr(['yodie', 'config_xml_path'])
+                                    ])
+                else:
+                    cmd = ' '.join(['gcp-direct.sh',
+                                    "-t %s" % ps.get_attr(['yodie', 'thread_num']),
+                                    "-Xmx%s" % ps.get_attr(['yodie', 'memory']),
+                                    "-b %s" % ps.get_attr(['yodie', 'config_xml_path']),
+                                    '-Dat.ofai.gate.modularpipelines.configFile="%s/bio-yodie-1-2-1/main-bio/main-bio.config.yaml" '
+                                    % ps.get_attr(['env', 'yodie_path']),
+                                    ])
+                logging.debug('executing the following command to start NLP...')
+                logging.info(cmd)
+                p = Popen(cmd, shell=True, stderr=STDOUT)
+                p.wait()
 
-            if 0 != p.returncode:
-                job_status.set_status(False)
-                job_status.save()
-                exit(p.returncode)
+                if 0 != p.returncode:
+                    job_status.set_status(False)
+                    job_status.save()
+                    logging.error('ERROR doing the NLP, stopped with a coide [%s]' % p.returncode)
+                    exit(p.returncode)
+                else:
+                    logging.info('[SemEHR-step-end] NLP step done')
+                if 'semehr_path' in os.environ:
+                    logging.info('changing back to semehr_path: %s' % os.environ['semehr_path'])
+                    os.chdir(os.environ['semehr_path'])
 
         # 2. do SemEHR concept/entity indexing
         if ps.get_attr(['job', 'semehr-concept']) == 'yes' or ps.get_attr(['job', 'semehr-patients']) == 'yes':
@@ -403,15 +641,40 @@ def process_semehr(config_file):
 
         # 3. do SemEHR actionable transparency
         if ps.get_attr(['job', 'action_trans']) == 'yes':
-            print 'doing transparency...'
+            logging.info('[SemEHR-step]doing transparency...')
             actionable_transparise(settings=ps)
+
+        # 4. do SemEHR document annotation analysis (post processing)
+        if ps.get_attr(['job', 'doc_analysis']) == 'yes':
+            logging.info('[SemEHR-step]doing SemEHR annotation analysis...')
+            do_semehr_doc_anns_analysis(settings=ps)
+            logging.info('[SemEHR-step-end] doc_analysis step done')
+
+        # 4.5 do SemEHR patient level index
+        if ps.get_attr(['job', 'patient_index']) == 'yes':
+            logging.info('[SemEHR-step]doing patient level indexing...')
+            patient_level_indexing(settings=ps, pids=pids)
+            logging.info('[SemEHR-step-end] patient level indexing done')
+
+        # 5. do populate results for a research study
+        if ps.get_attr(['job', 'populate_cohort_result']) == 'yes':
+            logging.info('[SemEHR-step]doing SemEHR cohort result extraction...')
+            populate_cohort_results(settings=ps)
+            logging.info('[SemEHR-step-end] populate_cohort_result step done')
+
+        # 6. do collect cohort doc based results for a research study
+        if ps.get_attr(['job', 'cohort_doc_collection']) == 'yes':
+            logging.info('[SemEHR-step]doing SemEHR cohort doc based collection...')
+            collect_cohort_doc_results(settings=ps, doc2pid=doc2pid)
+            logging.info('[SemEHR-step-end] collect_cohort_doc_results step done')
 
         job_status.set_status(True)
         job_status.save()
-    # except Exception as e:
-    #     print 'Failed to do SemEHR process %s' % str(e)
-    #     job_status.set_status(False)
-    #     job_status.save()
+        logging.info('[SemEHR-process-end] all done')
+    except Exception as e:
+        logging.error('[SemEHR-process-ERROR] Failed to do SemEHR process %s' % str(e))
+        job_status.set_status(False)
+        job_status.save()
 
 
 if __name__ == "__main__":

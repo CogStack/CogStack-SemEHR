@@ -11,7 +11,7 @@ from ann_post_rules import AnnRuleExecutor
 import re
 from analysis.semquery import SemEHRES
 import analysis.cohort_analysis_helper as chelper
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 db_conn_type = 'mysql'
@@ -272,17 +272,22 @@ def patient_timewindow_filter(fo, doc_id, pid):
     if d is None:
         print '%s/%s not found in full index' % (doc_id, pid)
         return True
+    if 'document_field_filter' in fo:
+        for field in fo['document_field_filter']:
+            if field in d:
+                if d[field] in fo['document_field_filter'][field]:
+                    return True
     win = fo['p2win'][pid]
     if win is None:
         return False
     d_date = datetime.strptime(d[fo['date_field']][0:19], fo['date_format'])
     print d_date, win
-    t0 = datetime.strptime(win['t0'], fo['pt_date_format'])
+    t0 = datetime.strptime(win['t0'], fo['pt_date_format']) #+ timedelta(days=1)
     t1 = datetime.strptime(win['t1'], fo['pt_date_format'])
     if t0 <= d_date <= t1:
         return False
     else:
-        print '%s filtered [%s]' % (doc_id, d_date) 
+        print '%s filtered [%s]' % (doc_id, d_date)
         return True
 
 
@@ -304,6 +309,7 @@ def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_ex
     es = SemEHRES.get_instance_by_setting_file(es_conn_file)
     if filter_obj is not None:
         fes = SemEHRES.get_instance_by_setting_file(filter_obj['doc_es_setting'])
+        patient_id_field = filter_obj['patient_id_field']
         filter_obj['es'] = fes
     if retained_patients_filter is None:
         pids = es.search_by_scroll("*", es.patient_type)
@@ -322,6 +328,17 @@ def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_ex
         positive_doc_anns = []
         sc_key = '%s(%s)' % (sc.name, len(sc.concept_closure))
         print 'working on %s' % sc_key
+        if sc.name.startswith('ess_'):
+            non_empty_concepts.append(sc_key)
+            # elasticsearch concepts
+            p2docs = chelper.query_doc_by_search(es, fes, sc.concept_closure, patient_id_field,
+                                                 retained_patients_filter=retained_patients_filter,
+                                                 filter_obj=filter_obj, doc_filter_function=patient_timewindow_filter)
+            for pd in p2docs:
+                id2p[pd['pid']][sc_key] = str(len(pd['docs']))
+            # continue without to do the rest
+            continue
+
         doc_anns = []
         if len(sc.concept_closure) > 0:
             doc_anns = chelper.query_doc_anns(es, sc.concept_closure, study_analyzer.skip_terms,
@@ -550,7 +567,7 @@ def action_transparentise(cohort_name, db_conn_file,
     for batch in batches:
         print 'working on %s/%s batch' % (i, len(batches))
         try:
-            do_action_trans_docs(batch, 
+            do_action_trans_docs(batch,
                                  nlp,
                                  doc_ann_sql_template,
                                  doc_content_sql_template,
@@ -625,10 +642,10 @@ def generate_result_in_one_iteration(cohort_name, study_analyzer, out_file,
     dutil.query_data(anns_iter_sql.format(**{'cohort_id': cohort_name,
                                              'extra_constrains':
                                                  ' \n '.join(
-                                                  [generate_skip_term_constrain(study_analyzer, skip_term_sql)]
-                                                  + [] if (study_analyzer.study_options is None or
-                                                           study_analyzer.study_options['extra_constrains'] is None)
-                                                  else study_analyzer.study_options['extra_constrains'])}),
+                                                     [generate_skip_term_constrain(study_analyzer, skip_term_sql)]
+                                                     + [] if (study_analyzer.study_options is None or
+                                                              study_analyzer.study_options['extra_constrains'] is None)
+                                                     else study_analyzer.study_options['extra_constrains'])}),
                      rows_container,
                      dbconn=dutil.get_db_connection_by_setting(db_conn_file))
     for r in rows_container:

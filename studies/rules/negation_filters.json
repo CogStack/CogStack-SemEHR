@@ -1,7 +1,7 @@
 [
   {
     "offset": -1, "regs":[
-    ".*(\\s)+non\\-",
+    ".*non\\-",
     ".*(\\s)+non\\s+",
     ".*no evidence.{0,70}",
     ".*\\s+nil\\s+",
@@ -12,15 +12,20 @@
     ".*not have.{0,60}",
     ".*ruling out.{0,20}",
     ".*hasn't got.{0,20}",
-    ".*(exclude|excude|exclusion|(r\\/o)).{0,20}"
+    ".*doesn't have.{0,50}",
+    ".*does not have.{0,50}",
+    ".*negative virology.{0,80}",
+    ".*(excluded|exclude|excude|exclusion|(r\\/o)).{0,120}"
   ]
   },
   {"offset": 1, "regs": [
-    "\\s+\\-",
-    "\\s+.{0,10}negative", "\\s+.{0,10}unlikely",
-    "\\s+.{0,30}non\\-reactive",
-    "\\s+.{0,40}ruled out",
-    "\\s+.{0,40}excluded",
-    "\\s+.{0,40}not clinically suspected"
+    "\\s+\\-.*",
+    "\\s+.{0,30}(negative|neg)\\b.*", "\\s+.{0,10}unlikely\\b.*", "\\s+.{0,10}None Seen\\b.*",
+    "\\s+.{0,30}non\\-reactive\\b.*",
+    "\\s+.{0,70}ruled out\\b.*",
+    "\\s+.{0,70}excluded\\b.*",
+    "\\s+.{0,40}not clinically suspected\\b.*",
+    "\\s+.{0,40}not detected\\b.*",
+    "\\s+.{0,40}cannot be\\b.*"
   ]}
 ]

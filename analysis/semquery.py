@@ -1,6 +1,8 @@
 from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions, helpers, TransportError
 from datetime import timedelta, datetime
 import utils
+import logging
+import hashlib
 
 _es_host = '10.200.102.23'
 _es_index = 'mimic'
@@ -79,9 +81,11 @@ class SemEHRES(object):
     def concept_type(self):
         return self._concept_type
 
-    def search_by_scroll(self, q, doc_type, field='_all', include_fields=None, collection_func=lambda d, c: c.append(d['_id'])):
-        print 'scrolling [%s]' % q
-        scroll_obj = self.scroll(q, doc_type, field=field, size=300, include_fields=include_fields)
+    def search_by_scroll(self, q, doc_type, field='_all', include_fields=None,
+                         collection_func=lambda d, c: c.append(d['_id']),
+                         index=None):
+        logging.debug('scrolling [%s]' % q)
+        scroll_obj = self.scroll(q, doc_type, field=field, size=300, include_fields=include_fields, index=index)
         container = []
         utils.multi_thread_tasking_it(scroll_obj, 10, collection_func, args=[container])
         return container
@@ -159,7 +163,7 @@ class SemEHRES(object):
         results = self._es_instance.search(index=self._index, doc_type=entity, body=query)
         return results['hits']['total'], results['hits']['hits']
 
-    def scroll(self, q, entity, query_type="qs", field='_all', size=500, include_fields=None, q_obj=None):
+    def scroll(self, q, entity, query_type="qs", field='_all', size=500, include_fields=None, q_obj=None, index=None):
         query = {"query": {"match": {field: q}},
                  "size": size}
         if query_type == "qs":
@@ -176,12 +180,68 @@ class SemEHRES(object):
             "includes": include_fields
         }
         query['sort'] = '_doc'
-        print 'scroll query is [%s]' % query
+        logging.debug('scroll query is [%s]' % query)
+
+        if index is None:
+            index = self._index
         return helpers.scan(self._es_instance, query,
-                            size=size, scroll='10m', index=self._index, doc_type=entity, request_timeout=300)
+                            size=size, scroll='10m', index=index, doc_type=entity, request_timeout=300)
 
     def index_med_profile(self, doc_type, data, patient_id):
         self._es_instance.index(index=self._index, doc_type=doc_type, body=data, id=str(patient_id), timeout='30s')
+
+    def index_new_doc(self, index, doc_type, data, doc_id):
+        self._es_instance.index(index=index, doc_type=doc_type, body=data, id=doc_id, timeout='30s')
+
+    def index_patient(self, doc_level_index, patient_id, doc_ann_type,
+                      doc_index, doc_type, doc_pid_field_name, doc_text_field_name,
+                      patient_index, patient_doct_type,
+                      ann_field_name='patient_id'):
+        """
+        index patient data by combining all annotation docs and full texts
+        :param doc_level_index:
+        :param patient_id:
+        :param doc_ann_type:
+        :param doc_index:
+        :param doc_type:
+        :param doc_pid_field_name:
+        :param doc_text_field_name:
+        :param patient_index:
+        :param patient_doct_type:
+        :param ann_field_name:
+        :return:
+        """
+        doc_anns = self.search_by_scroll(index=doc_level_index, q='%s:%s' % (ann_field_name, patient_id),
+                                         doc_type=doc_ann_type,
+                                         collection_func=lambda d, c: c.append(d))
+        docs = self.search_by_scroll(index=doc_index, q='%s:%s' % (doc_pid_field_name, patient_id), doc_type=doc_type,
+                                     collection_func=lambda d, c: c.append(d))
+        data = {
+            "id": str(patient_id)
+        }
+        entity_anns = []
+        articles = []
+        for d in doc_anns['hits']['hits']:
+            if 'annotations' in d['_source']:
+                anns = d['_source']['annotations']
+                for ann in anns:
+                    ann['contexted_concept'] = SemEHRES.get_ctx_concept_id(ann)
+                entity_anns += anns
+
+        for d in docs['hits']['hits']:
+            articles.append({'erpid': d['_id'], 'fulltext': d['_source'][doc_text_field_name]})
+        data['anns'] = entity_anns
+        data['articles'] = articles
+        self.index_new_doc(index=patient_index, doc_type=patient_doct_type, data=data, doc_id=str(patient_id))
+        logging.debug('patient %s indexed with %s anns' % (patient_id, len(entity_anns)))
+
+    @staticmethod
+    def get_ctx_concept_id(ann):
+        s = "%s_%s_%s_%s" % (ann['cui'],
+                             ann['negation'],
+                             ann['experiencer'],
+                             ann['temporality'])
+        return hashlib.md5(s).hexdigest().upper()
 
     @staticmethod
     def get_instance():

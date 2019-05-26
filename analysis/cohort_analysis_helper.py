@@ -32,7 +32,7 @@ def collect_patient_docs(po, es, concepts, skip_terms, container, filter_obj=Non
                      'inst': ann['CUI']}
                 if doc_id not in doc_anns:
                     doc_anns[doc_id] = {'doc_id': doc_id, 'pid': pid,
-                                          "anns": [], 'text': doc}
+                                        "anns": [], 'text': doc}
                 doc_anns[doc_id]['anns'] += [a]
     container.append(doc_anns)
 
@@ -51,11 +51,65 @@ def query_doc_anns(es, concepts, skip_terms, retained_patients_filter=None, filt
     container = []
     utils.multi_thread_tasking(patients, 40, collect_patient_docs,
                                args=[es, concepts, skip_terms, container, filter_obj, doc_filter_function])
-    print 'data collected, merging...'   
-    for d in container:                  
+    print 'data collected, merging...'
+    for d in container:
         doc_anns.update(d)
-    print 'merged dic size %s' % len(doc_anns)                            
+    print 'merged dic size %s' % len(doc_anns)
     return doc_anns
+
+
+def query_collect_patient_docs(po, des, es_search, patiet_id_field, container, filter_obj=None, doc_filter_function=None):
+    """
+    collect docs using filtering functions
+    :param po:
+    :param des:
+    :param es_search:
+    :param patiet_id_field:
+    :param container:
+    :param filter_obj:
+    :param doc_filter_function:
+    :return:
+    """
+    pid = po['_id']
+    docs = des.search_by_scroll(patiet_id_field + ":" + pid
+                                + " AND (" + " ".join(es_search) + ")",
+                                des.doc_type, collection_func=lambda d, c: c.append(d))
+    matched_docs = []
+    for d in docs:
+        doc_id = d['_id']
+        if doc_filter_function is not None:
+            if doc_filter_function(filter_obj, doc_id, pid):
+                continue
+        matched_docs.append(doc_id)
+    container.append({'pid': pid, 'docs': matched_docs})
+
+
+def query_doc_by_search(es, doc_es, es_search, patiet_id_field, retained_patients_filter=None, filter_obj=None,
+                        doc_filter_function=None):
+    """
+    get number of mentions by elasticsearch queries instead of NLP results
+    :param es:
+    :param doc_es:
+    :param es_search:
+    :param patiet_id_field:
+    :param retained_patients_filter:
+    :param filter_obj:
+    :param doc_filter_function:
+    :return:
+    """
+    patients = es.search_by_scroll(" ".join(es_search), es.patient_type, collection_func=lambda d, c: c.append(d))
+    print '%s patients matched' % len(patients)
+    if retained_patients_filter is not None:
+        retained = []
+        for po in patients:
+            if po['_id'] in retained_patients_filter:
+                retained.append(po)
+        patients = retained
+        print 'patients filtered to size %s' % len(patients)
+    container = []
+    utils.multi_thread_tasking(patients, 40, query_collect_patient_docs,
+                               args=[doc_es, es_search, patiet_id_field, container, filter_obj, doc_filter_function])
+    return container
 
 
 def get_all_patient_ids():

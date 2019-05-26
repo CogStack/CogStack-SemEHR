@@ -4,7 +4,7 @@ import utils
 import json
 from os.path import join, isfile
 from os import listdir
-#from cohortanalysis import load_all_docs
+from cohortanalysis import load_all_docs
 from datetime import datetime
 import sys
 import requests
@@ -34,12 +34,22 @@ class JSONSerializerPython2(serializer.JSONSerializer):
 class EntityCentricES(object):
     def __init__(self, es_host):
         self._host = es_host
-        self._es_instance = Elasticsearch([es_host], serializer=JSONSerializerPython2())
+        self._es_instance = Elasticsearch([es_host], serializer=JSONSerializerPython2(), verify_certs=False)
         self._index = 'semehr'
         self._concept_doc_type = 'ctx_concept'
         self._entity_doc_type = 'user'
         self._doc_doc_type = 'doc'
         self._customise_settings = None
+        self._doc_level_ann_idx = 'doc_anns'
+        self._doc_level_doc_type = 'ann_insts'
+
+    @property
+    def doc_level_index(self):
+        return self._doc_level_ann_idx
+
+    @doc_level_index.setter
+    def doc_level_index(self, value):
+        self._doc_level_ann_idx = value
 
     @property
     def index_name(self):
@@ -164,23 +174,23 @@ class EntityCentricES(object):
 
     def index_anns(self, entity_id, doc_id, anns, concept_index=None):
         if anns is not None:
-            # entity_anns = \
-            #     [
-            #         {
-            #             "contexted_concept": EntityCentricES.get_ctx_concept_id(ann),
-            #             "CUI": ann['features']['inst'],
-            #             "appearances": [
-            #                 {
-            #                     "eprid": doc_id,
-            #                     # "date": 0 if doc_date is None else doc_date,
-            #                     "offset_start": int(ann['startNode']['offset']),
-            #                     "offset_end": int(ann['endNode']['offset'])
-            #                 }
-            #             ]
-            #         } for ann in anns
-            #     ]
-            # data = {'patientId': entity_id, 'anns': entity_anns}
-            # self._es_instance.index(index=self.index_name, doc_type=_ann_doc_type, body=data)
+            entity_anns = \
+                [
+                    {
+                        "contexted_concept": EntityCentricES.get_ctx_concept_id(ann),
+                        "CUI": ann['features']['inst'],
+                        "appearances": [
+                            {
+                                "eprid": doc_id,
+                                # "date": 0 if doc_date is None else doc_date,
+                                "offset_start": int(ann['startNode']['offset']),
+                                "offset_end": int(ann['endNode']['offset'])
+                            }
+                        ]
+                    } for ann in anns
+                ]
+            data = {'patientId': entity_id, 'anns': entity_anns}
+            self._es_instance.index(index=self.doc_level_index, doc_type=self._doc_level_doc_type, body=data)
             for ann in anns:
                 self.index_ctx_concept(ann, concept_index=concept_index)
             print '[concepts] %s indexed for pid:%s did: %s' % (len(anns), entity_id, doc_id)
@@ -197,8 +207,8 @@ class EntityCentricES(object):
         :param ft_fulltext_field_id:
         :return:
         """
-        ann_results = self._es_instance.search(index=self.index_name,
-                                               doc_type=_ann_doc_type,
+        ann_results = self._es_instance.search(index=self.doc_level_index,
+                                               doc_type=self._doc_level_doc_type,
                                                body={'query': {'term': {'patientId': entity_id}}, 'size': 10000})
         doc_results = doc_es_inst.search(index=ft_index_name,
                                          doc_type=ft_doc_type,
@@ -284,7 +294,7 @@ class EntityCentricES(object):
         }
         self._es_instance.update(index=self.index_name, doc_type=self.doc_doc_type, id=doc_id, body=data)
 
-    def copy_doc(self, src_index, src_doc_type, src_doc_id, dest_index, dest_doc_type):
+    def copy_doc(self, src_index, src_doc_type, src_doc_id, dest_index, dest_doc_type, overwrite=False):
         """
         copy a document from one index to another.
         :param src_index: source doc index name
@@ -292,10 +302,23 @@ class EntityCentricES(object):
         :param src_doc_id: source doc id
         :param dest_index: destination index name
         :param dest_doc_type: destination doc type
+        :param overwrite: yes if copy anyway no matter dest doc exists
         :return:
         """
+        if not overwrite and self.exist_doc(dest_index, dest_doc_type, src_doc_id):
+            return
         src_doc = self._es_instance.get(src_index, src_doc_id, doc_type=src_doc_type)
         self._es_instance.index(index=dest_index, doc_type=dest_doc_type, body=src_doc['_source'], id=src_doc_id, timeout='30s')
+
+    def exist_doc(self, idx, doc_type, doc_id):
+        """
+        check whether a document exists or not
+        :param idx:
+        :param doc_type:
+        :param doc_id:
+        :return:
+        """
+        return self._es_instance.exists(index=idx, doc_type=doc_type, id=doc_id)
 
     def copy_doc_by_entity(self, src_index, src_doc_type, src_entity_id,
                            entity_id_field_name, dest_index, dest_doc_type):

@@ -1,0 +1,119 @@
+{
+  "Restless legs syndrome": [
+    "Restless legs syndrome 2 [C2931830]",
+    "RESTLESS LEGS SYNDROME, SUSCEPTIBILITY TO, 1 (finding) [C1876177]",
+    "Restless Legs Syndrome [C0035258]"
+  ],
+  "Narcolepsy": [
+    "Narcolepsy-Cataplexy Syndrome [C0751362]",
+    "Narcolepsy [C0027404]",
+    "Irresistible sleepiness, cataplexy and onset of sleep in desynchronized phase [C2931865]"
+  ],
+  "Hashimoto's thyroiditis": [
+    "Autoimmune thyroiditis [C0920350]",
+    "Hashimoto's encephalitis [C0393639]",
+    "Hashimoto Disease [C0677607]",
+    "Thyroiditis [C0040147]"
+  ],
+  "Crohn's": [
+    "Colonic Crohn's disease, active moderate [C0941061]",
+    "Colonic Crohn's disease, quiescent [C0941060]",
+    "Colonic Crohn's disease, active severe [C0941287]",
+    "Crohn Disease [C0010346]",
+    "Pediatric Crohn's disease [C2931133]",
+    "IIeocolitis [C0949272]",
+    "Crohn's disease of large bowel [C0156147]",
+    "Crohn's disease of the ileum [C0267380]"
+  ],
+  "Multiple sclerosis": [
+    "Multiple Sclerosis [C0026769]",
+    "Multiple Sclerosis, Acute Fulminating [C0751324]"
+  ],
+  "Rheumatoid arthritis": [
+    "Rheumatoid arthritis aggravated [C0235762]",
+    "Rheumatoid Arthritis [C0003873]"
+  ],
+  "Juvenile diabetes": [
+    "Diabetes Mellitus, Insulin-Dependent [C0011854]"
+  ],
+  "Ulcerative colitis": [
+    "Ulcerative colitis, quiescent [C0941057]",
+    "Ulcerative Colitis [C0009324]",
+    "Ulcerative colitis, active severe [C0941059]",
+    "Ulcerative colitis, active moderate [C0941058]",
+    "Pediatric ulcerative colitis [C2931173]"
+  ],
+  "Rheumatic fever": [
+    "Rheumatic Fever [C0035436]"
+  ],
+  "Giant cell arteritis": [
+    "Juvenile Temporal Arteritis [C0751547]",
+    "Giant Cell Aortic Arteritis [C0751545]",
+    "Giant Cell Arteritis [C0039483]",
+    "Cranial Arteritis [C1956390]",
+    "Temporal Arteritis [C1956391]",
+    "Juvenile giant cell arteritis [C2931873]"
+  ],
+  "Autoimmune hepatitis": [
+    "Hepatitis, Autoimmune [C0241910]"
+  ],
+  "Vesiculobullous dermatosis": [
+    "Psoriasis [C0033860]"
+  ],
+  "Neuromyelitis optica": [
+    "Neuromyelitis Optica [C0027873]"
+  ],
+  "CIDP": [
+    "Polyradiculoneuropathy, Chronic Inflammatory Demyelinating [C0393819]"
+  ],
+  "SLE": [
+    "Lupus Nephritis [C0024143]",
+    "LE syndrome aggravated [C0542297]",
+    "Neonatal Systemic lupus erythematosus [C0409979]",
+    "Lupus Erythematosus, Systemic [C0024141]",
+    "Systemic lupus erythematosus rash [C0521471]"
+  ],
+  "Polyarteritis nodosa": [
+    "Polyarteritis Nodosa [C0031036]"
+  ],
+  "Graves' disease": [
+    "Graves Disease [C0018213]"
+  ],
+  "Primary biliary cirrhosis": [
+    "Primary biliary cirrhosis [C0008312]"
+  ],
+  "Coeliac": [
+    "Celiac Disease [C0007570]"
+  ],
+  "Myositis": [
+    "Myositis [C0027121]",
+    "Polymyositis, Idiopathic [C0554591]",
+    "Myositis, Proliferative [C0544796]",
+    "Polymyositis Ossificans [C0263984]",
+    "Amyopathic dermatomyositis [C0406645]",
+    "Dermatomyositis [C0011633]",
+    "Fibrodysplasia Ossificans Progressiva [C0016037]",
+    "Myositis, Focal [C0751357]",
+    "Macrophagic myofasciitis [C2931639]",
+    "Adult type dermatomyositis [C0221056]",
+    "Dermatomyositis, Childhood Type [C0263666]",
+    "Antisynthetase syndrome [C2609059]",
+    "Juvenile dermatomyositis [C2931785]",
+    "Idiopathic Inflammatory Myopathies [C0751356]",
+    "Polymyositis [C0085655]"
+  ],
+  "Polymyalgia rheumatica": [
+    "Polymyalgia Rheumatica [C0032533]"
+  ],
+  "Sarcoidosis": [
+    "Sarcoidosis [C0036202]",
+    "Neurosarcoidosis [C0393485]"
+  ],
+  "Peripheral neuropathy": [
+    "Myasthenia Gravis, Ocular [C0751340]",
+    "Myasthenia Gravis [C0026896]"
+  ],
+  "Alopecia areata": [
+    "Alopecia [C0002170]"
+  ]
+}

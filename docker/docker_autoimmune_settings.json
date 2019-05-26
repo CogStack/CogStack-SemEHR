@@ -1,0 +1,84 @@
+{
+  "env": {
+    "java_home": "/usr/lib/jvm/java-8-oracle/",
+    "gcp_home": "/opt/gcp/gcp-2.5-18658",
+    "gate_home": "/opt/gcp/gate",
+    "yodie_path": "/opt/gcp/",
+    "ukb_home": "/opt/gcp/ukb"
+  },
+  "yodie": {
+    "os": "linux",
+    "gcp_run_path": "/opt/gcp/",
+    "input_doc_file_path": "/data/input_docs/",
+    "thread_num": "5",
+    "memory": "4g",
+    "config_xml_path": "/data/yodi.xml",
+    "output_file_path": "/data/output_docs/",
+    "output_destination": "json",
+    "use_file_based": "true",
+    "output_dbconn_setting_file": "..dbconn.json..",
+    "output_table": "..[kconnect_annotations]..",
+    "output_concept_filter_file": "",
+    "input_source": "files",
+    "input_dbconn_setting_file": "..dbconn.json.."
+  },
+  "semehr": {
+    "es_doc_url": "",
+    "full_text_doc_id": "",
+    "full_text_doc_date": "",
+    "full_text_index": "",
+    "full_text_doc_type": "",
+    "full_text_patient_field": "",
+    "full_text_text_field": "",
+    "es_host": "",
+    "index": "",
+    "concept_index": "ctx_concept_index",
+    "concept_doc_type": "ctx_concept",
+    "entity_doc_type": "patient"
+  },
+  "doc_copy":{
+    "thread_num": "5",
+    "es_host": "",
+    "src_index": "",
+    "src_doc_type": "",
+    "dest_index": "",
+    "dest_doc_type": ""
+  },
+  "new_docs":{
+    "sql_query": "select docid from ...",
+    "dbconn_setting_file": "..dbconn.json.."
+  },
+  "action_trans":{
+    "cohort_name": "",
+    "dbconn_setting_file": "",
+    "sql_cohort_doc_template": "",
+    "sql_doc_anns_template": "",
+    "sql_doc_content_template": "",
+    "sql_action_trans_update_template": "",
+    "action_trans_model_file": ""
+  },
+  "doc_ann_analysis": {
+    "ann_docs_path": "/data/output_docs/",
+    "rule_config_path": "./studies/autoimmune.v3/sample_rule_config.json",
+    "full_text_folder": "/data/input_docs",
+    "output_folder": "/data/semehr_results",
+    "study_folder": "./studies/autoimmune.v3",
+    "full_text_fn_ptn": "%s.txt",
+    "output_fn_pattern": "se_ann_%s.json"
+  },
+  "logging":{
+    "file": "/data/semehr.log",
+    "format": "%(module)s(%(lineno)d) %(name)s %(asctime)s %(levelname)s %(message)s"
+  },
+  "job":{
+    "load_docs": "no",
+    "copy_docs": "no",
+    "yodie": "yes",
+    "semehr-concept": "no",
+    "semehr-patients": "no",
+    "action_trans": "no",
+    "doc_analysis": "yes",
+    "job_id": "doc_semehr",
+    "job_status_file_path": "/data/"
+  }
+}

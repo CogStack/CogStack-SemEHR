@@ -1,0 +1,468 @@
+Blindness, Acquired	C0339730
+Blindness	C0456909
+Blindness, Monocular	C0750958
+Cataract	C0086543
+GLAUCOMA 1, OPEN ANGLE, O	C2751294
+Glaucoma	C0017601
+Age related macular degeneration	C0242383
+Blindness, Legal	C0271215
+Asthma	C0004096
+Congenital emphysema	C0265797
+Focal Emphysema	C2350878
+Centriacinar Emphysema	C0221227
+Bronchitis	C0006277
+Pulmonary Emphysema	C0034067
+Chronic Obstructive Airway Disease	C0024117
+Chronic Airflow Obstruction	C1527303
+Bronchitis, Chronic	C0008677
+Panacinar Emphysema	C0264393
+Migraine Variant	C0042331
+Sick Headaches	C0700438
+Abdominal Migraine	C0270858
+Migraine Disorders	C0149931
+Status Migrainosus	C0338489
+Acute Confusional Migraine	C0521664
+Cervical Migraine Syndrome	C0007852
+Hemiplegic migraine, familial type 1	C1832884
+Hemicrania migraine	C0018984
+Tactile Reflex Epilepsy	C0751789
+Reflex Epilepsy, Visual Pattern	C0751788
+Generalized seizures	C0234533
+Early Childhood Epilepsy, Myoclonic	C0393695
+Reflex Epilepsy, Eating-Induced	C0751787
+Decision Making Reflex Epilepsy	C0751786
+Single Seizure	C0751110
+Awakening Epilepsy	C0751111
+EPILEPSY, PYRIDOXINE-DEPENDENT	C1849508
+Reflex Epilepsy, Musicogenic	C0278198
+Myoclonic Epilepsy	C0014550
+Epilepsy	C0014544
+Reflex Epilepsy, Cursive (Running)	C0270819
+Epilepsy telangiectasia	C1856929
+Epilepsy, Reflex	C0270857
+Epilepsy, Myoclonic, Infantile	C0917800
+Benign Infantile Myoclonic Epilepsy	C0751120
+Infantile Severe Myoclonic Epilepsy	C0751122
+Immersion Related Epilepsy	C0393729
+Writing-Induced Reflex Epilepsy	C0751790
+Reflex Epilepsy, Audiogenic	C0751791
+Epilepsy, Cryptogenic	C0086237
+Reflex Epilepsy, Photosensitive	C0393720
+Idiopathic Myoclonic Epilepsy	C0338478
+Symptomatic Myoclonic Epilepsy	C0338479
+Reflex Epilepsy, Reading	C0278193
+Myoclonic Absence Epilepsy	C0393703
+Myoclonic Astatic Epilepsy	C0393702
+CHONDROCALCINOSIS WITH EARLY-ONSET OSTEOARTHRITIS (disorder)	C1833499
+Hypertrophic osteoarthropathy	C0178703
+Osteoarthrosis Deformans	C0086743
+Degenerative polyarthritis	C0029408
+cerebral ischemia or hypoxia	C0679443
+Cerebrovascular accident	C0038454
+Transient Cerebral Ischemia	C0917805
+Posterior Circulation Transient Ischemic Attack	C0472381
+Transient Ischemic Attack, Vertebrobasilar Circulation	C0751020
+Transient Ischemic Attack	C0007787
+Acute Cerebrovascular Accidents	C0751956
+Carotid Circulation Transient Ischemic Attack	C0751019
+Crescendo Transient Ischemic Attacks	C0751021
+Brain Stem Ischemia, Transient	C0751022
+Transient Ischemic Attack, Anterior Circulation	C1527335
+Gastritis	C0017152
+Gastritis, Hypertrophic	C0017155
+Gastritis, Atrophic	C0017154
+Zollinger-Ellison syndrome	C0043515
+Hemorrhagic gastritis	C2010560
+Acute gastritis	C0149518
+Stress ulcer	C2741638
+Peptic ulcer with hemorrhage AND perforation	C0473108
+Duodenal ulcer with hemorrhage AND perforation	C0151968
+Duodenal ulcer with hemorrhage	C0151966
+Gastric ulcer with hemorrhage AND perforation	C0341162
+Curling Ulcer	C0010474
+Duodenal ulcer perforation	C0740401
+Gastritis, Familial Giant Hypertrophic	C2936660
+Bleeding gastric ulcer	C0341164
+Gastric ulcer	C0038358
+Duodenal ulcer due to antral G-cell hyperfunction	C1852009
+Gastric ulcer with perforation	C0341163
+Bleeding ulcer of esophagus	C0236127
+Ulcer of esophagus	C0151970
+Peptic Ulcer	C0030920
+Peptic Ulcer Perforation	C0030925
+Duodenal Ulcer	C0013295
+Alcoholic gastritis	C0156076
+genetic hypertension	C0598428
+environment associated hypertension	C0596515
+Kallikrein hypertension	C1171349
+Hypertensive disease	C0020538
+Endocrine hypertension	C0264641
+Neurogenic hypertension	C0597048
+Renal hypertension	C0020544
+Essential Hypertension	C0085580
+heart overload	C0684338
+Pulmonary arterial hypertension	C2973725
+Heart Failure, Right-Sided	C0235527
+ST elevation myocardial infarction (STEMI) of true posterior wall	C1561920
+Acute non-ST segment elevation myocardial infarction (disorder)	C1276061
+Angina Pectoris	C0002962
+Pulmonary Hypertension	C0020542
+Cor pulmonale	C0034072
+Myocardial Failure	C1959583
+Myocardial Infarction	C0027051
+Heart failure	C0018801
+Congestive heart failure	C0018802
+Left-Sided Heart Failure	C0023212
+Adult Hodgkin Lymphoma	C0220597
+Familial Retinoblastoma	C0751483
+Sporadic Retinoblastoma	C0751484
+Neuroma	C0027858
+Carcinoma of lung	C0684249
+liposarcoma	C0023827
+Adenomatous Polyps	C0206677
+Adenocarcinoid tumor	C0334302
+genital cancer	C0814141
+blood or lymphatic cancer	C0814142
+endocrine system cancer	C0814144
+Ewings sarcoma	C0553580
+Papillary Meningioma	C3163622
+Intraorbital Meningioma	C1334261
+Hemangioma	C0018916
+Epithelioma	C1368683
+Myxosarcoma	C0027155
+Colorectal Neoplasms	C0009404
+Neoplasms	C0027651
+TYLOSIS WITH ESOPHAGEAL CANCER	C1835664
+Neoplasms, Connective Tissue	C0027656
+Embryonal Neoplasm	C0027654
+Myelocytic leukemia-like syndrome, familial, chronic	C1838670
+Hodgkin's-like	C0235598
+Malignant neoplasm of stomach	C0024623
+Pancreatic carcinoma, familial	C2931038
+Carcinoma in situ of larynx	C0154069
+Brain Neoplasms	C0006118
+Chronic Lymphocytic Leukemia	C0023434
+Angiosarcoma of the breast	C1332614
+Childhood Medulloblastoma	C0278510
+Hemangioma acquired	C0856897
+Chondrogenic Neoplasm	C0476147
+Fibrosarcoma	C0016057
+drug carcinogenesis	C0596466
+nutrition related neoplasm/cancer	C0597120
+Melanotic medulloblastoma	C1275668
+Tongue Neoplasms	C0040411
+Teratoma, Malignant	C0334520
+Viral Carcinogenesis	C0597645
+viral leukemia	C0597646
+viral leukemogenesis	C0597647
+Malignant neoplasm of tongue	C0153349
+Leukemia, Radiation-Induced	C0023488
+Monocytic leukemia	C0598894
+Intracranial Meningioma	C0349604
+Leukemia, Plasma Cell	C0023484
+Maxillary Sinus Neoplasms	C0024958
+Malignant neoplasm of pharynx	C0153405
+Radiation-Induced Cancer	C0751366
+Central Nervous System Neoplasms	C0085136
+Neoplasm of cardiovascular system	C0497243
+Malignant neoplasm of liver	C0345904
+Intrahepatic Cholangiocarcinoma	C0345905
+Basal cell carcinoma, infundibulocystic	C1304297
+leiomyosarcoma	C0023269
+Fibroid Tumor	C0023267
+Neoplasm of lymph node	C0596869
+Mesenchymoma	C0025464
+Benign neoplasm of brain, unspecified	C0496899
+Colorectal Carcinoma	C0009402
+Benign Teratoma	C1879828
+Desmoplastic Medulloblastoma	C0751291
+Lymphangioma, Cystic	C0206620
+Hepatoblastoma	C0206624
+Neuroblastoma	C0027819
+Mature Teratoma	C1368910
+Xanthomatous Meningioma	C0457190
+Oropharyngeal Carcinoma	C2349952
+Basal cell carcinoma, multiple	C1854245
+Pancreatic adenoma	C1142432
+Renal carcinoma	C1378703
+Lymphoma, Intermediate-Grade	C0079741
+Benign neoplasm of female breast	C0235922
+High Grade Lymphoma (neoplasm)	C0079740
+Multiple Myeloma	C0026764
+Pineal Teratoma	C1848902
+Neoplasm of rectosigmoid junction	C0345873
+Low Grade Lymphoma (neoplasm)	C0079747
+Adenocarcinoma of lung (disorder)	C0152013
+Esophageal carcinoma	C0152018
+Benign digestive system neoplasms	C0497538
+Orbital lymphoma	C0271333
+Hairy Cell Leukemia	C0023443
+Acute Erythroblastic Leukemia	C0023440
+Colonic Neoplasms	C0009375
+Lymphoid leukemia	C0023448
+Acute lymphocytic leukemia	C0023449
+Liver neoplasms	C0023903
+Carcinogenesis	C0596263
+Adenocarcinoma	C0001418
+Clear Cell Meningioma	C0431121
+Myxopapillary ependymoma	C0205769
+Pituitary carcinoma	C0346300
+Neoplasm of female breast	C0235652
+Malignant neoplasm of female breast	C0235653
+Anaplastic astrocytoma	C0334579
+Papillary ependymoma	C0334578
+Secondary malignant neoplasm of bone	C0153690
+Cancer of Maxillary Sinus	C2350638
+Malignant neoplasm of thymus	C0751552
+Kaposiform Hemangioendothelioma	C1367420
+Malignant neoplasm of testis	C0153594
+Adrenal Cortical Adenoma	C0206667
+Nasopharyngeal carcinoma	C2931822
+Carcinoma, Basosquamous	C0007118
+Rectal Carcinoma	C0007113
+respiratory system cancer	C0814136
+head or neck cancer	C0814137
+Basal cell carcinoma	C0007117
+Malignant neoplasm of skin	C0007114
+Liver carcinoma	C2239176
+Nerve Sheath Tumors	C0206727
+hormone related neoplasm/cancer	C0920776
+AIDS related neoplasm/cancer	C0920774
+Intraventricular Meningioma	C1334271
+Pancreatic carcinoma	C0235974
+Cancer of Digestive System	C0751075
+African Burkitt's lymphoma	C0343640
+avian leukosis/sarcoma	C0178493
+Carcinoma of Male Breast	C0238033
+Uveal melanoma	C0220633
+Malignant neoplasm of salivary gland	C0220636
+Neoplasms, Multiple Primary	C0027663
+Retinoblastoma	C0035335
+Sinonasal undifferentiated carcinoma	C1710096
+Lymphocyte Rich Classical Hodgkin Lymphoma	C1266194
+Uterine carcinoma	C0848454
+Intestinal Cancer	C0346627
+Chronic leukemia (category)	C1279296
+Rhabdomyosarcoma	C0035412
+chemical related neoplasm/cancer	C0872026
+Thymic epithelial tumor	C1266101
+Malignant Teratocarcinosarcoma	C2930986
+virus related neoplasm/cancer	C0597656
+Small cell carcinoma of lung	C0149925
+Pleomorphic Lipoma	C0205823
+Adult T-Cell Lymphoma/Leukemia	C0023493
+Carcinosarcoma	C0007140
+Burkitt Lymphoma	C0006413
+Familial Burkitt's lymphoma	C2931863
+nervous system carcinoma	C0597035
+Endometrial adenocarcinoma	C1153706
+Carcinoma	C0007097
+Fibrillary Astrocytoma	C0334582
+Pilocytic Astrocytoma	C0334583
+Protoplasmic astrocytoma	C0334580
+Gemistocytic astrocytoma	C0334581
+Angioblastic Meningioma	C1527197
+Glioma	C0017638
+Neoplasm Metastasis	C0027627
+Histiocytoma	C1509147
+environment related neoplasm/cancer	C0178619
+Malignant neoplasm of esophagus	C0546837
+Malignant epithelioma	C0553707
+Diffuse Mixed-Cell Lymphoma	C0079757
+Sarcoma	C1261473
+Grade I Astrocytoma	C1704230
+Malignant Peripheral Nerve Sheath Tumor	C0751690
+Pseudolymphoma	C0221269
+Rectal Neoplasms	C0034885
+Hodgkin lymphoma, lymphocyte depletion	C0152267
+Mixed Cellularity Hodgkin Lymphoma	C0152266
+Glioblastoma Multiforme	C1621958
+Malignant Neoplasms	C0006826
+Cancer of Nasopharynx	C0238301
+Intestinal Neoplasms	C0021841
+Neoplasm malignant aggravated	C0236022
+Anaplastic Ependymoma	C0280788
+Diffuse Astrocytoma	C0280785
+Hereditary Diffuse Gastric Cancer	C1708349
+Juvenile Pilocytic Astrocytoma	C0280783
+Ependymoma	C0014474
+Uterine Cancer	C0153567
+Skin carcinoma	C0699893
+Malignant tumor of colon	C0007102
+melanoma	C0025202
+Pharyngeal Neoplasms	C0031347
+Follicular atrophoderma and basal cell epitheliomata	C0346104
+Chemical Carcinogenesis	C0596321
+Nephroblastoma	C0027708
+Cervical polyp	C0007855
+Pheochromocytoma	C0031511
+Pigmented Basal Cell Carcinoma	C1368275
+Malignant neoplasm of larynx	C0007107
+Cerebral sarcoma	C1861714
+Malignant neoplasm of endometrium	C0007103
+Colorectal Cancer	C1527249
+Gastrointestinal Neoplasms	C0017185
+Malignant neoplasm of brain	C0153633
+Adenosarcoma of the uterus	C2103110
+Malignant Glioma	C0555198
+Aggravated acute myeloid leukemia	C0549446
+Oropharyngeal Neoplasms	C0029295
+Malignant Vaginal Neoplasm	C0042237
+Anaplastic small cell lymphoma	C1335983
+Peripheral Nerve Sheath Neoplasm	C0751689
+leukemia	C0023418
+Metastatic malignant neoplasm to brain	C0220650
+Malignant Meningioma	C0259785
+Choriocarcinoma	C0008497
+Bowen's Disease	C0006079
+Salivary Gland Neoplasms	C0036095
+Buccal cavity cancer	C0549353
+Stomach Carcinoma	C0699791
+Colon Carcinoma	C0699790
+drug related neoplasm/cancer	C0872034
+Acute monocytic leukemia	C0023465
+Medullomyoblastoma	C0205833
+Leukemia, Myelocytic, Acute	C0023467
+Mycosis Fungoides	C0026948
+Squamous cell carcinoma	C0007137
+Non-Small Cell Lung Carcinoma	C0007131
+Carcinoma, Transitional Cell	C0007138
+Bile duct carcinoma	C0740277
+Blast cell proliferation	C0549414
+Hemangiopericytic Meningioma	C0334610
+Transitional Meningioma	C0334611
+Malignant ovarian cyst	C0235770
+Tufted angioma of skin	C0346073
+Chorioangioma	C0677608
+Pituitary Neoplasms	C0032019
+Genital neoplasm malignant male	C0549404
+Acute Myeloid Leukemia, M1	C0026998
+Malignant tumor of nasal sinuses	C0153474
+Malignant Childhood Neoplasm	C0278704
+Lymphoma, Mixed-Cell	C0024304
+Lymphoma, Non-Hodgkin	C0024305
+Lymphoma, Undifferentiated	C0024306
+Neoplasm, Residual	C0242596
+Reticulosarcoma	C0024302
+Secretory breast carcinoma	C0334371
+Teratoma	C0039538
+Adult Medulloblastoma	C0278876
+Hemangiosarcoma	C0018923
+Medulloblastoma	C0025149
+Lipomatosis, Multiple	C3489413
+Cerebral Astrocytoma	C0750935
+Retroperitoneal liposarcoma	C2063389
+Intracranial Astrocytoma	C0750936
+Thyroid carcinoma	C0549473
+Astrocytoma	C0004114
+Acute Myeloid Leukemia (AML-M2)	C1879321
+Malignant mesenchymal tumor	C0334492
+Bone Sarcoma	C1704327
+Carcinogenesis, Radiation	C0920372
+Malignant neoplasm musculoskeletal	C0036210
+B-Cell Lymphomas	C0079731
+Follicular adenoma	C0205647
+Carcinoma, Granular Cell	C0205644
+Adenocarcinoma, Tubular	C0205645
+Adenocarcinoma, Oxyphilic	C0205642
+Breast Neoplasms, Male	C0242788
+Malignant neoplasm of male breast	C0242787
+infection related neoplasm/cancer	C0596772
+Carcinoma in situ of uterine cervix	C0851140
+Genital neoplasm malignant female	C0549368
+Hemangioma, Intramuscular	C0205789
+Histiocytoid hemangioma	C0205788
+Carcinoma of bladder	C0699885
+Hodgkin Disease	C0019829
+Friend leukemia	C0678128
+Pleural Mesothelioma	C1377913
+Cancer of Urinary Tract	C0751571
+Squamous cell carcinoma of the head and neck	C1168401
+Mouth Neoplasms	C0026640
+lymphangiosarcoma	C0024224
+Malignant neoplasm of gastrointestinal tract	C0685938
+Malignant neoplasm of thyroid	C0007115
+Neurofibromatosis aggravated	C0235814
+Familial primary gastric lymphoma	C1850900
+Thyroid Gland Follicular Adenoma	C0151468
+Neonatal leukaemia	C0235813
+Primary malignant neoplasm of brain	C0750979
+Brain Tumor, Primary	C0750974
+Recurrent Brain Neoplasm	C0750977
+Esophageal Neoplasms	C0014859
+Pheochromocytoma, Extra-Adrenal	C1257877
+Ovarian Carcinoma	C0029925
+Secondary malignant neoplasm of liver	C0494165
+Nervous System Neoplasms	C0027766
+Angioma hereditary neurocutaneous	C1275084
+Lymphoma	C0024299
+Wilms tumor and radial bilateral aplasia	C1832099
+Hemangioblastic Meningioma	C0334609
+AIDS with Kaposi's sarcoma	C0276535
+Rhabdomyosarcoma 1	C1849385
+Recurrent malignant colonic tumor	C0941054
+Perineurioma	C0751691
+Malignant neoplasm of pancreas	C0346647
+Stomach Neoplasms	C0038356
+Osteosarcoma	C0029463
+Childhood Cerebral Astrocytoma	C0338070
+Malignant neoplasm of breast	C0006142
+Lymphoma, Small Noncleaved-Cell	C0079770
+mixed gliomas	C0259783
+Primary malignant melanoma of the cervix	C2931191
+Erosive adenomatosis of nipple	C1868647
+Malignant neoplasm of mouth	C0153381
+Fibrolamellar Hepatocellular Carcinoma	C0334287
+Seminoma	C0036631
+Basal Cell Carcinoma, Nonsyndromic	C2751545
+Cervix carcinoma	C0302592
+Kaposi Sarcoma	C0036220
+Central Nervous System Neoplasms, Primary	C0751620
+Myeloid Leukemia, Chronic	C0023473
+Myeloid Leukemia	C0023470
+Carcinomatosis	C0205699
+Carcinoma, Spindle-Cell	C0205697
+Carcinoma, Ehrlich Tumor	C0007125
+Bronchogenic Carcinoma	C0007121
+Melanoma astrocytoma syndrome	C1835042
+Acute leukemia	C0085669
+Nasopharyngeal Neoplasms	C0027439
+Anastomotic malignant colonic tumor	C0941056
+Angiomatous Meningioma	C0334608
+Wolffian tumor	C1520159
+Post-operative malignant colonic tumor	C0941055
+Primary malignant colonic tumor	C0941053
+Gallbladder Carcinoma	C0235782
+Uterine Neoplasms	C0042138
+Uterine Fibroids	C0042133
+deaf mute	C0742977
+Hearing Loss, Partial	C0018772
+Tinnitus	C0040264
+Diabetes Mellitus, Insulin-Dependent	C0011854
+Diabetic Amyotrophy	C0271685
+Diabetic Autonomic Neuropathy	C0271686
+Diabetic Asymmetric Polyneuropathy	C0393835
+Diabetic Neuralgia	C0751074
+Gestational Diabetes	C0085207
+Diabetic Cardiomyopathies	C0853897
+Microangiopathy, Diabetic	C0025945
+Hyperglycemia	C0020456
+Asymmetric Diabetic Proximal Motor Neuropathy	C0271674
+Diabetic Nephropathy	C0011881
+virus related diabetes mellitus	C0597655
+Symmetric Diabetic Proximal Motor Neuropathy	C0271673
+Diabetic Neuropathies	C0011882
+Nodular glomerulosclerosis	C0017667
+Diabetic Ketoacidosis	C0011880
+Diabetic Retinopathy	C0011884
+Diabetes Mellitus, Non-Insulin-Dependent	C0011860
+Diabetes mellitus reactivated	C0235399
+Diabetes mellitus exacerbated	C0235398
+diabetic ophthalmopathy	C0920358
+Diabetes Mellitus	C0011849
+Diabetic Mononeuropathy	C0271678
+Prediabetes syndrome	C0362046
+Drug-induced diabetes mellitus	C0271646
+Cataract due to diabetes mellitus	C0011876
+Diabetic Polyneuropathies	C0271680
+Diabetic Angiopathies	C0011875

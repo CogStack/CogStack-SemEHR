@@ -1,0 +1,5 @@
+[
+  {"offset": 100, "case_sensitive": true, "regs": [
+    "^[A-Z]{1,5}$"
+  ]}
+]

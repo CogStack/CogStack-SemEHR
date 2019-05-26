@@ -1,6 +1,6 @@
 import spacy
 import en_core_web_sm as enmodel
-import sqldbutils as dutil
+# import sqldbutils as dutil
 import utils
 from os.path import join, exists, isfile
 from os import listdir
@@ -10,6 +10,8 @@ import joblib as jl
 import json
 import numpy as np
 from sklearn import cluster
+from sklearn.metrics.pairwise import euclidean_distances
+import scipy
 
 
 def load_mode(model_name):
@@ -229,7 +231,8 @@ def test_load(models_path):
                 print (token.text, token.pos_)
 
 
-def word2vect_clustering(nlp, docs, cluster_prefix='cls', eps=3.0, min_samples=2):
+def word2vect_clustering(nlp, docs, metric='euclidean',
+                         cluster_prefix='cls', eps=3.0, min_samples=2):
     """
     word2doc dbscan clustering to merge short texts, e.g., concrete verb phrases
     :param nlp:
@@ -246,7 +249,8 @@ def word2vect_clustering(nlp, docs, cluster_prefix='cls', eps=3.0, min_samples=2
         else:
             X = np.concatenate((X, np.array([nlp(d).vector.tolist()])), axis=0)
 
-    labels = cluster.DBSCAN(eps=eps, min_samples=min_samples).fit_predict(X)
+    model = cluster.DBSCAN(eps=eps, min_samples=min_samples, metric=metric)
+    labels = model.fit_predict(X)
     print labels
     cls2docs = {}
     for idx in xrange(len(labels)):
@@ -262,6 +266,27 @@ def word2vect_clustering(nlp, docs, cluster_prefix='cls', eps=3.0, min_samples=2
             arr.append(docs[idx])
     print cls2docs
     return cls2docs
+
+
+def dbscan_predict(dbscan_model, X_new, metric=euclidean_distances):
+    """
+    dbscan model for assigning new data items to learnt clusters
+    """
+    # Result is noise by default
+    y_new = np.ones(shape=len(X_new), dtype=int)*-1
+    print dbscan_model.components_.shape
+
+    # Iterate all input samples for a label
+    for j, x_new in enumerate(X_new):
+        # Find a core sample closer than EPS
+        for i, x_core in enumerate(dbscan_model.components_):
+            s = metric(x_new.reshape(1, -1), x_core.reshape(1, -1))
+            if s < dbscan_model.eps:
+                print s, dbscan_model.eps
+                # Assign label of x_core to x_new
+                y_new[j] = dbscan_model.labels_[dbscan_model.core_sample_indices_[i]]
+                break
+    return y_new
 
 
 def predict_exp(corpus_trans_file, ann_file, cache_file, output_file):
@@ -368,42 +393,42 @@ def produce_weka_output(predict_output_file, orig_features_file,
 
 if __name__ == "__main__":
     # word2vec_testing(u'for Tested', u'for Diagnosed')
-    # word2vect_clustering(
-    #     spacy.load('en_core_web_lg'),
-    #     [
-    #         u'for is',
-    #         u'from suffers',
-    #         u'for was',
-    #         u'for start',
-    #         u'with infected',
-    #         u'about spoken',
-    #         u'about informed',
-    #         u'about talking',
-    #         u'for Tested',
-    #         u'for treated',
-    #         u'for diagnosed',
-    #         u'for Diagnosed',
-    #     ])
+    word2vect_clustering(
+        spacy.load('en'),
+        [
+            u'for is',
+            u'from suffers',
+            u'for was',
+            u'for start',
+            u'with infected',
+            u'about spoken',
+            u'about informed',
+            u'about talking',
+            u'for Tested',
+            u'for treated',
+            u'for diagnosed',
+            u'for Diagnosed',
+        ], eps=9)
     # sentence_parsing(u'Routine blood investigation and virology for Hep C done')
-    reload(sys)
-    sys.setdefaultencoding('cp1252')
-    working_folder = "/Users/honghan.wu/Documents/working/KCL/publications/actionable_trans"
-    # 1. download texts from EHR
-    # download_docs([],
-    #               'select cn_doc_id, textcontent from SQLCRIS_User.Kconnect.working_docs where cn_doc_id in ({ids})',
-    #               join(working_folder, "dbcnn.json"),
-    #               join(working_folder, 'docs') )
-    # 2. process doc
-    # nlp = load_mode('en')
-    # corpus_analyzer = process_labelled_docs(join(working_folder, 'labelled.txt'),
-    #                                         join(working_folder, 'cris_hepc_model_test.pickle'),
-    #                                         join(working_folder, 'cris_hepc_mini_comp_dict.pickle'))
-    # predict annotation accuracy
-    # predict_exp(join(working_folder, 'cris_corpus_trans.json'),
-    #             join(working_folder, 'validate_unknown_200hepc.txt'),
-    #             join(working_folder, 'validation_cache.pickle'),
-    #             join(working_folder, 'predicted_200hepc_output.json'))
-    produce_weka_output(join(working_folder, 'predicted_200hepc_output.json'),
-                        join(working_folder, 'orig_gt_labelled.txt'),
-                        join(working_folder, 'merged_hepc_features.json'),
-                        join(working_folder, 'merged_hepc.9.arff'), threshold=.9)
+    # reload(sys)
+    # sys.setdefaultencoding('cp1252')
+    # working_folder = "/Users/honghan.wu/Documents/working/KCL/publications/actionable_trans"
+    # # 1. download texts from EHR
+    # # download_docs([],
+    # #               'select cn_doc_id, textcontent from SQLCRIS_User.Kconnect.working_docs where cn_doc_id in ({ids})',
+    # #               join(working_folder, "dbcnn.json"),
+    # #               join(working_folder, 'docs') )
+    # # 2. process doc
+    # # nlp = load_mode('en')
+    # # corpus_analyzer = process_labelled_docs(join(working_folder, 'labelled.txt'),
+    # #                                         join(working_folder, 'cris_hepc_model_test.pickle'),
+    # #                                         join(working_folder, 'cris_hepc_mini_comp_dict.pickle'))
+    # # predict annotation accuracy
+    # # predict_exp(join(working_folder, 'cris_corpus_trans.json'),
+    # #             join(working_folder, 'validate_unknown_200hepc.txt'),
+    # #             join(working_folder, 'validation_cache.pickle'),
+    # #             join(working_folder, 'predicted_200hepc_output.json'))
+    # produce_weka_output(join(working_folder, 'predicted_200hepc_output.json'),
+    #                     join(working_folder, 'orig_gt_labelled.txt'),
+    #                     join(working_folder, 'merged_hepc_features.json'),
+    #                     join(working_folder, 'merged_hepc.9.arff'), threshold=.9)

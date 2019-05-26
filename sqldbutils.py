@@ -1,6 +1,7 @@
 import utils as imutil
 import pyodbc
 import MySQLdb
+import logging
 
 
 #SQL db setting
@@ -17,14 +18,23 @@ def get_db_connection():
     return {'cnxn': cnxn, 'cursor': cursor}
 
 
-def get_db_connection_by_setting(setting_file):
-    settings = imutil.load_json_data(setting_file)
+def get_db_connection_by_setting(setting_file=None, setting_obj=None):
+    if setting_file is not None:
+        settings = imutil.load_json_data(setting_file)
+    else:
+        settings = setting_obj
     if 'db_type' in settings and settings['db_type'] == 'mysql_socket':
         return get_mysqldb_connection(settings['server'],
                                       settings['user'],
                                       settings['password'],
                                       settings['database'],
                                       settings['mysql_sock_file'])
+    elif 'db_type' in settings and settings['db_type'] == 'mysql':
+        return get_mysqldb_host_connection(settings['server'],
+                                      settings['user'],
+                                      settings['password'],
+                                      settings['database'])
+
     if 'trusted_connection' in settings:
         con_string = 'driver=%s;server=%s;trusted_connection=yes;DATABASE=%s;' % (settings['driver'],
                                                                          settings['server'],
@@ -56,6 +66,18 @@ def get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock='/var/lib/my
     return {'cnxn': db, 'cursor': cursor}
 
 
+def get_mysqldb_host_connection(my_host, my_user, my_pwd, my_db):
+    db = MySQLdb.connect(host=my_host,  # your host, usually localhost
+                         user=my_user,  # your username
+                         passwd=my_pwd, # your password
+                         db=my_db,      # name of the data base
+                         use_unicode=True,
+                         charset='utf8')
+    db.set_character_set('utf8')
+    cursor = db.cursor()
+    return {'cnxn': db, 'cursor': cursor}
+
+
 def release_db_connection(cnn_obj):
     cnn_obj['cnxn'].close()
     #cnn_obj['cursor'].close()
@@ -67,13 +89,21 @@ def query_data(query, container, dbconn=None):
         conn_dic = get_db_connection()
     else:
         conn_dic = dbconn
+    try:
+        conn_dic['cursor'].execute(query)
+        if container is not None:
+            rows = conn_dic['cursor'].fetchall()
+            columns = [column[0] for column in conn_dic['cursor'].description]
+            for row in rows:
+                container.append(dict(zip(columns, row)))
+        else:
+            conn_dic['cnxn'].commit()
+    except Exception, e:
+        logging.error('error [%s] doing [%s]' % (e, query))
+    finally:
+        if dbconn is None:
+            release_db_connection(conn_dic)
 
-    conn_dic['cursor'].execute(query)
-    if container is not None:
-        rows = conn_dic['cursor'].fetchall()
-        columns = [column[0] for column in conn_dic['cursor'].description]
-        for row in rows:
-            container.append(dict(zip(columns, row)))
-    else:
-        conn_dic['cnxn'].commit()
-    release_db_connection(conn_dic)
+
+def escape_string(s):
+    return s.replace("'", "''")

@@ -10,15 +10,16 @@
     <script src="js/libs/d3.v4.min.js"></script>
     <script src="js/libs/elasticsearch.jquery.js"></script>
     <script src="js/libs/jquery.json-2.3.js"></script>
-    <script src="js/es.search.js?v=1"></script>
+    <script src="js/es.search.js?v=1.2"></script>
     <script src="js/semehr.analytics.js"></script>
     <script src="js/semehr.entities.js"></script>
-    <script src="js/semehr.render.js"></script>
+    <script src="js/semehr.render.js?v=1.1"></script>
     <script src="js/semehr.medprofile.js"></script>
     <script src="js/api.js"></script>
     <script src="js/libs/sweetalert2.min.js"></script>
     <script src="js/hpo-umls.js"></script>
     <script src="js/100k/diseae_model.js"></script>
+    <script src="js/100k/pheno.search.js"></script>
     <script src="js/main.js?v=0.2"></script>
 </head>
 <link type="text/css" href="css/semehr.css" rel="stylesheet"/>
@@ -100,57 +101,71 @@
                 </span>
             </div>
         </div>
-    </div>
+        <div id="patientDataContainer">
+            <div class="tabHeaders">
+                <a class="tabView tabSelected" >PHENOTYPES</a>
+                <a class="tabView" >DOCUMENTS</a>
+            </div>
+            <div id="phenotypeView" class="viewContent">
+
+                    <div id="patientConceptContainer" style="display:block;">
+                        <div class="clsHPOTitle">Disease related HPO terms</div>
+                        <div id="diseasePhenotypeDiv" class="hpoDivs"></div>
+                        <div class="clsHPOTitle">Other HPO terms</div>
+                        <div id="patientConceptMapDiv" class="hpoDivs"></div>
+                    </div>
+
+                    <div id="sumTermDiv"></div>
+                    <div id="entityPaginationDiv">
+                        <span class="clsEntityPrev">&lt; prev</span> <span class="clsEntityPageInfo">1/1</span> <span class="clsEntityNext">next &gt;</span>
+                    </div>
+
+                    <div id="entitySummHeader">
+                        <div class="sumRow headerRow">
+                            <div class="sumCol">Patient ID</div>
+                            <div class="sumCol">Total Mentions</div>
+                            <div class="sumCol">Positive Mentions</div>
+                            <div class="sumCol">History/hypothetical Mentions</div>
+                            <div class="sumCol">Negative Mentions</div>
+                            <div class="sumCol">Other Experiencers</div>
+                        </div>        
+                    </div>
+                    <div style="display:block;overflow:hidden;width:100%;display:none" id="dataRowDiv">
+                        <div id="entitySumm">
+                            <div class="sumRow headerRow" style="visibility: hidden;">
+                                <div class="sumCol">Patient ID</div>
+                                <div class="sumCol">Total Mentions</div>
+                                <div class="sumCol">Positive Mentions</div>
+                                <div class="sumCol">History/hypothetical Mentions</div>
+                                <div class="sumCol">Negative Mentions</div>
+                                <div class="sumCol">Other Experiencers</div>
+                            </div>       
+                        </div>
+                    </div>
+                    <div id="feedbackDiv">
+                        <label for="feedBackText" id="feedbackLabel">Feedback</label><br/>
+                        <textarea rows="6" id="feedBackText"></textarea><br/>
+                        <button id="btnSaveFeedback">save</button>
+                    </div>
+                    <div id="pageCtrl">
+                        <span class="clsPrev">&lt; prev</span> <span class="clsPageInfo">1/1</span> <span class="clsNext">next &gt;</span>
+                    </div>
+                    <div id="results"></div>
+                </div><!-- end of phenotypeView -->
+
+            <div id="patientDocumentView" class="viewContent">
+                <div id="docListContainer"></div>
+            </div>
 
 
-    <div id="patientConceptContainer" style="display:block;">
-        <div class="clsHPOTitle">Disease related HPO terms</div>
-        <div id="diseasePhenotypeDiv" class="hpoDivs"></div>
-        <div class="clsHPOTitle">Other HPO terms</div>
-        <div id="patientConceptMapDiv" class="hpoDivs"></div>
+        </div> <!--end of patientDataContainer-->
     </div>
 
-    <div id="sumTermDiv"></div>
-    <div id="entityPaginationDiv">
-        <span class="clsEntityPrev">&lt; prev</span> <span class="clsEntityPageInfo">1/1</span> <span class="clsEntityNext">next &gt;</span>
-    </div>
-
-    <div id="entitySummHeader">
-        <div class="sumRow headerRow">
-            <div class="sumCol">Patient ID</div>
-            <div class="sumCol">Total Mentions</div>
-            <div class="sumCol">Positive Mentions</div>
-            <div class="sumCol">History/hypothetical Mentions</div>
-            <div class="sumCol">Negative Mentions</div>
-            <div class="sumCol">Other Experiencers</div>
-        </div>        
-    </div>
-    <div style="display:block;overflow:hidden;width:100%;display:none" id="dataRowDiv">
-        <div id="entitySumm">
-            <div class="sumRow headerRow" style="visibility: hidden;">
-                <div class="sumCol">Patient ID</div>
-                <div class="sumCol">Total Mentions</div>
-                <div class="sumCol">Positive Mentions</div>
-                <div class="sumCol">History/hypothetical Mentions</div>
-                <div class="sumCol">Negative Mentions</div>
-                <div class="sumCol">Other Experiencers</div>
-            </div>       
-        </div>
-    </div>
-    <div id="feedbackDiv">
-        <label for="feedBackText" id="feedbackLabel">Feedback</label><br/>
-        <textarea rows="6" id="feedBackText"></textarea><br/>
-        <button id="btnSaveFeedback">save</button>
-    </div>
-    <div id="pageCtrl">
-        <span class="clsPrev">&lt; prev</span> <span class="clsPageInfo">1/1</span> <span class="clsNext">next &gt;</span>
-    </div>
-    <div id="results"></div>
-</div>
 <div id="chartDivOverlay" class="overlay">
     <div id="chartDiv" class="popup">
     </div>
 </div>
+
 <div id="sumRowTemplate" style="display:none">
     <div class="sumRow dataRow">
         <div class="sumCol"><span class="patientId">-</span></div>
@@ -160,6 +175,9 @@
         <div class="sumCol"><span class="negM sum">-</span></div>
         <div class="sumCol"><span class="otherM sum">-</span></div>
     </div>
+</div>
+<div id="pageCtrlTemplate" style="display:none">
+    <span class="clsPrev">&lt; prev</span> <span class="clsPageInfo">1/1</span> <span class="clsNext">next &gt;</span>
 </div>
 </body>
 </html>
