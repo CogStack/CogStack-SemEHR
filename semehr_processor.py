@@ -510,6 +510,36 @@ def patient_level_indexing(settings, pids):
     #                      ann_field_name=ann_field_name)
 
 
+def load_document_to_es(settings):
+    """
+    load document to elastic search
+    :param settings:
+    :return:
+    """
+    doc_folder = settings.get_attr(['epr_index', 'doc_folder'])
+    d2p_tsv = settings.get_attr(['epr_index', 'doc2patient_tsv'])
+    es = SemEHRES.get_instance_by_setting(settings.get_attr(['epr_index', 'es_host']),
+                                          settings.get_attr(['epr_index', 'es_index_name']),
+                                          settings.get_attr(['epr_index', 'doc_type']),
+                                          '',
+                                          '')
+    tsv_lines = utils.read_text_file(d2p_tsv)
+    d2p = {}
+    for l in tsv_lines:
+        arr = l.split('\t')
+        if len(arr) > 1:
+            d2p[arr[0]] = arr[1]
+    for f in [f for f in listdir(doc_folder) if isfile(join(doc_folder, f))]:
+        if f in d2p:
+            p = d2p[f]
+            t = utils.read_text_file(join(doc_folder, f))
+            es.index_new_doc(index=settings.get_attr(['epr_index', 'es_index_name']),
+                             doc_type=settings.get_attr(['epr_index', 'doc_type']),
+                             data={settings.get_attr(['epr_index', 'text_field']): t,
+                                   settings.get_attr(['epr_index', 'patient_id_field']):p})
+
+
+
 def process_semehr(config_file):
     """
     a pipeline to process all SemEHR related processes:
@@ -643,6 +673,12 @@ def process_semehr(config_file):
         if ps.get_attr(['job', 'action_trans']) == 'yes':
             logging.info('[SemEHR-step]doing transparency...')
             actionable_transparise(settings=ps)
+
+        # 3.5 load documents to es
+        if ps.get_attr(['job', 'epr_index']) == 'yes':
+            logging.info('[SemEHR-step]load documents to elasticsearch...')
+            load_document_to_es(settings=ps)
+            logging.info('[SemEHR-step-end] epr_index step done')
 
         # 4. do SemEHR document annotation analysis (post processing)
         if ps.get_attr(['job', 'doc_analysis']) == 'yes':
