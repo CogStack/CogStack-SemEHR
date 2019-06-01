@@ -536,7 +536,8 @@ def load_document_to_es(settings):
             es.index_new_doc(index=settings.get_attr(['epr_index', 'es_index_name']),
                              doc_type=settings.get_attr(['epr_index', 'doc_type']),
                              data={settings.get_attr(['epr_index', 'text_field']): t,
-                                   settings.get_attr(['epr_index', 'patient_id_field']):p},
+                                   settings.get_attr(['epr_index', 'patient_id_field']):p,
+                                   "id": f},
                              doc_id=f)
 
 
