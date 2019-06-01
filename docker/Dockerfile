@@ -86,7 +86,7 @@ RUN apt-get -y install unixodbc unixodbc-dev libmysqlclient-dev freetds-dev tdso
 RUN pip install pyodbc
 
 # mysql odbc
-RUN curl -L 'https://cdn.mysql.com//Downloads/Connector-ODBC/8.0/mysql-connector-odbc-8.0.13-linux-ubuntu18.04-x86-64bit.tar.gz' > mysql-connector-odbc-8.0.13-linux-ubuntu18.04-x86-64bit.tar.gz && tar xzvf mysql-connector-odbc-8.0.13-linux-ubuntu18.04-x86-64bit.tar.gz && cp mysql-connector-odbc-8.0.13-linux-ubuntu18.04-x86-64bit/lib/* /usr/lib && mysql-connector-odbc-8.0.13-linux-ubuntu18.04-x86-64bit/bin/myodbc-installer -d -n MySQL -a -t DRIVER=/usr/lib/libmyodbc8w.so && rm -fr mysql-connector-odbc-8.0.13-linux-ubuntu18.04-x86-64bit && rm -f mysql-connector-odbc-8.0.13-linux-ubuntu18.04-x86-64bit.tar.gz
+RUN curl -L 'https://cdn.mysql.com//Downloads/Connector-ODBC/8.0/mysql-connector-odbc-8.0.16-linux-ubuntu19.04-x86-64bit.tar.gz' > mysql-connector-odbc-8.0.16-linux-ubuntu19.04-x86-64bit.tar.gz && tar xzvf mysql-connector-odbc-8.0.16-linux-ubuntu19.04-x86-64bit.tar.gz && cp mysql-connector-odbc-8.0.16-linux-ubuntu19.04-x86-64bit/lib/* /usr/lib && mysql-connector-odbc-8.0.16-linux-ubuntu19.04-x86-64bit/bin/myodbc-installer -d -n MySQL -a -t DRIVER=/usr/lib/libmyodbc8w.so && rm -fr mysql-connector-odbc-8.0.16-linux-ubuntu19.04-x86-64bit && rm -f mysql-connector-odbc-8.0.16-linux-ubuntu19.04-x86-64bit.tar.gz
 
 ########
 # SemEHR
