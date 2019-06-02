@@ -46,7 +46,9 @@ if (typeof semehr == "undefined"){
 
             initESClient: function(){
                 if (semehr.search.__es_server_url == null) {
-                    semehr.search.setupES();
+                    // semehr.search.setupES();
+                    semehr.search.__es_server_url = document.location.hostname + ":8200";
+                    semehr.search.doInit();
                 }
                 else{
                     semehr.search.doInit();
