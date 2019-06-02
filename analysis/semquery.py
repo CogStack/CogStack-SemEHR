@@ -213,24 +213,30 @@ class SemEHRES(object):
         """
         doc_anns = self.search_by_scroll(index=doc_level_index, q='%s:%s' % (ann_field_name, patient_id),
                                          doc_type=doc_ann_type,
+                                         include_fields=['annotations', 'phenotypes'],
                                          collection_func=lambda d, c: c.append(d))
         docs = self.search_by_scroll(index=doc_index, q='%s:%s' % (doc_pid_field_name, patient_id), doc_type=doc_type,
+                                     include_fields=[doc_text_field_name],
                                      collection_func=lambda d, c: c.append(d))
         data = {
             "id": str(patient_id)
         }
         entity_anns = []
+        phenotypes = []
         articles = []
-        for d in doc_anns['hits']['hits']:
+        for d in doc_anns:
             if 'annotations' in d['_source']:
                 anns = d['_source']['annotations']
                 for ann in anns:
                     ann['contexted_concept'] = SemEHRES.get_ctx_concept_id(ann)
                 entity_anns += anns
+            if 'phenotypes' in d['_source']:
+                phenotypes += d['_source']['phenotypes']
 
-        for d in docs['hits']['hits']:
+        for d in docs:
             articles.append({'erpid': d['_id'], 'fulltext': d['_source'][doc_text_field_name]})
         data['anns'] = entity_anns
+        data['phenotypes'] = phenotypes
         data['articles'] = articles
         self.index_new_doc(index=patient_index, doc_type=patient_doct_type, data=data, doc_id=str(patient_id))
         logging.debug('patient %s indexed with %s anns' % (patient_id, len(entity_anns)))
