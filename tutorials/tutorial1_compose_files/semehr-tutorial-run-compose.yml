@@ -12,7 +12,7 @@ volumes:
   semehr_data:
     driver_opts:
       type: none
-      device: /semehr_tutorial1/mtsamples-cohort
+      device: /semehr_tutorial1/CogStack-SemEHR/tutorials/mtsamples-cohort
       o: bind
   semehr_src:
     driver_opts:
