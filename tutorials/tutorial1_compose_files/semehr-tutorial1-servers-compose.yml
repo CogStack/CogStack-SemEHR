@@ -51,12 +51,12 @@ volumes:
   esdata01:
     driver_opts:
       type: none
-      device: /semehr_tutorial1/working_data/docker_es01
+      device: /semehr_tutorial1/CogStack-SemEHR/tutorials/working_data/docker_es01
       o: bind
   esdata02:
     driver_opts:
       type: none
-      device: /semehr_tutorial1/working_data/docker_es02
+      device: /semehr_tutorial1/CogStack-SemEHR/tutorials/working_data/docker_es02
       o: bind
   semehr_phenome_ui_folder:
     driver_opts:
