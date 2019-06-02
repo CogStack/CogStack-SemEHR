@@ -1,5 +1,4 @@
 (function($){
-    var _invitationId = '100k';
     var _log_call_url = "./log_touch.html" // a local url to be called so that apache saves the log
     var _pageNum = 0;
     var _pageSize = 1;
@@ -107,13 +106,9 @@
     function resetCohortConcepts(){
         $('#styListSpan').hide();
         $('#btnMoreSTY').hide();
-        //$('#conceptMapDiv').html('');
-    }
-
-    function resetCohortConcepts(){
-        $('#styListSpan').hide();
-        $('#btnMoreSTY').hide();
-        //$('#conceptMapDiv').html('');
+        //$('#conceptMapDiv').§html('');
+        $('#patientConceptMapDiv').html('');
+        $('#diseasePhenotypeDiv').html('');
     }
 
     function cohortSearch(queryObj, cohorts, patientResults, currentOffset, totalPatientCount, givenTermMaps){
@@ -129,10 +124,12 @@
                 _entityCurrentTotal = totalPatientCount;
                 _entityCurrentPage = 0;
                 renderEntityPageInfo();
+                swal.close();
             }else{
                 $('#sumTermDiv').html('no records found');
+                resetCohortConcepts();
+                swal('patient not found!');
             }
-            swal.close();
         }else{
             var start = currentOffset;
             var end = Math.min(start + queryPatientSize, cohorts.length);
@@ -233,7 +230,7 @@
 
     function populateDiseaseList(diseases){
         $('#listDisease').find('option').remove();
-        $('#listDisease').html('<option value="">-select disease-</option>')
+        $('#listDisease').html('<option value="">-select a disease model-</option>')
         _sty2ontoMap = {};
         for(var i=0;i<diseases.length;i++){
             var opt = document.createElement('option');
@@ -611,6 +608,9 @@
             }else if ($(this).hasClass('otherM')){
                 var ctx_concept = m.getTypedDocApps('otherM');
                 show_matched_docs(ctx_concept);
+            }else if ($(this).hasClass('ruledM')){
+                var ctx_concept = m.getTypedDocApps('ruled');
+                show_matched_docs(ctx_concept);
             }
             $('.sum').parent().removeClass('selected');
             $(this).parent().addClass('selected');
@@ -671,6 +671,10 @@
 
             if (entityMention.getTypedFreq('hisM') > 0){
                 $(row).find('.hisM').html(entityMention.getTypedFreq('hisM'));
+            }
+
+            if (entityMention.getTypedFreq('ruled') > 0){
+                $(row).find('.ruledM').html(entityMention.getTypedFreq('ruled'));
             }
         }
     }
@@ -934,7 +938,7 @@
         });
 
         var strHPOs = "";
-        var disObj = disease_model_100k[$('#listDisease').val()];
+        var disObj = disease_model[$('#listDisease').val()];
         if (disObj){
             strHPOs = render_typed_concepts(disObj, patientHPO, _phenotypeSearches, complementarySearch4EmptyPhenotypes);
         }
@@ -1013,6 +1017,7 @@
 
     $(document).ready(function(){
         semehr.search.initESClient();
+        getUserFeedback();
 
         $('#btnSearch').click(function () {
             resetSearchResult();
@@ -1137,7 +1142,7 @@
 		});
 
 		var diseases = [];
-		for (var d in disease_model_100k){
+		for (var d in disease_model){
 		    diseases.push(d);
 		}
 		populateDiseaseList(diseases.sort());

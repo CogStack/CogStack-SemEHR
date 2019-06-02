@@ -12,20 +12,22 @@ if (typeof semehr == "undefined"){
             __indice_index: 0,
             __es_need_login: false,
             _es_client: null,
-            __es_server_url: "http://10.200.102.23:9200/",
-            __es_index: "mimic", //epr_documents_bioyodie
+            __es_server_url: null,
+            __es_port: 8200,
+            __es_index: "semehr_patients", //epr_documents_bioyodie
             __es_type: "patient", //patient type
             __es_concept_type: "ctx_concept",
-            __es_fulltext_index: ["mimic"],
-            __es_fulltext_type: "eprdoc",
+            __es_concept_index: "semehr_ctx_concepts",
+            __es_fulltext_index: ["eprdoc"],
+            __es_fulltext_type: "docs",
             _full_text_attr: ['fulltext'],
             _user_id: "not_logged",
             _fdid: '_id',
             __discharge_summary_type: "Discharge summary",
-            _es_doc_patient_id_field: ["patientId"],
-            _es_doc_type_field: ["docType"],
-            _es_doc_date_field: ["gooddate"],
-
+            _es_doc_patient_id_field: ["patient_id"],
+            _es_doc_type_field: ["document_description"],
+            _es_doc_date_field: ["document_dateadded"],
+            
             // __es_need_login: false,
             // _es_client: null,
             // __es_server_url: "http://10.200.102.23:9200/",
@@ -43,6 +45,15 @@ if (typeof semehr == "undefined"){
             // _es_doc_date_field: "gooddate",
 
             initESClient: function(){
+                if (semehr.search.__es_server_url == null) {
+                    semehr.search.setupES();
+                }
+                else{
+                    semehr.search.doInit();
+                }
+            },
+
+            doInit: function(){
                 if (semehr.search.__es_need_login){
                     semehr.search.easyLogin();
                 }else{
@@ -54,6 +65,7 @@ if (typeof semehr == "undefined"){
                     }, function (error) {
                         if (error) {
                             console.error('elasticsearch cluster is down!');
+                            swal('seems elasticsearch cluster is down!');
                         } else {
                             console.log('All is well');
                         }
@@ -93,7 +105,7 @@ if (typeof semehr == "undefined"){
                                 host: semehr.search.__es_server_url,
                                 auth: result[0] + ':' + result[1],
                                 protocol: 'https',
-                                port: 9200
+                                port: semehr.search.__es_port
                             }
                         ]
                     });
@@ -118,6 +130,47 @@ if (typeof semehr == "undefined"){
                             console.log('All is well');
                         }
                     });
+                }, function () {
+                    swal.resetDefaults()
+                })
+            },
+
+            setupES: function(){
+                swal.setDefaults({
+                    confirmButtonText: 'Next &rarr;',
+                    showCancelButton: true,
+                    animation: false,
+                    progressSteps: ['1', '2']
+                })
+
+                var steps = [
+                    {
+                        title: 'SemEHR Elasticsearch Host',
+                        text: 'host',
+                        input: 'text',
+                    },
+                    {
+                        title: 'SemEHR Elasticsearch Port',
+                        text: 'port',
+                        input: 'text'
+                    },
+                    {
+                        title: 'XPack login',
+                        text: 'Is there a xpack access/control in place? (yes, no)',
+                        input: 'text',
+                        confirmButtonText: "let's go"
+                    }
+                ]
+
+                swal.queue(steps).then(function (result) {
+                    swal.resetDefaults();
+                    swal('setting up...');
+                    swal.showLoading();
+                    semehr.search.__es_server_url = result[0] + ":" + result[1];
+                    semehr.search.__es_port = result[1];
+                    semehr.search.__es_need_login = result[2] == 'yes';
+                    swal.close();
+                    semehr.search.doInit();
                 }, function () {
                     swal.resetDefaults()
                 })
@@ -268,7 +321,7 @@ if (typeof semehr == "undefined"){
                 if (!from) from = 0;
                 if (!size) size = 20;
                 semehr.search._es_client.search({
-                    index: semehr.search.__es_index,
+                    index: semehr.search.__es_concept_index,
                     type: semehr.search.__es_concept_type,
                     q: search,
                     from: from,
@@ -305,9 +358,9 @@ if (typeof semehr == "undefined"){
                         q: semehr.search._es_doc_patient_id_field + ":" + queryBody
                     };
                 }
-                queryObj["_sourceInclude"] = [];
-                queryObj["_sourceInclude"] = queryObj["_sourceInclude"].concat(semehr.search._es_doc_type_field); 
-                queryObj["_sourceInclude"] = queryObj["_sourceInclude"].concat(semehr.search._es_doc_date_field); 
+                queryObj["_source_includes"] = [];
+                queryObj["_source_includes"] = queryObj["_source_includes"].concat(semehr.search._es_doc_type_field);
+                queryObj["_source_includes"] = queryObj["_source_includes"].concat(semehr.search._es_doc_date_field);
                 queryObj['from'] = from;
                 queryObj['size'] = size;
                 if (size != null){
@@ -333,7 +386,7 @@ if (typeof semehr == "undefined"){
 
             getConcept: function (ctxConceptId, successCB, errorCB) {
                 semehr.search._es_client.get({
-                    index: semehr.search.__es_index,
+                    index: semehr.search.__es_concept_index,
                     type: semehr.search.__es_concept_type,
                     id: ctxConceptId
                 }).then(function (resp) {
@@ -371,19 +424,21 @@ if (typeof semehr == "undefined"){
                 var p = new semehr.Patient(hit["_id"]);
                 var duplicate_ann_detector = {}; //do duplication check for multiple apperance of same annotations
                 for(var i=0;i<annFields.length;i++){
-                    var app = annFields[i]["appearances"][0];
-                    var uniqueAnnStr = annFields[i]["CUI"] + " " + app.eprid + " " + app.offset_start + " " + app.offset_end;
+                    //var app = annFields[i]["appearances"][0];
+                    var annObj = annFields[i];
+                    var uniqueAnnStr = annObj["cui"] + " " + annObj["eprid"] + " " + annObj["start"] + " " + annObj["end"];
                     if (uniqueAnnStr in duplicate_ann_detector)
                         continue;
                     var ann = new semehr.Annotation(
                         annFields[i]["contexted_concept"],
-                        annFields[i]["CUI"],
-                        "STY" in annFields[i] ? annFields[i]["STY"] : "unknown_sty"
+                        annFields[i]["cui"],
+                        "sty" in annFields[i] ? annFields[i]["sty"] : "unknown_sty"
                     );
-                    for(var j=0;j<annFields[i]["appearances"].length;j++){
+                    /*for(var j=0;j<annFields[i]["appearances"].length;j++){
                         var app = annFields[i]["appearances"][j];
-                        ann.addAppearance(app["eprid"], app["offset_start"], app["offset_end"], app["date"]);
-                    }
+                        ann.addAppearance(annObj["eprid"], annObj["start"], annObj["end"], '');
+                    }*/
+                    ann.addAppearance(annObj["eprid"], annObj["start"], annObj["end"], '', annObj["ruled_by"]);
                     p.addAnnotation(ann);
                     duplicate_ann_detector[uniqueAnnStr] = 1;
                 }

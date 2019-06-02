@@ -108,12 +108,13 @@ if (typeof semehr == "undefined"){
             this.STY = STY;
         };
 
-        semehr.Annotation.prototype.addAppearance = function(doc, start, end, time){
+        semehr.Annotation.prototype.addAppearance = function(doc, start, end, time, ruledBy){
             var app = {
                 "doc": doc,
                 "start": start,
                 "end": end,
-                "time": time
+                "time": time,
+                "ruledBy": ruledBy
             };
             this.appearances.push(app);
         }

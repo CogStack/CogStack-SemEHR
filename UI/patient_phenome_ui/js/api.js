@@ -6,7 +6,7 @@ if (typeof qbb == "undefined"){
 	if(typeof qbb.inf == "undefined") {
 
 		qbb.inf = {
-			service_url: "https://napeasy.org/napeasy_api/api",
+			service_url: "https://honghan.info/napeasy_api/api",
 
 			saveEvalResult: function(result, invitationId, searchCB){
 				var apiName = "saveEvalResult";

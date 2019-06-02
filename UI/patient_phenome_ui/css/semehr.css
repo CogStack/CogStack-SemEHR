@@ -483,6 +483,7 @@ h1.sumHeading{
 }
 #feedbackDiv{
     margin-top: 20px;
+    display: none;
 }
 #feedbackDiv textarea{
     font-size:120%;
@@ -573,5 +574,14 @@ h1.sumHeading{
 .clsSnipts br{
     margin: 6px;
 }
-
-
+.ruledBy{
+    position: relative;
+    top: -20px;
+    font-style: italic;
+    font-size: 60%;
+    left: -30px;
+    background-color: yellow;
+}
+#phenotypeControls{
+    display:none;
+}

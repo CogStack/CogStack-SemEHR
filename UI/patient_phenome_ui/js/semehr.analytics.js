@@ -12,6 +12,9 @@ if (typeof semehr == "undefined"){
             this.type2freq = {};
             this.uid2DocApp = {};
             this.typedDocApp = {};
+            this.ruledDoc2app = {}
+            this.ruledFreq = 0;
+            this.uid2freq = {};
         }
 
         semehr.AggMention.prototype.setTypedFreq = function(t, freq){
@@ -35,19 +38,36 @@ if (typeof semehr == "undefined"){
         semehr.AggMention.prototype.addAnnAppearance = function(uid, apps){
             var doc2app = {};
             var duplicate_detect_obj = {};
+            var ruledDoc2app = {};
+            var notRuledFreq = 0;
             for (var i=0;i<apps.length;i++){
                 var app = apps[i];
                 var key = app.doc + ' ' + app.start + ' ' + app.end;
                 if (!(key in duplicate_detect_obj)){
                     duplicate_detect_obj[key] = 1;
-                    if (apps[i].doc in doc2app){
-                        doc2app[apps[i].doc].push(app);
+                    if (app.ruledBy.length == 0){
+                        if (apps[i].doc in doc2app){
+                            doc2app[apps[i].doc].push(app);
+                        }else{
+                            doc2app[apps[i].doc] = [app];
+                        }
+                        notRuledFreq += 1;
                     }else{
-                        doc2app[apps[i].doc] = [app];
+                        this.ruledFreq += 1;
+                        if (apps[i].doc in this.ruledDoc2app){
+                            this.ruledDoc2app[apps[i].doc].push(app);
+                        }else{
+                            this.ruledDoc2app[apps[i].doc] = [app];
+                        }
                     }
+                    
                 }
             }
             this.uid2DocApp[uid] = doc2app;
+            if(uid in this.uid2freq){
+                this.uid2freq[uid] += notRuledFreq;
+            }else
+                this.uid2freq[uid] = notRuledFreq;
         }
 
         semehr.AggMention.prototype.addTypedDocApp = function(t, uid, docApp){
@@ -117,9 +137,13 @@ if (typeof semehr == "undefined"){
                 var mentions = this.p2mentions[p.id]["mentions"];
                 for(var cc in this.typedconcepts){
                     if (cc in p.annId2Anns){
-                        mentions.addTypedFreq(this.typedconcepts[cc], p.annId2Anns[cc].appearances.length);
+                        mentions.addTypedFreq(this.typedconcepts[cc], mentions.uid2freq[cc]);
                         mentions.addTypedDocApp(this.typedconcepts[cc], cc, mentions.getTypedDocApps("allM")[cc]);
                     }
+                }
+                if (mentions.ruledFreq > 0){
+                    mentions.addTypedFreq("ruled", mentions.ruledFreq);
+                    mentions.addTypedDocApp("ruled", "ruled", mentions.ruledDoc2app);
                 }
             }
         };

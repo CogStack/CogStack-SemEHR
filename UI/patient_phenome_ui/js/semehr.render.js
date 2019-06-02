@@ -10,9 +10,8 @@ if (typeof semehr == "undefined"){
 
         semehr.Render = {
             docDisplayAttrs: [
-                // ["charttime", "chartdate", "docType", "fulltext"],
-                ["updatetime", "document_description", "body_analysed"], 
-                ["basicobs_createdwhen", "basicobs_itemname_analysed", "textualObs"]],
+                ["patient_id", "fulltext"]
+            ],
 
             /**
              * highlight a piece of text with an array of annotations
@@ -25,7 +24,9 @@ if (typeof semehr == "undefined"){
                 var hos = [];
                 for (var idx in anns){
                     hos.push({"term": "", "s": anns[idx]['start'], "e": anns[idx]['end'],
-                        "t": anns[idx].type? anns[idx].type : ""});
+                        "t": anns[idx].type? anns[idx].type : "", 
+                        "ruled": anns[idx].ruledBy
+                    });
                 }
                 hos = hos.sort(function(a, b){
                     return a["s"] - b["s"];
@@ -39,7 +40,8 @@ if (typeof semehr == "undefined"){
                         new_str += "...";
                     for (var idx in hos){
                         new_str += text.substring(prev_pos, hos[idx]["s"]) +
-                            "<em title='" + hos[idx]["t"] + "'>" + text.substring(hos[idx]["s"], hos[idx]["e"]) + "</em>";
+                            "<em title='" + hos[idx]["t"] + "'>" + text.substring(hos[idx]["s"], hos[idx]["e"]) + "</em>" +
+                            (hos[idx]["ruled"].length > 0 ? "<span class='ruledBy'>" + hos[idx]["ruled"][0] + "</span>" : "");
                         prev_pos = hos[idx]["e"];
                         if (snippet)
                             break;
@@ -201,12 +203,14 @@ if (typeof semehr == "undefined"){
                     var attrDateB = semehr.Render.getAttrNameFromList(attrDates, b["_source"]);
                     return a['_source'][attrDateA] >= b['_source'][attrDateB] ? -1 : 1;
                 })
-                var s = "<div class='dRowHeader'><div class='dRowTitle'>document type</div><div class='dRowTitle'>document date</div></div>";
+                var s = "<div class='dRowHeader'><div class='dRowTitle'>document</div><div class='dRowTitle'>document type</div><div class='dRowTitle'>document date</div></div>";
                 for (var i=0;i<docs.length;i++){
                     var d = docs[i]['_source'];
                     var attrType = semehr.Render.getAttrNameFromList(attrTypes, d);
                     var attrDate = semehr.Render.getAttrNameFromList(attrDates, d);
-                    s += "<div class='dRow' docId='" + docs[i]['_id'] + "'><div class='cAttr'>" + docs[i]["_id"] + "</div><div class='cAttr'>" + d[attrType] + "</div><div class='cAttr'>" + d[attrDate] + "</div></div>";
+                    var docType = d[attrType] ? d[attrType] : "-";
+                    var docDate = d[attrDate] ? d[attrDate] : "-";
+                    s += "<div class='dRow' docId='" + docs[i]['_id'] + "'><div class='cAttr'>" + docs[i]["_id"] + "</div><div class='cAttr'>" + docType + "</div><div class='cAttr'>" + docDate + "</div></div>";
                 }
                 $(container).html(s);
                 $('.dRow').click(function(){
