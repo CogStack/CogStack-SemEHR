@@ -27,7 +27,7 @@ Alternatively, we are happy to provide a copy if you can let us know you have go
 ### 1. run server containers
 1. go to docker compose files folder
     ```bash
-    cd /semehr_tutorial1/Cogstack-SemEHR/tutorials/tutorial1_compose_files
+    cd /semehr_tutorial1/CogStack-SemEHR/tutorials/tutorial1_compose_files
     ```
 2. run the servers
     ```bash
