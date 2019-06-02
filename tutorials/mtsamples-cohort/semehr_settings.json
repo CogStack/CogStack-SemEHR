@@ -1,0 +1,131 @@
+{
+  "env": {
+    "java_home": "/usr/lib/jvm/java-11-openjdk-amd64",
+    "gcp_home": "/opt/gcp/gcp-2.5-18658",
+    "gate_home": "/opt/gcp/gate",
+    "yodie_path": "/opt/gcp/",
+    "ukb_home": "/opt/gcp/ukb"
+  },
+  "yodie": {
+    "os": "linux",
+    "gcp_run_path": "/opt/gcp/",
+    "input_doc_file_path": "",
+    "thread_num": "5",
+    "memory": "4g",
+    "config_xml_path": "/data/yodi.xml",
+    "output_file_path": "/data/output_docs/",
+    "output_destination": "json",
+    "use_file_based": "false",
+    "output_dbconn_setting_file": "..dbconn.json..",
+    "output_table": "..[kconnect_annotations]..",
+    "output_concept_filter_file": "",
+    "input_source": "es",
+    "input_dbconn_setting_file": "..dbconn.json.."
+  },
+  "semehr": {
+    "es_doc_url": "http://172.17.0.1:8200/",
+    "full_text_doc_id": "id",
+    "full_text_doc_date": "",
+    "full_text_index": "eprdoc",
+    "full_text_doc_type": "docs",
+    "full_text_patient_field": "patient_id",
+    "full_text_text_field": "fulltext",
+    "es_host": "",
+    "index": "",
+    "concept_index": "ctx_concept_index",
+    "concept_doc_type": "ctx_concept",
+    "entity_doc_type": "patient"
+  },
+  "doc_copy":{
+    "thread_num": "5",
+    "es_host": "",
+    "src_index": "",
+    "src_doc_type": "",
+    "dest_index": "",
+    "dest_doc_type": ""
+  },
+  "new_docs":{
+    "sql_query": "select docid from ...",
+    "dbconn_setting_file": "..dbconn.json.."
+  },
+  "cohort_docs": {
+    "es_cohort_file": "/data/cohort.txt",
+    "es_host": "http://172.17.0.1:8200/",
+    "es_index": "eprdoc",
+    "es_doc_type": "docs",
+    "es_concept_type": "",
+    "es_patient_type": "",
+    "patiet_id_field": "patient_id"
+  },
+  "action_trans":{
+    "cohort_name": "",
+    "dbconn_setting_file": "",
+    "sql_cohort_doc_template": "",
+    "sql_doc_anns_template": "",
+    "sql_doc_content_template": "",
+    "sql_action_trans_update_template": "",
+    "action_trans_model_file": ""
+  },
+  "epr_index":{
+    "doc_folder": "/data/discharge_summaries",
+    "doc2patient_tsv": "/data/d2p.tsv",
+    "es_host": "http://172.17.0.1:8200/",
+    "es_index_name": "eprdoc",
+    "doc_type": "docs",
+    "text_field": "fulltext",
+    "patient_id_field": "patient_id"
+  },
+  "doc_ann_analysis": {
+    "ann_docs_path": "/data/output_docs/",
+    "rule_config_path": "./studies/autoimmune.v3/sample_rule_config.json",
+    "full_text_folder": "/data/input_docs",
+    "output_folder": "/data/semehr_results",
+    "study_folder": "./studies/autoimmune.v3",
+    "full_text_fn_ptn": "%s.txt",
+    "output_fn_pattern": "se_ann_%s.json",
+    "process_mode": "es",
+    "es_host": "http://172.17.0.1:8200/",
+    "es_index": "eprdoc",
+    "es_doc_type": "docs",
+    "es_output_index": "semehr_docs",
+    "es_output_doc": "doc_ann",
+    "es_concept_type": "",
+    "es_patient_type": "",
+    "full_text_field": "fulltext",
+    "patielt_id_field": "patient_id",
+    "combined_anns": true
+  },
+  "patient_index":{
+    "es_host": "http://172.17.0.1:8200/",
+    "doc_level_index": "semehr_docs",
+    "doc_ann_type": "doc_ann",
+    "ann_field_name": "patient_id",
+    "doc_index": "eprdoc",
+    "doc_type": "docs",
+    "doc_text_field_name": "fulltext",
+    "doc_pid_field_name": "patient_id",
+    "patient_index": "semehr_patients",
+    "patient_doct_type": "patient",
+    "es_concept_type": "",
+    "es_patient_type": "",
+    "ignore_exist": false
+  },
+  "logging":{
+    "file": "/data/semehr.log",
+    "format": "%(module)s(%(lineno)d) %(name)s %(asctime)s %(levelname)s %(message)s"
+  },
+  "job":{
+    "load_docs": "no",
+    "copy_docs": "no",
+    "epr_index": "yes",
+    "cohort_docs": "yes",
+    "yodie": "yes",
+    "semehr-concept": "no",
+    "semehr-patients": "no",
+    "action_trans": "no",
+    "doc_analysis": "yes",
+    "patient_index": "yes",
+    "job_id": "doc_semehr",
+    "job_status_file_path": "/data/"
+  }
+}

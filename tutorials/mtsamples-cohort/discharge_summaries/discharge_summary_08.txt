@@ -1,0 +1,32 @@
+Description: A 49-year-old man with respiratory distress, history of coronary artery disease with prior myocardial infarctions, and recently admitted with pneumonia and respiratory failure.
+(Medical Transcription Sample Report)
+ADMISSION DIAGNOSIS:
+1. Respiratory arrest.
+2 . End-stage chronic obstructive pulmonary disease.
+3. Coronary artery disease.
+4. History of hypertension.
+
+DISCHARGE DIAGNOSIS:
+1. Status post-respiratory arrest.
+2. Chronic obstructive pulmonary disease.
+3. Congestive heart failure.
+4. History of coronary artery disease.
+5. History of hypertension.
+
+SUMMARY: The patient is a 49-year-old man who was admitted to the hospital in respiratory distress, and had to be intubated shortly after admission to the emergency room. The patient’s past history is notable for a history of coronary artery disease with prior myocardial infarctions in 1995 and 1999. The patient has recently been admitted to the hospital with pneumonia and respiratory failure. The patient has been smoking up until three to four months previously. On the day of admission, the patient had the sudden onset of severe dyspnea and called an ambulance. The patient denied any gradual increase in wheezing, any increase in cough, any increase in chest pain, any increase in sputum prior to the onset of his sudden dyspnea.
+
+ADMISSION PHYSICAL EXAMINATION:
+GENERAL: Showed a well-developed, slightly obese man who was in extremis.
+NECK: Supple, with no jugular venous distension.
+HEART: Showed tachycardia without murmurs or gallops.
+PULMONARY: Status showed decreased breath sounds, but no clear-cut rales or wheezes.
+EXTREMITIES: Free of edema.
+
+HOSPITAL COURSE: The patient was admitted to the Special Care Unit and intubated. He received intravenous antibiotic therapy with Levaquin. He received intravenous diuretic therapy. He received hand-held bronchodilator therapy. The patient also was given intravenous steroid therapy with Solu-Medrol. The patient’s course was one of gradual improvement, and after approximately three days, the patient was extubated. He continued to be quite dyspneic, with wheezes as well as basilar rales. After pulmonary consultation was obtained, the pulmonary consultant felt that the patient’s overall clinical picture suggested that he had a
+significant element of congestive heart failure. With this, the patient was placed on increased doses of Lisinopril and Digoxin, with improvement of his respiratory status. On the day of discharge, the patient had minimal basilar rales; his chest also showed minimal expiratory wheezes; he had no edema; his heart rate was regular; his abdomen was soft; and his neck veins were not distended. It was, therefore, felt that the patient was stable for further management on an outpatient basis.
+
+DIAGNOSTIC DATA: The patient’s admission laboratory data was notable for his initial blood gas, which showed a pH of 7.02 with a pCO2 of 118 and a pO2 of 103. The patient’s electrocardiogram showed nonspecific ST-T wave changes. The patent’s CBC showed a white count of 24,000, with 56% neutrophils and 3% bands.
+
+DISPOSITION: The patient was discharged home.
+
+DISCHARGE INSTRUCTIONS: His diet was to be a 2 grams sodium, 1800 calorie ADA diet. His medications were to be Prednisone 20 mg twice per day, Theo-24 400 mg per day, Furosemide 40 mg 1-1/2 tabs p.o. per day; Acetazolamide 250 mg one p.o. per day, Lisinopril 20 mg. one p.o. twice per day, Digoxin 0.125 mg one p.o. q.d., nitroglycerin paste 1 inch h.s., K-Dur 60 mEq p.o. b.i.d. He was also to use a Ventolin inhaler every four hours as needed, and Azmacort four puffs twice per day. He was asked to return for follow-up with Dr. X in one to two weeks. Arrangements have been made for the patient to have an echocardiogram for further evaluation of his congestive heart failure later on the day of discharge. 

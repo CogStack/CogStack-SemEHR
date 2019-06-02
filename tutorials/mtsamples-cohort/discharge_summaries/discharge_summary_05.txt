@@ -1,0 +1,19 @@
+Description: Discharge summary of a patient with a BRCA-2 mutation.
+(Medical Transcription Sample Report)
+DISCHARGE DIAGNOSES: BRCA-2 mutation. 
+
+HISTORY OF PRESENT ILLNESS: The patient is a 59-year-old with a BRCA-2 mutation. Her sister died of breast cancer at age 32 and her daughter had breast cancer at age 27.
+
+PHYSICAL EXAMINATION: The chest was clear. The abdomen was nontender. Pelvic examination shows no masses. No heart murmur. 
+
+HOSPITAL COURSE: The patient underwent surgery on the day of admission. In the postoperative course she was afebrile and unremarkable. The patient regained bowel function and was discharged on the morning of the fourth postoperative day.
+
+OPERATIONS AND PROCEDURES: Total abdominal hysterectomy/bilateral salpingo-oophorectomy with resection of ovarian fossa peritoneum en bloc on July 25, 2006.
+
+PATHOLOGY: A 105-gram uterus without dysplasia or cancer.
+
+CONDITION ON DISCHARGE: Stable.
+
+PLAN: The patient will remain at rest initially with progressive ambulation after. She will avoid lifting, driving or intercourse. She will call me if any fevers, drainage, bleeding, or pain. Follow up in my office in four weeks. Family history, social history, psychosocial needs per the social worker.
+
+DISCHARGE MEDICATIONS: Percocet 5 #40 one every 3 hours p.r.n. pain. 

@@ -1,0 +1,39 @@
+Description: Need for cardiac catheterization. Coronary artery disease, chest pain, history of diabetes, history of hypertension, history of obesity, a 1.1 cm lesion in the medial aspect of the right parietal lobe, and deconditioning.
+(Medical Transcription Sample Report)
+REASON FOR TRANSFER: Need for cardiac catheterization done at ABCD.
+
+TRANSFER DIAGNOSES:
+1. Coronary artery disease.
+2. Chest pain.
+3. History of diabetes.
+4. History of hypertension.
+5. History of obesity.
+6. A 1.1 cm lesion in the medial aspect of the right parietal lobe.
+7. Deconditioning.
+
+CONSULTATIONS: Cardiology.
+
+PROCEDURES:
+1. Echocardiogram.
+2. MRI of the brain.
+3. Lower extremity Duplex ultrasound.
+
+HOSPITAL COURSE: Please refer to my H&P for full details. In brief, the patient is a 64-year-old male with history of diabetes, who presented with 6 hours of chest pressure. He was brought in by a friend. The friend states that the patient deteriorated over the last few weeks to the point that he is very short of breath with exertion. He apparently underwent a cardiac workup 6 months ago that the patient states he barely passed. His vital signs were stable on admission. He was ruled out for myocardial infarction with troponin x2. An echocardiogram showed concentric LVH with an EF of 62%. I had Cardiology come to see the patient, who reviewed the records from Fountain Valley. Based on his stress test in the past, Dr. X felt the patient needed to undergo a cardiac cath during his inpatient stay.
+
+The patient on initial presentation complained of, what sounded like, amaurosis fugax. I performed an MRI, which showed a 1 cm lesion in the right parietal lobe. I was going to call Neurology at XYZ for evaluation. However, secondary to his indication for transfer, this could be followed up at ABCD with Dr. Y.
+
+The patient is now stable for transfer for cardiac cath.
+
+Discharged to ABCD.
+
+DISCHARGE CONDITION: Stable.
+
+DISCHARGE MEDICATIONS:
+1. Aspirin 325 mg p.o. daily.
+2. Lovenox 40 mg p.o. daily.
+3. Regular Insulin sliding scale.
+4. Novolin 70/30, 15 units b.i.d.
+5. Metformin 500 mg p.o. daily.
+6. Protonix 40 mg p.o. daily.
+
+DISCHARGE FOLLOWUP: Followup to be arranged at ABCD after cardiac cath. 

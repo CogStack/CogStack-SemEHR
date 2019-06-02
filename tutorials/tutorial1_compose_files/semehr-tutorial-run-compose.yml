@@ -1,0 +1,26 @@
+version: '3.3'
+
+services:
+  semehr:
+    image: semehr/core
+    volumes:
+      - semehr_data:/data
+      - semehr_src:/opt/semehr/CogStack-SemEHR
+      - yodie_umls:/opt/gcp/bio-yodie-1-2-1/bio-yodie-resources
+
+volumes:
+  semehr_data:
+    driver_opts:
+      type: none
+      device: /semehr_tutorial1/mtsamples-cohort
+      o: bind
+  semehr_src:
+    driver_opts:
+      type: none
+      device: /semehr_tutorial1/CogStack-SemEHR
+      o: bind
+  yodie_umls:
+    driver_opts:
+      type: none
+      device: /semehr_tutorial1/bio-yodie-resources
+      o: bind
