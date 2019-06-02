@@ -24,7 +24,7 @@ Alternatively, we are happy to provide a copy if you can let us know you have go
    git clone https://github.com/CogStack/CogStack-SemEHR.git
    ```
    
-### run server containers
+### 1. run server containers
 1. go to docker compose files folder
     ```bash
     cd /semehr_tutorial1/Cogstack-SemEHR/tutorials/tutorial1_compose_files
@@ -35,15 +35,15 @@ Alternatively, we are happy to provide a copy if you can let us know you have go
     ```
     This will start a two-node elasticsearch cluster and a web server for hosting
 
-### run SemEHR
+### 2. run SemEHR
 The tutorial uses a sample corpus - 20 discharge summaries from http://www.medicaltranscriptionsamples.com/.
 ```bash
 docker-compose -f semehr-tutorial-run-compose.yml run semehr
 ```
 
-### play with the results
+### 3. play with the results
 You can play with the results using either of the options below.
-1. check elasticsearch indices (replace `IP_ADDR` with your machine's IP address)
+- check elasticsearch indices (replace `IP_ADDR` with your machine's IP address)
     - list all SemEHR indices
     ```bash
     curl -X GET "http://IP_ADDR:8200/_cat/indices/"
@@ -112,5 +112,5 @@ You can play with the results using either of the options below.
                 },
              ...
     ```
-2. use SemEHR patient phenome viewer
+- use SemEHR patient phenome viewer
 Put the url `http://IP_ADDR:8080/SemEHR.html` into your browser (Chrome or Firefox).
