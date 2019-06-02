@@ -232,8 +232,11 @@ class SemEHRES(object):
                 anns = d['_source']['annotations']
                 for ann in anns:
                     ann['contexted_concept'] = SemEHRES.get_ctx_concept_id(ann)
+                    ann['eprid'] = d['_id']
                 entity_anns += anns
             if 'phenotypes' in d['_source']:
+                for p in d['_source']['phenotypes']:
+                    p['eprid'] = d['_id']
                 phenotypes += d['_source']['phenotypes']
 
         for d in docs:
