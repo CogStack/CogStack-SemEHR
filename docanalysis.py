@@ -9,6 +9,7 @@ import random
 import re
 import ann_post_rules
 import multiprocessing
+from analysis.semquery import SemEHRES
 
 
 class BasicAnn(object):
@@ -665,7 +666,8 @@ def analyse_doc_anns_line(line, rule_executor, text_reader, output_folder,
 
 def analyse_doc_anns(json_doc, file_key, rule_executor, text_reader, output_folder,
                      fn_pattern='se_ann_%s.json', es_inst=None, es_output_index=None, es_output_doc='doc',
-                     study_analyzer=None):
+                     study_analyzer=None, contextualised_concept_index='semehr_ctx_concepts',
+                     ctx_doc_type='ctx_concept'):
     ann_doc = SemEHRAnnDoc()
     ann_doc.load(json_doc, file_key=file_key)
     read_obj = text_reader.read_full_text(ann_doc.file_key)
@@ -688,7 +690,28 @@ def analyse_doc_anns(json_doc, file_key, rule_executor, text_reader, output_fold
         data['patient_id'] = patient_id
         es_inst.index_new_doc(index=es_output_index, doc_type=es_output_doc,
                               data=data, doc_id=file_key)
+        # index conceptualised concepts
+        if contextualised_concept_index is not None:
+            for ann in data['annotations']:
+                index_ctx_concept(ann, contextualised_concept_index, ctx_doc_type, es_inst)
+
     return ann_doc.serialise_json()
+
+
+def index_ctx_concept(ann, concept_index, ctx_doc_type, es_inst):
+    data = {
+        "doc": {
+            "cui": ann['cui'],
+            "negation": ann['negation'],
+            "experiencer": ann['experiencer'],
+            "temporality": ann['temporality'],
+            "prefLabel": ann['pref'],
+            "STY": ann['sty']
+        },
+        "doc_as_upsert": True
+    }
+    ctx_id = SemEHRES.get_ctx_concept_id(ann)
+    es_inst.index_new_doc(index=concept_index, doc_type=ctx_doc_type, data=data, doc_id=ctx_id)
 
 
 def load_study_ruler(study_folder, rule_config_file, study_config='study.json'):
