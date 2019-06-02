@@ -532,7 +532,7 @@ def load_document_to_es(settings):
     for f in [f for f in listdir(doc_folder) if isfile(join(doc_folder, f))]:
         if f in d2p:
             p = d2p[f]
-            t = utils.read_text_file(join(doc_folder, f))
+            t = utils.read_text_file_as_string(join(doc_folder, f))
             es.index_new_doc(index=settings.get_attr(['epr_index', 'es_index_name']),
                              doc_type=settings.get_attr(['epr_index', 'doc_type']),
                              data={settings.get_attr(['epr_index', 'text_field']): t,
