@@ -193,6 +193,9 @@ class SemEHRES(object):
     def index_new_doc(self, index, doc_type, data, doc_id):
         self._es_instance.index(index=index, doc_type=doc_type, body=data, id=doc_id, timeout='30s')
 
+    def update_doc(self, index, doc_type, data, doc_id):
+        self._es_instance.update(index=index, doc_type=doc_type, id=doc_id, body=data)
+
     def index_patient(self, doc_level_index, patient_id, doc_ann_type,
                       doc_index, doc_type, doc_pid_field_name, doc_text_field_name,
                       patient_index, patient_doct_type,
