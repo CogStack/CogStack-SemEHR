@@ -185,7 +185,7 @@ class SemEHRES(object):
         if index is None:
             index = self._index
         return helpers.scan(self._es_instance, query,
-                            size=size, scroll='10m', index=index, doc_type=entity, request_timeout=300)
+                            size=size, scroll='10m', index=index, request_timeout=300)
 
     def index_med_profile(self, doc_type, data, patient_id):
         self._es_instance.index(index=self._index, doc_type=doc_type, body=data, id=str(patient_id), timeout='30s')
