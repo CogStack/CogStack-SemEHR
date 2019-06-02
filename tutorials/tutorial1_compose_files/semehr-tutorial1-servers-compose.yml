@@ -61,5 +61,5 @@ volumes:
   semehr_phenome_ui_folder:
     driver_opts:
       type: none
-      device: /semehr_tutorial1/Cogstack-SemEHR/UI/patient_phenome_ui
+      device: /semehr_tutorial1/CogStack-SemEHR/UI/patient_phenome_ui
       o: bind
