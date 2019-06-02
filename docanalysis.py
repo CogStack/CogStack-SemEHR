@@ -711,7 +711,7 @@ def index_ctx_concept(ann, concept_index, ctx_doc_type, es_inst):
         "doc_as_upsert": True
     }
     ctx_id = SemEHRES.get_ctx_concept_id(ann)
-    es_inst.index_new_doc(index=concept_index, doc_type=ctx_doc_type, data=data, doc_id=ctx_id)
+    es_inst.update_doc(index=concept_index, doc_type=ctx_doc_type, data=data, doc_id=ctx_id)
 
 
 def load_study_ruler(study_folder, rule_config_file, study_config='study.json'):
