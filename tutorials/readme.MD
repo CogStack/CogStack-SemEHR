@@ -1,7 +1,7 @@
 ## Tutorial 1: SemEHR over Elasticsearch 
 ### Introduction
 In this tutorial, we will illustrate how to deploy SemEHR results over an Elasticsearch
-cluster and play with the results using SemEHR patient phenome viewer (browser based user interface).
+cluster and play with the results using SemEHR patient phenome viewer (browser based user interface). The tutorial uses a sample corpus - [20 discharge summaries](https://github.com/CogStack/CogStack-SemEHR/tree/master/tutorials/mtsamples-cohort/discharge_summaries) downloaded from http://www.medicaltranscriptionsamples.com/.
 
 ### Prerequisite
 1. Create to a working folder for this tutorial: `/semehr_tutorial1` 
@@ -30,13 +30,14 @@ Alternatively, we are happy to provide a copy if you can let us know you have go
     cd /semehr_tutorial1/CogStack-SemEHR/tutorials/tutorial1_compose_files
     ```
 2. run the servers
+Note: you can edit `semehr-tutorial1-servers-compose.yml` to either fit your environment if you use different folder path or other settings; or tweak the server parameters.
     ```bash
     docker-compose -f semehr-tutorial1-servers-compose.yml up -d
     ```
     This will start a two-node elasticsearch cluster and a web server for hosting
 
 ### 2. run SemEHR
-The tutorial uses a sample corpus - 20 discharge summaries from http://www.medicaltranscriptionsamples.com/.
+Note: you can edit `semehr-tutorial-run-compose.yml` to fit your environment.
 ```bash
 docker-compose -f semehr-tutorial-run-compose.yml run semehr
 ```
