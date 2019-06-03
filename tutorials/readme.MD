@@ -53,6 +53,8 @@ Put the url `http://IP_ADDR:8080/SemEHR.html` into your browser (Chrome or Firef
     a predefined disease model (essentially a list of phenotypes) is used.  
     
     ![screenshot1](https://raw.githubusercontent.com/CogStack/CogStack-SemEHR/master/tutorials/imgs/Screenshot_tutorial1.1.png "Patient Phenotype Viewer")
+    
+     ![screenshot1](https://raw.githubusercontent.com/CogStack/CogStack-SemEHR/master/tutorials/imgs/Screenshot_tutorial1.2.png "Patient Phenotype Viewer show contextualised phenotype mentinos")
 
 - check elasticsearch indices (replace `IP_ADDR` with your machine's IP address)
     - list all SemEHR indices
