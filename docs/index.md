@@ -8,6 +8,6 @@ Follow this [tutorial](https://github.com/CogStack/CogStack-SemEHR/tree/master/t
 Email: honghan.wu@gmail.com
 
 ## References
-[1] SemEHR: A General-purpose Semantic Search System to Surface Semantic Data from Clinical Notes for Tailored Care, Trial Recruitment and Clinical Research. Honghan Wu, Giulia Toti, Katherine I Morley, Zina Ibrahim, Amos Folarin, Ismail Kartoglu, Richard Jackson, Asha Agrawal, Clive Stringer, Darren Gale, Genevieve M Gorrell, Angus Roberts, Matthew Broadbent, Robert Stewart, Richard J B Dobson.Journal of the American Medical Informatics Association, 2017. [http://dx.doi.org/10.1093/jamia/ocx160](http://dx.doi.org/10.1093/jamia/ocx160)
+[1] Honghan Wu, Giulia Toti, Katherine I Morley, Zina Ibrahim, Amos Folarin, Ismail Kartoglu, Richard Jackson, Asha Agrawal, Clive Stringer, Darren Gale, Genevieve M Gorrell, Angus Roberts, Matthew Broadbent, Robert Stewart, Richard J B Dobson. "SemEHR: A general-purpose semantic search system to surface semantic data from clinical notes for tailored care, trial recruitment, and clinical research." Journal of the American Medical Informatics Association 25, no. 5 (2018): 530-537. [http://dx.doi.org/10.1093/jamia/ocx160](http://dx.doi.org/10.1093/jamia/ocx160)
 
 [2] [https://github.com/CogStack/CogStack-SemEHR](https://github.com/CogStack/CogStack-SemEHR)
