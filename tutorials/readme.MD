@@ -30,7 +30,8 @@ Alternatively, we are happy to provide a copy if you can let us know you have go
     cd /semehr_tutorial1/CogStack-SemEHR/tutorials/tutorial1_compose_files
     ```
 2. run the servers
-Note: you can edit `semehr-tutorial1-servers-compose.yml` to either fit your environment if you use different folder path or other settings; or tweak the server parameters.
+
+   Note: you can edit `semehr-tutorial1-servers-compose.yml` to either fit your environment if you use different folder path or other settings; or tweak the server parameters.
     ```bash
     docker-compose -f semehr-tutorial1-servers-compose.yml up -d
     ```
