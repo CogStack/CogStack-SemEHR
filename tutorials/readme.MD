@@ -118,3 +118,4 @@ Put the url `http://IP_ADDR:8080/SemEHR.html` into your browser (Chrome or Firef
     - search a patient: put `P001` as an example into the search box and click `search`
     - (optionally) choose a disease model from the drop list to show how the UI works when
     a predefined disease model (essentially a list of phenotypes) is used.  
+    ![screenshot1](https://raw.githubusercontent.com/CogStack/CogStack-SemEHR/master/tutorials/imgs/Screenshot_tutorial1.1.png "Patient Phenotype Viewer")
