@@ -36,7 +36,7 @@ Alternatively, we are happy to provide a copy if you can let us know you have go
     ```bash
     docker-compose -f semehr-tutorial1-servers-compose.yml up -d
     ```
-    This will start a two-node elasticsearch cluster and a web server for hosting the user interface.
+    This will start a two-node elasticsearch cluster for indexing SemEHR results and a web server for hosting the user interface.
 
 ### 2. run SemEHR
 Note: you can edit `semehr-tutorial-run-compose.yml` to fit your environment.
