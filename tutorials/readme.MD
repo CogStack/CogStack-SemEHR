@@ -50,11 +50,16 @@ Put the url `http://IP_ADDR:8080/SemEHR.html` into your browser (Chrome or Firef
 (Note: there are 20 patients, IDs from P001 to P020, each of whom has a discharge summary in the corpus) 
     - search a patient: put `P001` as an example into the search box and click `search`
     - (optionally) choose a disease model from the drop list to show how the UI works when
-    a predefined disease model (essentially a list of phenotypes) is used.  
-    
+    a predefined disease model (essentially a list of phenotypes a study is looking for) is used.  
+    - Screenshot 1: phenotype list page
     ![screenshot1](https://raw.githubusercontent.com/CogStack/CogStack-SemEHR/master/tutorials/imgs/Screenshot_tutorial1.1.png "Patient Phenotype Viewer")
-    
-     ![screenshot1](https://raw.githubusercontent.com/CogStack/CogStack-SemEHR/master/tutorials/imgs/Screenshot_tutorial1.2.png "Patient Phenotype Viewer show contextualised phenotype mentinos")
+    This page lists the phenotypes (mapped to [Human Phenotype Ontology](https://hpo.jax.org/)) for a given patient. If a diseae model is selected, the phenotypes are put into two sections: top section lists all phenotypes defined in the selected disease model; bottom section lists the rest. There are three disease models defined. `Example - Conditions for John's Study` is an example model (of 6 common conditions). The other two models are extracted from rare disease models of Genomics England's 100K project.
+    - Screenshot 2: detailed phenotype mention page
+     ![screenshot2](https://raw.githubusercontent.com/CogStack/CogStack-SemEHR/master/tutorials/imgs/Screenshot_tutorial1.2.png "Patient Phenotype Viewer shows contextualised phenotype mentinos")
+     When you click a phenotype from the list on the previous page, this page will pop out. It shows two things: 1) a summary about the phenotype in the patient's EHRs (how many mentions and how they are classified into different contextualised mentions); 2) when you click on any of the numbers, the page will show the original EHR document(s) with respective mentions highlighted.
+     - Screenshot 3: patient's document list
+     ![screenshot3](https://raw.githubusercontent.com/CogStack/CogStack-SemEHR/master/tutorials/imgs/Screenshot_tutorial.1.3.png "Patient Phenotype Viewer shows all the documents of the searched patient")
+     
 
 - check elasticsearch indices (replace `IP_ADDR` with your machine's IP address)
     - list all SemEHR indices
