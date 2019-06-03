@@ -1,1 +1,1 @@
-
+SemEHR[1,2] is a text mining and semantic search system designed for Surfacing Semantic Data from Clinical Notes in Electronic Health Records for Tailored Care, Trial Recruitment and Clinical Research.
