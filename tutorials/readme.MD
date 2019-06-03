@@ -47,7 +47,8 @@ docker-compose -f semehr-tutorial-run-compose.yml run semehr
 You can play with the results using either of the options below.
 
 - use SemEHR patient phenome viewer
-Put the url `http://IP_ADDR:8080/SemEHR.html` into your browser (Chrome or Firefox). 
+
+   Put the url `http://IP_ADDR:8080/SemEHR.html` into your browser (Chrome or Firefox). 
 (Note: there are 20 patients, IDs from P001 to P020, each of whom has a discharge summary in the corpus) 
     - search a patient: put `P001` as an example into the search box and click `search`
     - (optionally) choose a disease model from the drop list to show how the UI works when
