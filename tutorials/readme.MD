@@ -44,6 +44,16 @@ docker-compose -f semehr-tutorial-run-compose.yml run semehr
 
 ### 3. play with the results
 You can play with the results using either of the options below.
+
+- use SemEHR patient phenome viewer
+Put the url `http://IP_ADDR:8080/SemEHR.html` into your browser (Chrome or Firefox). 
+(Note: there are 20 patients, IDs from P001 to P020, each of whom has a discharge summary in the corpus) 
+    - search a patient: put `P001` as an example into the search box and click `search`
+    - (optionally) choose a disease model from the drop list to show how the UI works when
+    a predefined disease model (essentially a list of phenotypes) is used.  
+    
+    ![screenshot1](https://raw.githubusercontent.com/CogStack/CogStack-SemEHR/master/tutorials/imgs/Screenshot_tutorial1.1.png "Patient Phenotype Viewer")
+
 - check elasticsearch indices (replace `IP_ADDR` with your machine's IP address)
     - list all SemEHR indices
     ```bash
@@ -113,10 +123,3 @@ You can play with the results using either of the options below.
                 },
              ...
     ```
-- use SemEHR patient phenome viewer
-Put the url `http://IP_ADDR:8080/SemEHR.html` into your browser (Chrome or Firefox). 
-(Note: there are 20 patients, IDs from P001 to P020, each of whom has a discharge summary in the corpus) 
-    - search a patient: put `P001` as an example into the search box and click `search`
-    - (optionally) choose a disease model from the drop list to show how the UI works when
-    a predefined disease model (essentially a list of phenotypes) is used.  
-    ![screenshot1](https://raw.githubusercontent.com/CogStack/CogStack-SemEHR/master/tutorials/imgs/Screenshot_tutorial1.1.png "Patient Phenotype Viewer")
