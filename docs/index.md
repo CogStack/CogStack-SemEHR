@@ -2,7 +2,7 @@
 SemEHR[1,2] is a text mining and semantic search system designed for Surfacing Semantic Data from Clinical Notes in Electronic Health Records for Tailored Care, Trial Recruitment and Clinical Research.
 
 ## How to use SemEHR?
-Follow this [tutorial](https://github.com/CogStack/CogStack-SemEHR/tree/master/tutorials) to see how SemEHR is used to analyse 20 discharge summaries and work on an Elasticsearch cluster.
+Follow this [tutorial](tuorials.html) to see how SemEHR is used to analyse 20 discharge summaries and work on an Elasticsearch cluster.
 
 ## Questions?
 Email: honghan.wu@gmail.com
