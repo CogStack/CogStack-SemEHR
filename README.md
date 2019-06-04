@@ -1,12 +1,12 @@
 # SemEHR
 Surfacing Semantic Data from Clinical Notes in Electronic Health Records for Tailored Care, Trial Recruitment and Clinical Research
-- [Tutorial: use dockerised SemEHR on (dockerised) Elasticsearch (an example on 20 discharge summaries)](https://github.com/CogStack/CogStack-SemEHR/tree/master/tutorials) 
+- [Tutorial: use dockerised SemEHR on (dockerised) Elasticsearch (an example on 20 discharge summaries)](https://semehr.cogstack.systems/tutorials.html) 
 - [Dockerised SemEHR](https://github.com/CogStack/CogStack-SemEHR/tree/master/docker)
 - [Documentation on running SemEHR](https://github.com/CogStack/SemEHR/wiki)
 - [Documentation on API calls to SemEHR](https://github.com/CogStack/SemEHR/wiki/API-calls-to-SemEHR-index)
 
 ## updates
-- (03 June 2019) A tutorial to apply SemEHR on 20 discharge summaries and deploy the system on an Elasticsearch Cluster: [Here](https://github.com/CogStack/CogStack-SemEHR/tree/master/tutorials)
+- (03 June 2019) A tutorial to apply SemEHR on 20 discharge summaries and deploy the system on an Elasticsearch Cluster: [Here](https://semehr.cogstack.systems/tutorials.html)
 - (20 Dec 2018) Dead easy to run SemEHR NOW - Docker version of SemEHR released! Check [docker](https://github.com/CogStack/CogStack-SemEHR/tree/master/docker).
 - (26 Feb 2018) An actionable transparency model has been implemented to derive confidence/accuracy value for [each annotation on a cohort basis](https://github.com/CogStack/SemEHR/blob/master/cohortanalysis.py#L334). Such value is based on the syntactic/semantic/contextual characteristics of the containing sentence/document of annotations. (a working paper about this technique will be shared soon.)
 - (9 Feb 2018) [Patient Phenome UI](https://github.com/CogStack/SemEHR/tree/master/UI/patient_phenome_ui) implemented - to support 100k Genomics England (GeL) phenome model population for patients recruited for rare disease studies. ![HPO Phenome Model](https://raw.githubusercontent.com/CogStack/SemEHR/master/resources/HPO_Phenome_Model_sample.png "HPO Phenome Model")
