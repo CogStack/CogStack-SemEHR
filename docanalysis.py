@@ -888,6 +888,8 @@ def extract_sample(pk_vals, concept, cui2concept, sample_sql_temp, dbcnn_file, c
                 r['src_table'] = rows[0]['src_table']
                 r['src_col'] = rows[0]['src_col']
                 r['anns'] = rows[0]['anns']
+            else:
+                r = None
     else:
         rows = []
         db.query_data(sample_sql_temp.format(*[v for v in pk_vals]), rows,
