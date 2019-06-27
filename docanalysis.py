@@ -870,11 +870,34 @@ def extract_sample(pk_vals, concept, cui2concept, sample_sql_temp, dbcnn_file, c
     :param container:
     :return:
     """
-    rows = []
-    db.query_data(sample_sql_temp.format(*[v for v in pk_vals]), rows,
-                  db.get_db_connection_by_setting(dbcnn_file))
-    if len(rows) > 0:
-        r = rows[0]
+    r = {}
+    if type(sample_sql_temp) is dict:
+        # two separate sqls to avoid join
+        rows = []
+        db.query_data(sample_sql_temp['text_sql'].format(*[v for v in pk_vals]), rows,
+                      db.get_db_connection_by_setting(dbcnn_file))
+        if len(rows) > 0:
+            r['text'] = rows[0]['text']
+        else:
+            r = None
+        if r is not None:
+            rows = []
+            db.query_data(sample_sql_temp['ann_sql'].format(*[v for v in pk_vals]), rows,
+                          db.get_db_connection_by_setting(dbcnn_file))
+            if len(rows) > 0:
+                r['src_table'] = rows[0]['src_table']
+                r['src_col'] = rows[0]['src_col']
+                r['anns'] = rows[0]['anns']
+    else:
+        rows = []
+        db.query_data(sample_sql_temp.format(*[v for v in pk_vals]), rows,
+                      db.get_db_connection_by_setting(dbcnn_file))
+        if len(rows) > 0:
+            r = rows[0]
+        else:
+            r = None
+
+    if r is not None:
         anns = json.loads(r['anns'])
         ann_doc = SemEHRAnnDoc()
         ann_doc.load(anns)
