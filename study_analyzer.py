@@ -409,6 +409,7 @@ def study(folder, cohort_name, sql_config_file, db_conn_file, umls_instance,
                                           join(folder, 'ruled_anns.json'), sql_config_file, db_conn_file,
                                           text_preprocessing=do_preprocessing)
         else:
+            filter_obj = None
             if filter_obj_setting is not None:
                 filter_obj = utils.load_json_data(filter_obj_setting)
             sa.gen_study_table_with_rules_es(cohort_name, join(folder, 'result.csv'), join(folder, 'sample_docs.js'),
