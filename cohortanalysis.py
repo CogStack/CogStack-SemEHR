@@ -267,6 +267,8 @@ def populate_patient_study_table_post_ruled(cohort_name, study_analyzer, out_fil
 
 
 def patient_timewindow_filter(fo, doc_id, pid):
+    if fo is None:
+        return False
     fes = fo['es']
     d = fes.get_doc_detail(str(doc_id))
     if d is None:
@@ -355,10 +357,10 @@ def es_populate_patient_study_table_post_ruled(study_analyzer, out_file, rule_ex
                 if d in counted_docs:
                     continue
                 for ann in doc['anns']:
-                    ruled, rule = rule_executor.execute(doc['text'] if not text_preprocessing else
-                                                        preprocessing_text_befor_rule_execution(doc['text']),
-                                                        int(ann['s']),
-                                                        int(ann['e']))
+                    ruled, matched, rule = rule_executor.execute(doc['text'] if not text_preprocessing else
+                                                                 preprocessing_text_befor_rule_execution(doc['text']),
+                                                                 int(ann['s']),
+                                                                 int(ann['e']))
                     if not ruled:
                         counted_docs.add(d)
                         p_to_dfreq[p] = 1 if p not in p_to_dfreq else 1 + p_to_dfreq[p]
