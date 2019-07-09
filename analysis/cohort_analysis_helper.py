@@ -10,26 +10,34 @@ def get_doc_by_id(p, doc_id):
     return None
 
 
+def retrieve_doc_by_id(doc_id, es, index_name='epr_documents', full_text_field='body_analysed'):
+    d = es.get_doc_detail(doc_id=doc_id, index_name=index_name)
+    if d is not None and full_text_field in d:
+        return d[full_text_field]
+    else:
+        return None
+
+
 def collect_patient_docs(po, es, concepts, skip_terms, container, filter_obj=None, doc_filter_function=None):
     docs = {}
     pid = po['_id']
     p = es.get_doc_detail(pid, doc_type=es.patient_type)
     doc_anns = {}
     for ann in p['anns']:
-        if ann['CUI'] in concepts:
-            doc_id = ann['appearances'][0]['eprid']
-            doc = get_doc_by_id(p, doc_id) if doc_id not in docs else docs[doc_id]
+        if ann['cui'] in concepts:
+            doc_id = ann['eprid']
+            doc = retrieve_doc_by_id(doc_id, es) if doc_id not in docs else docs[doc_id]
             if doc is None:
                 continue
             if doc_filter_function is not None:
                 if doc_filter_function(filter_obj, doc_id, pid):
                     continue
             docs[doc_id] = doc
-            string_orig = doc[ann['appearances'][0]['offset_start']:ann['appearances'][0]['offset_end']]
+            string_orig = doc[ann['start']:ann['end']]
             if string_orig not in skip_terms:
-                a = {'s': ann['appearances'][0]['offset_start'], 'e': ann['appearances'][0]['offset_end'],
+                a = {'s': ann['start'], 'e': ann['end'],
                      'contexted_concept': ann['contexted_concept'],
-                     'inst': ann['CUI']}
+                     'inst': ann['cui']}
                 if doc_id not in doc_anns:
                     doc_anns[doc_id] = {'doc_id': doc_id, 'pid': pid,
                                         "anns": [], 'text': doc}
