@@ -140,10 +140,12 @@ class SemEHRES(object):
             results.append(sp)
         return results, list(valid_docs)
 
-    def get_doc_detail(self, doc_id, doc_type=None):
+    def get_doc_detail(self, doc_id, doc_type=None, index_name=None):
         doc_type = self._doc_type if doc_type is None else doc_type
         try:
-            es_doc = self._es_instance.get(index=self._index, id=doc_id, doc_type=doc_type)
+            if index_name is None:
+                index_name = self._index
+            es_doc = self._es_instance.get(index=index_name, id=doc_id, doc_type=doc_type)
             if es_doc is not None:
                 return es_doc['_source']
             else:
