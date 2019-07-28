@@ -1,0 +1,14 @@
+Myocardial infarction	Charlson main	Top	?IHD	I252, I21, I22, I23, I241
+Congestive heart failure	Charlson main	Top	CHF	I110, I130, I132, I260, I50
+Cerbrovascular disease	Charlson main	Top	CVD	G458, G459, I691, I692, I694, I698, G463, G464, G465, G466, G467, I64, I693, I63, I690, I61, I620, I621, I629
+Peripheral vascular	Charlson main	Top		I713-I719, I731, I738, I739, I743, I744, I745
+Pulmonary disease	Charlson main	Top	?Asthma	J40-J47, J60-67
+Diabetes	Charlson main	Top	Diabetes	E10, E11, E12, O242, E13, E14, O240, O241, O243
+Diabetes complications	Charlson main	Top		E102, E112, E122, E132, E142, N083, E104, E114, E124, E134, E144, G590, G632, E103, E113, E123, E133, E143, H360
+Angina (needed)	Charlson second	Top	?IHD	I20
+Arrythmia (needed)	Charlson second	Top		R00, I47, I48, I495
+Hypertension (needed)	Charlson second	Top		I10-13, I15
+Arterial disease	Covariate	Top		I20-25, I60-79
+Hypercholesterolemia	Covariate	Top		E78
+Overweight and obesity	Covariate	Top		E66
+Osteoporosis	Covariate	Top		M80-82
