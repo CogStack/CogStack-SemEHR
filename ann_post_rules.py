@@ -84,7 +84,7 @@ class AnnRuleExecutor(object):
         if t[s:e] == string_orig:
             return [s, e]
         candidates = []
-        ito = re.finditer(r'\b(' + string_orig + r')\b',
+        ito = re.finditer(r'\b(' + re.escape(string_orig) + r')\b',
                     t, re.IGNORECASE)
         for mo in ito:
             # print mo.start(1), mo.end(1), mo.group(1)
