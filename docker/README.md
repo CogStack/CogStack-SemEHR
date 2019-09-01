@@ -2,7 +2,12 @@
 
 Makes it dead easy to run SemEHR: just put a set of documents in a folder and then run SemEHR container over it.
 
-## compile docker image locally
+## get semehr docker image: pull it from docker hub or compile it locally
+You can either pull semehr docker image 
+```
+docker pull semehr/core
+```
+Or, compile your copy by using the following command
 ```
 docker build -t cogstack/semehr - < Dockerfile
 ```
