@@ -120,7 +120,7 @@ class AnnRuleExecutor(object):
                 s_compare = text[:_head_text_window_size]
             elif r.compare_type == 100:
                 s_compare = string_orig
-            s_compare = s_compare.replace('\n', ' ')
+            # s_compare = s_compare.replace('\n', ' ')
             for reg_p in r.reg_patterns:
                 m = reg_p.match(s_compare)
                 if m is not None:
@@ -153,7 +153,7 @@ class AnnRuleExecutor(object):
                     if 1 in r.more_context_sents and 'next' in more_context_sents:
                         s_compare = '%s %s' % (s_compare, more_context_sents['next'])
                     logging.debug('s_compare [%s]' % s_compare)
-            s_compare = s_compare.replace('\n', ' ')
+            # s_compare = s_compare.replace('\n', ' ')
             for reg_p in r.reg_patterns:
                 m = reg_p.match(s_compare)
                 if m is not None:
