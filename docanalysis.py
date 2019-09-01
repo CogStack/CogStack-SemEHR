@@ -512,7 +512,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer, r
         if is_a_concept:
             # lazy reading to ignore unnecessary full text reading
             if text is None:
-                text = reader.read_full_text(text_key).replace('\n', ' ')
+                text = reader.read_full_text(text_key) #.replace('\n', ' ')
             sent = ann_doc.get_ann_sentence(ann)
             if sent is not None:
                 ruled = False
