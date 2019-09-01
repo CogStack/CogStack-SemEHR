@@ -43,11 +43,13 @@ class Rule(object):
     def add_pattern(self, ptn):
         if not self.is_containing_patterns and not ptn.startswith('^') and not ptn.endswith('$'):
             ptn = '^' + ptn + '$'
+        else:
+            ptn = '.*' + ptn + '.*'
         try:
             if self.is_case_sensitive:
                 reg_p = re.compile(ptn)
             else:
-                reg_p = re.compile('.*' + ptn + '.*', re.IGNORECASE)
+                reg_p = re.compile(ptn, re.IGNORECASE)
             self._reg_ptns.append(reg_p)
         except Exception:
             logging.error('regs error: [%s]' % ptn)
