@@ -43,7 +43,7 @@ class Rule(object):
     def add_pattern(self, ptn):
         if not self.is_containing_patterns and not ptn.startswith('^') and not ptn.endswith('$'):
             ptn = '^' + ptn + '$'
-        else:
+        elif self.is_containing_patterns:
             ptn = '.*' + ptn + '.*'
         try:
             if self.is_case_sensitive:
