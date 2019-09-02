@@ -7,9 +7,13 @@ import urllib2
 import urllib
 import traceback
 import math
+import logging
 
 
 class UMLSAPI(object):
+    """
+    Using UMLS APIs to get semantic associations between concepts
+    """
     api_url = "https://uts-ws.nlm.nih.gov/rest"
 
     def __init__(self, api_key):
@@ -34,7 +38,7 @@ class UMLSAPI(object):
         content_endpoint = self.api_url + '/search/current'
         r = requests.get(content_endpoint, params=query)
         r.encoding = 'utf-8'
-        print r.text
+        logging.debug(r.text)
         items = json.loads(r.text)
         jsonData = items["result"]
         return [o for o in jsonData['results']]
@@ -61,17 +65,25 @@ class UMLSAPI(object):
     def get_all_objects(self, content_endpoint):
         objects = []
         obj = self.get_object(content_endpoint)
-        objects += obj['result']
-        # print 'page count: %s ' % obj['pageCount']
-        for i in range(2, obj['pageCount'] + 1):
-            objects += self.get_object(content_endpoint, page_number=i)['result']
+        if obj is not None:
+            objects += obj['result']
+            # print 'page count: %s ' % obj['pageCount']
+            for i in range(2, obj['pageCount'] + 1):
+                obj = self.get_object(content_endpoint, page_number=i)
+                if obj is not None:
+                    objects += obj['result']
         return objects
 
     def get_object(self, uri, page_number=1):
-        # print uri
+        logging.debug('retrieving [%s]' % uri)
         content = requests.get(uri, params={'ticket': self.get_st(), 'pageNumber': page_number}).content
-        # print content
-        return json.loads(content)
+        logging.debug('request content: [%s]' % content)
+        try:
+            obj = json.loads(content)
+            return obj
+        except Exception as e:
+            logging.error(str(e))
+        return None
 
     def transitive_narrower(self, concept, processed_set=None, result_set=None, skip_relations={}):
         """
@@ -87,15 +99,17 @@ class UMLSAPI(object):
             processed_set = set()
         if concept in processed_set:
             return list(result_set)
-        print 'working on %s...' % concept
+        logging.debug('get narrower concepts of %s...' % concept)
         subconcepts = []
         try:
             subconcepts = self.get_narrower_concepts(concept)
             subconcepts2ignore = [] if concept not in skip_relations else skip_relations[concept]
-            subconcepts = [c[0] for c in subconcepts if c not in subconcepts2ignore]
-            print '%s has %s children' % (concept, len(subconcepts))
+            if len(subconcepts2ignore) > 0:
+                logging.info('concepts to skip %s' % subconcepts2ignore)
+            subconcepts = [c[0] for c in subconcepts if c[0] not in subconcepts2ignore]
+            logging.info('%s has %s children' % (concept, len(subconcepts)))
         except:
-            print 'error %s ' % sys.exc_info()[0]
+            logging.error('error %s ' % sys.exc_info()[0])
 
         result_set |= set(subconcepts)
         processed_set.add(concept)
@@ -151,7 +165,7 @@ def get_umls_client_inst(umls_key_file):
     :return:
     """
     key = utils.read_text_file_as_string(umls_key_file)
-    print key
+    logging.info('key [%s]' % key)
     return UMLSAPI(key)
 
 
@@ -210,7 +224,58 @@ WHERE {{
             if len(ret) > 0:
                 icd2umls[icd] = ret[0]['umls']['value']
                 print '%s\t%s\t%s' % (icd, ret[0]['umls']['value'], ret[0]['label']['value'])
-    print json.dumps(icd2umls)
+    logging.info(json.dumps(icd2umls))
+
+
+def icd10_wildcard_queries(lines, icd_file=None):
+    endpoint = 'http://sparql.bioontology.org/sparql/'
+    query_template = """
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT distinct ?umls
+FROM <http://bioportal.bioontology.org/ontologies/ICD10>
+WHERE {{
+ <http://purl.bioontology.org/ontology/ICD10/{icd10}> <http://bioportal.bioontology.org/ontologies/umls/cui> ?umls.
+}}
+"""
+    if lines is None:
+        lines = utils.read_text_file(icd_file)
+    icd2umls = {}
+    for l in lines:
+        arr = l.split("\t")
+        if len(arr) == 2:
+            not_mapped = True
+            icd = arr[0]
+            q_icd = icd
+            if '#' in icd or 'X' in icd:
+                q_icd = icd.replace('#', '').replace('X', '')
+            queries = []
+            if len(q_icd) >= 4:
+                q_icd = q_icd[:3] + '.' + q_icd[3:]
+                queries.append(q_icd)
+            elif len(q_icd) < 4:
+                gen_q = set()
+                for i in xrange(int(math.pow(10, 4-len(q_icd)))):
+                    ff = '%0' + str(4-len(q_icd)) + 'd'
+                    q = q_icd + ff % i
+                    gen_q.add(q[:3])
+                    gen_q.add(q[:3] + '.' + q[3:])
+                queries += list(gen_q)
+            for qi in queries:
+                q = query_template.format(**{'icd10': qi})
+                ret = json.loads(query(q, utils.read_text_file_as_string('./resources/HW_NCBO_KEY.txt'), endpoint))
+                ret = ret['results']['bindings']
+                if len(ret) > 0:
+                    not_mapped = False
+                for r in ret:
+                    if icd not in icd2umls:
+                        icd2umls[icd] = []
+                    icd2umls[icd].append(r['umls']['value'])
+            if not_mapped:
+                logging.info('%s not mapped: \n %s' % (icd, qi))
+    logging.info(json.dumps(icd2umls))
+    return icd2umls
 
 
 def do_get_concepts_names(concepts, umls, container):
@@ -239,14 +304,45 @@ def get_concepts_names(umls, concepts):
     return c2label
 
 
+def print_readable_sc2closure(sc2closure, umls):
+    s = ''
+    for t in sc2closure:
+        s += '%s\n' % t
+        for c in sc2closure[t]:
+            label = 'UNKNOWN'
+            obj = get_umls_concept_detail(umls, c)
+            if obj is not None:
+                label = obj['result']['name']
+            s += '\t%s[%s]\n' % (label, c)
+            logging.debug('%s read as %s' % (c, label))
+    print s
+
+
+def get_umls():
+    return get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
+
+
+def convert_manual_mapped_to_exact_mapped(manual_mapped_file):
+    result = {}
+    mm = utils.load_json_data(manual_mapped_file)
+    for t in mm:
+        for i in xrange(len(mm[t]['concepts'])):
+            result['%s (%s)' % (t, i+1)] = {
+                'closure': len(mm[t]['concepts']),
+                'mapped': mm[t]['concepts'][i]
+            }
+    print json.dumps(result)
+
+
 if __name__ == "__main__":
+    logging.basicConfig(level='DEBUG')
     # align_mapped_concepts('./resources/autoimmune-concepts.json', './resources/auto_immune_gazetteer.txt')
     umls = get_umls_client_inst('./resources/HW_UMLS_KEY.txt')
     # rets = umls.match_term('type 2 diabetes')
     # cui = rets[0]['ui']
     # print cui
-    # subconcepts = umls.transitive_narrower('C0019104', None, None)
-    # print len(subconcepts), json.dumps(subconcepts)
+    subconcepts = umls.transitive_narrower('C0038525', None, None)
+    print len(subconcepts), json.dumps(subconcepts)
     # next_scs = set([c[0] for c in subconcepts])
     # for sc in subconcepts:
     #     local_scs = umls.get_narrower_concepts(sc[0])
@@ -256,10 +352,12 @@ if __name__ == "__main__":
     # print json.dumps(umls.get_object('https://uts-ws.nlm.nih.gov/rest/content/current/CUI/C0178298/relations'))
     # print json.dumps(get_umls_concept_detail(umls, 'C0011860'))
     # print json.dumps(get_umls_source_descendants(umls, 'NCI_NICHD', 'C26747'))
-    utils.save_json_array(json.dumps(
-        get_concepts_names(umls, utils.read_text_file('./resources/all_A00-N99_concepts.txt'))),
-                          './resources/all_A00-N99_concepts_labels.json')
-    # get_concepts_names(umls, ['C0020437', 'C0020438'])
+    # utils.save_json_array(json.dumps(
+    #     get_concepts_names(umls, utils.read_text_file('./resources/all_A00-N99_concepts.txt'))),
+    #                       './resources/all_A00-N99_concepts_labels.json')
     # print get_umls_concept_detail(umls, 'C0020538')['result']['name']
     # complete_tsv_concept_label(umls, './studies/IMPARTS/concepts_verified_chris.tsv')
     # icd10_queries()
+    # print_readable_sc2closure(utils.load_json_data('./studies/autoimmune.v3.control/sc2closure.json'), umls)
+    # icd10_wildcard_queries('./resources/icd10_kch_haematology.tsv')
+    # convert_manual_mapped_to_exact_mapped('./studies/autoimmune.v3.control/manual_mapped_concepts.json')
