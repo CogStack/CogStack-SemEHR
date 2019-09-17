@@ -1,0 +1,10 @@
+{
+  "cohort": "jay-cohort",
+  "sql_config": "",
+  "db_conn": "",
+  "umls_key": "./resources/HW_UMLS_KEY.txt",
+  "do_preprocessing": false,
+  "rule_setting_file": "./studies/autoimmune.v3.control/sample_rule_config.json",
+  "do_one_iter": false,
+  "export_study_concept": false
+}
