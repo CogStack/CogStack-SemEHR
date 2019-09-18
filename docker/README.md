@@ -7,7 +7,7 @@ You can either pull semehr docker image
 ```
 docker pull semehr/core
 ```
-Or, compile your copy by using the following command
+Or, compile your copy by using the following command. (You can customise your copy by modifying the Dockerfile downloadable from above)
 ```
 docker build -t cogstack/semehr - < Dockerfile
 ```
