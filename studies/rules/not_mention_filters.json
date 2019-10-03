@@ -20,7 +20,7 @@
     ".*\\s+eg(\\s)+.{0,70}",
     ".*for example(\\s)+.{0,70}",
     ".*the word(\\s)+.{0,10}",
-    ".*risk (of|for)(\\s)+.{0,70}",
+    ".*risk(s){0,1} (of|for)(\\s)+.{0,70}",
     ".*erroneous(\\s)+.{0,30}",
     ".*should you receive(\\s)+.{0,50}",
     ".*(Does the client|Is there a family history)(\\s)+.{0,20}",
@@ -72,7 +72,7 @@
     ".*(wished|hopeful)(\\s)+.{0,80}",
     ".*(explain|explanation)\\s+.{0,80}",
     ".*\\s+double.{0,5}",
-    ".*(research|researcher).{0,30}",
+    ".*(research|researcher|threshold).{0,30}",
     ".*\\s+secretary for.{0,10}",
     ".*\\s+Breakthrough.{0,10}"
   ]},
