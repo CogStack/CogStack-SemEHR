@@ -2,7 +2,7 @@
   {
     "offset": -1, "regs":[
     ".*non\\-",
-    ".*(\\s)+non\\s+",
+    ".*(\\s)+(non|no)\\s+",
     ".*no evidence.{0,70}",
     ".*\\s+nil\\s+.{0,40}",
     ".*never[^\\.;,\\n\\r]{0,30}",
@@ -27,5 +27,5 @@
     "\\s+.{0,40}not clinically suspected\\b.*",
     "\\s+.{0,40}not detected\\b.*",
     "\\s+.{0,40}cannot be\\b.*"
-  ]}
+  ], "more_context_sents": [1]}
 ]
