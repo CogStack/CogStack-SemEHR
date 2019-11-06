@@ -985,7 +985,7 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
     for c in concept_list:
         c2pks[c] = []
     if len(results) > 0:
-        head = '\t'.join(['pid'] + concept_list)
+        head = '\t'.join(['pid'] + concept_list) + '\n'
         grp2output = {}
         for r in results:
             c2f = r['c2f']
@@ -993,7 +993,8 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
                 for g in r['c2f']:
                     gen_grouped_output(r['c2f'][g], r['p'], g, grp2output, concept_list, c2pks, head)
             else:
-                gen_grouped_output(c2f, r['p'], '', grp2output, concept_list, c2pks, head)
+                if len(c2f) > 0:
+                    gen_grouped_output(c2f, r['p'], '', grp2output, concept_list, c2pks, head)
         for grp in grp2output:
             f = join(output_folder, 'result_%s.tsv' % grp)
             utils.save_string(grp2output[grp], f)
