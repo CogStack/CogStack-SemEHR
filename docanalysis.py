@@ -991,7 +991,7 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
             c2f = r['c2f']
             if r['grp']:
                 for g in r['c2f']:
-                    gen_grouped_output(c2f, r['p'], g, grp2output, concept_list, c2pks, head)
+                    gen_grouped_output(r['c2f'][g], r['p'], g, grp2output, concept_list, c2pks, head)
             else:
                 gen_grouped_output(c2f, r['p'], '', grp2output, concept_list, c2pks, head)
         for grp in grp2output:
