@@ -806,9 +806,20 @@ def db_populate_patient_result(container, pid, doc_ann_sql_temp, doc_ann_pks, db
         c2f[c] = {'f': 0, 'rf': 0, 'docs': []}
     logging.debug('pid: %s has %s docs' % (pid, len(rows)))
     i = 0
+    g2_c2f = {}
+    grp = False
     for r in rows:
         try:
             i += 1
+            if 'grp' in r:
+                grp = True
+                if r['grp'] in g2_c2f:
+                    c2f = g2_c2f[r['grp']]
+                else:
+                    c2f = {}
+                    for c in concept_list:
+                        c2f[c] = {'f': 0, 'rf': 0, 'docs': []}
+                    g2_c2f[r['grp']] = c2f
             anns = json.loads(fix_escaped_issue(r['anns']))
             ann_doc = SemEHRAnnDoc()
             ann_doc.load(anns)
@@ -830,7 +841,9 @@ def db_populate_patient_result(container, pid, doc_ann_sql_temp, doc_ann_pks, db
         except Exception as e:
             logging.error('parsing anns %s because of %s' % (fix_escaped_issue(r['anns']), str(e)))
     logging.info('pid %s done' % pid)
-    container.append({'p': pid, 'c2f': c2f})
+    if not grp:
+        g2_c2f = c2f
+    container.append({'p': pid, 'c2f': g2_c2f, 'grp': grp})
     logging.debug('pid %s with %s, %s' % (pid, len(c2f), len(container)))
 
 
@@ -971,17 +984,20 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
     c2pks = {}
     for c in concept_list:
         c2pks[c] = []
-    s = '\t'.join(['pid'] + concept_list)
-    for r in results:
-        pr = [r['p']]
-        for c in concept_list:
-            if r['c2f'][c]['f'] > 0:
-                c2pks[c].append(r['c2f'][c]['docs'][0])
-            pr.append(str(r['c2f'][c]['f']))
-        s += '\t'.join(pr) + '\n'
-    f = join(output_folder, 'result.tsv')
-    utils.save_string(s, f)
-    logging.info('result table saved to [%s]' % f)
+    if len(results) > 0:
+        head = '\t'.join(['pid'] + concept_list)
+        grp2output = {}
+        for r in results:
+            c2f = r['c2f']
+            if r['grp']:
+                for g in r['c2f']:
+                    gen_grouped_output(c2f, r['p'], g, grp2output, concept_list, c2pks, head)
+            else:
+                gen_grouped_output(c2f, r['p'], '', grp2output, concept_list, c2pks, head)
+        for grp in grp2output:
+            f = join(output_folder, 'result_%s.tsv' % grp)
+            utils.save_string(grp2output[grp], f)
+            logging.info('result table saved to [%s]' % f)
     if sampling:
         logging.info('doing sampling...')
         sampled_result = {}
@@ -1008,9 +1024,27 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
     logging.info('all results populated')
 
 
+def gen_grouped_output(c2f, p, g, grp2output, concept_list, c2pks, head):
+    if g in grp2output:
+        grp_str = grp2output[g]
+    else:
+        grp_str = head
+    grp_str += get_c2f_output(p, c2f, concept_list, c2pks)
+    grp2output[g] = grp_str
+
+
+def get_c2f_output(p, c2f, concept_list, c2pks):
+    pr = [p]
+    for c in concept_list:
+        if c2f[c]['f'] > 0:
+            c2pks[c].append(c2f[c]['docs'][0])
+        pr.append(str(c2f[c]['f']))
+    return '\t'.join(pr) + '\n'
+
+
 def init_study_config(study_folder):
     load_study_ruler(study_folder, None)
 
 
 if __name__ == "__main__":
-    init_study_config('./studies/autoimmune.v3.control')
+    init_study_config('./studies/ktr_charlson')
