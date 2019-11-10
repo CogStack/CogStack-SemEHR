@@ -41,7 +41,7 @@ Alternatively, we are happy to provide a copy if you can let us know you have go
 ### 2. run SemEHR
 Note: you can edit `semehr-tutorial-run-compose.yml` to fit your environment. 
 
-**IMPORTANT:** you need to check whether your docker container's gateway is different than 172.17.0.1. If so, you need to change all mentions of 172.17.0.1 to your gateway ip. Do do that you can: run `docker inspect semehr-tutorial1-servers-es01-xxx` and scroll to the final bits, which tells you the gateway ip.
+**IMPORTANT:** you need to check whether your docker container's gateway is different than 172.17.0.1. If so, in `tutorials/mtsamples-cohort/semehr_settings.json` file, you need to change all mentions of 172.17.0.1 to your gateway ip. Do do that you can: run `docker inspect semehr-tutorial1-servers-es01-xxx` and scroll to the final bits, which tells you the gateway ip.
 
 Run the following to start SemEHR process.
 ```bash
