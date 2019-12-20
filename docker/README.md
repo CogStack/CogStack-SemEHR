@@ -9,7 +9,7 @@ docker pull semehr/core
 ```
 Or, compile your copy by using the following command. (You can customise your copy by modifying the Dockerfile downloadable from above)
 ```
-docker build -t cogstack/semehr - < Dockerfile
+docker build -t semehr/core - < Dockerfile
 ```
 
 ## run SemEHR docker image
@@ -27,7 +27,7 @@ docker build -t cogstack/semehr - < Dockerfile
 docker run --name=semehr-test \
 --mount type=bind,src=FULL PATH OF YOUR DATA FOLDER,dst=/data/ \
 --mount type=bind,src=FULL PATH OF YOUR CLONED CogStack-SemEHR repo,dst=/opt/semehr/CogStack-SemEHR \
-cogstack/semehr
+semehr/core
 ```
 If you have got a bio-yodie usable UMLS resource populated, you can use it like the following.
 ```
@@ -35,7 +35,7 @@ docker run --name=semehr-test \
 --mount type=bind,src=FULL PATH OF YOUR DATA FOLDER,dst=/data/ \
 --mount type=bind,src=FULL PATH OF YOUR CLONED CogStack-SemEHR repo,dst=/opt/semehr/CogStack-SemEHR \
 --mount type=bind,src=FULL PATH OF YOUR UMLS RESOURCE FOR BIO-YODIE,dst=/opt/gcp/bio-yodie-1-2-1/bio-yodie-resources \
-cogstack/semehr
+semehr/core
 ```
 
 ## results
