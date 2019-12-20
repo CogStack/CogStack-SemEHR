@@ -9,5 +9,5 @@
     "s_abbr.json",
     "cris_cutoff_filters.json"
   ],
-  "skip_term_setting": "./studies/rules/autoimmune_skip_terms.json"
+  "skip_term_setting": "./studies/rules/katrina_skip_terms.json"
 }
