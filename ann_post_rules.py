@@ -48,7 +48,9 @@ class Rule(object):
         elif self.is_containing_patterns:
             ptn = '.*' + ptn + '.*'
         try:
-            if self.is_case_sensitive:
+            if self.compare_type == -100:
+                reg_p = ptn
+            elif self.is_case_sensitive:
                 reg_p = re.compile(ptn)
             else:
                 reg_p = re.compile(ptn, re.IGNORECASE)
