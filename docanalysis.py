@@ -574,6 +574,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer, r
                     # post processing rules
                     ruled, case_instance, rule = \
                         rule_executor.execute_context_text(text, s_before, s_end, str_orig,
+                                                           ann.start + offset, ann.end + offset,
                                                            more_context_sents=more_context_sents)
                 if ruled:
                     ann.add_ruled_by(rule)

@@ -135,7 +135,7 @@ class AnnRuleExecutor(object):
                     break
         return filtered, matched, rule_name
 
-    def execute_context_text(self, text, s_before, s_end, string_orig, more_context_sents=None):
+    def execute_context_text(self, text, s_before, s_end, string_orig, start, end, more_context_sents=None):
         filtered = False
         matched = []
         rule_name = ''
@@ -149,7 +149,7 @@ class AnnRuleExecutor(object):
             elif r.compare_type == 100:
                 s_compare = string_orig
             elif r.compare_type == -100:
-                in_cut_off = AnnRuleExecutor.cut_off_matching(text, r.reg_patterns, s_before)
+                in_cut_off = AnnRuleExecutor.cut_off_matching(text, r.reg_patterns, start)
                 if in_cut_off:
                     filtered = True
                     matched.append('CUTOFF: %s' % r.name)
@@ -230,6 +230,7 @@ class AnnRuleExecutor(object):
             if check_pos >= pos > 0:
                 return True
         return False
+
 
 def test_filter_rules():
     t = """Sheet1
