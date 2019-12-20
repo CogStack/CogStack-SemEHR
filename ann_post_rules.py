@@ -144,6 +144,15 @@ class AnnRuleExecutor(object):
                 s_compare = text[:_head_text_window_size]
             elif r.compare_type == 100:
                 s_compare = string_orig
+            elif r.compare_type == -100:
+                in_cut_off = AnnRuleExecutor.cut_off_matching(text, r.reg_patterns, s_before)
+                if in_cut_off:
+                    filtered = True
+                    matched.append('CUTOFF: %s' % r.name)
+                    rule_name = r.name
+                    return filtered, matched, rule_name
+                else:
+                    continue
 
             if more_context_sents is not None:
                 if len(r.more_context_sents) > 0:
@@ -210,6 +219,13 @@ class AnnRuleExecutor(object):
         if 'skip_term_setting' in rule_config:
             self.skip_terms = utils.load_json_data(rule_config['skip_term_setting'])
 
+    @staticmethod
+    def cut_off_matching(text, anchor_texts, check_pos):
+        for t in anchor_texts:
+            pos = text.lower().find(t.lower())
+            if check_pos >= pos > 0:
+                return True
+        return False
 
 def test_filter_rules():
     t = """Sheet1
