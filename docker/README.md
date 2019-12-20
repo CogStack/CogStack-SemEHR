@@ -9,7 +9,7 @@ docker pull semehr/core
 ```
 Or, compile your copy by using the following command. (You can customise your copy by modifying the Dockerfile downloadable from above)
 ```
-docker build -t cogstack/semehr - < Dockerfile
+docker build -t semehr/core - < Dockerfile
 ```
 
 ## run SemEHR docker image
@@ -20,14 +20,14 @@ docker build -t cogstack/semehr - < Dockerfile
     - output_docs: for saving `temporary` NLP annotations;
     - semehr_results: for saving SeEHR results.
 - (optional) create a SemEHR configuration file (semehr_settings.json) in `data` dir. If not, a default configuration will be used, i.e. `docker/docker_doc_based_settings.json`.
-- (optional) [*Gazetteer settings*] A sample gazetteer will be used for NLP annotation. This is a list of entities used for a stroke subtyping study. It is recommended to use a UMLS gazetteer that bio-yodie can use. Due to license purpose, we cannot provide it. If you have got a UMLS license, please follow instructions from [here](https://github.com/GateNLP/bio-yodie-resource-prep) to populate your own.
+- (optional) [*Gazetteer settings*] A sample gazetteer will be used for NLP annotation. This is a list of entities used for a stroke subtyping study. It is recommended to use a UMLS gazetteer that bio-yodie can use. Due to license purpose, we cannot provide it. If you have got a UMLS license, please follow instructions from [here](https://github.com/GateNLP/bio-yodie-resource-prep) to populate your own. Or, you can get in touch (honghan.wu@gmail.com) for help on the resource generation.
 
 ### run the container
 ```
 docker run --name=semehr-test \
 --mount type=bind,src=FULL PATH OF YOUR DATA FOLDER,dst=/data/ \
 --mount type=bind,src=FULL PATH OF YOUR CLONED CogStack-SemEHR repo,dst=/opt/semehr/CogStack-SemEHR \
-cogstack/semehr
+semehr/core
 ```
 If you have got a bio-yodie usable UMLS resource populated, you can use it like the following.
 ```
@@ -35,7 +35,7 @@ docker run --name=semehr-test \
 --mount type=bind,src=FULL PATH OF YOUR DATA FOLDER,dst=/data/ \
 --mount type=bind,src=FULL PATH OF YOUR CLONED CogStack-SemEHR repo,dst=/opt/semehr/CogStack-SemEHR \
 --mount type=bind,src=FULL PATH OF YOUR UMLS RESOURCE FOR BIO-YODIE,dst=/opt/gcp/bio-yodie-1-2-1/bio-yodie-resources \
-cogstack/semehr
+semehr/core
 ```
 
 ## results
