@@ -85,7 +85,7 @@
     ".*\\s+not accepting.{0,50}"
   ]},
   {"offset": 1, "regs": [
-    "\\s+risk",
+    "\\s+risk.*",
     "\\s+[^\\.,;\\n\\r]{0,30}\\?\\s+.*",
     "\\s+.{0,10}unlikely\\b.*",
     "\\s+.{0,50}likely\\b.*",
