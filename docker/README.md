@@ -20,7 +20,7 @@ docker build -t semehr/core - < Dockerfile
     - output_docs: for saving `temporary` NLP annotations;
     - semehr_results: for saving SeEHR results.
 - (optional) create a SemEHR configuration file (semehr_settings.json) in `data` dir. If not, a default configuration will be used, i.e. `docker/docker_doc_based_settings.json`.
-- (optional) [*Gazetteer settings*] A sample gazetteer will be used for NLP annotation. This is a list of entities used for a stroke subtyping study. It is recommended to use a UMLS gazetteer that bio-yodie can use. Due to license purpose, we cannot provide it. If you have got a UMLS license, please follow instructions from [here](https://github.com/GateNLP/bio-yodie-resource-prep) to populate your own.
+- (optional) [*Gazetteer settings*] A sample gazetteer will be used for NLP annotation. This is a list of entities used for a stroke subtyping study. It is recommended to use a UMLS gazetteer that bio-yodie can use. Due to license purpose, we cannot provide it. If you have got a UMLS license, please follow instructions from [here](https://github.com/GateNLP/bio-yodie-resource-prep) to populate your own. Or, you can get in touch (honghan.wu@gmail.com) for help on the resource generation.
 
 ### run the container
 ```
