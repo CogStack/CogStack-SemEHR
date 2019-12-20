@@ -41,7 +41,9 @@ class Rule(object):
         return self._reg_ptns
 
     def add_pattern(self, ptn):
-        if not self.is_containing_patterns and not ptn.startswith('^') and not ptn.endswith('$'):
+        if self.compare_type == -100:
+            pass
+        elif not self.is_containing_patterns and not ptn.startswith('^') and not ptn.endswith('$'):
             ptn = '^' + ptn + '$'
         elif self.is_containing_patterns:
             ptn = '.*' + ptn + '.*'
