@@ -1,0 +1,13 @@
+{
+  "rules_folder": "./studies/rules/",
+  "active_rules": [
+    "cris_document_filters.json",
+    "hypothetical_filters.json",
+    "negation_filters.json",
+    "not_mention_filters.json",
+    "other_experiencer_filters.json",
+    "s_abbr.json",
+    "cris_cutoff_filters.json"
+  ],
+  "skip_term_setting": "./studies/rules/katrina_skip_terms.json"
+}
