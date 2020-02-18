@@ -4,6 +4,7 @@ import re
 from semquery import SemEHRES
 import mimicdao
 from random import randint
+from os.path import join
 
 
 def parse_summary_structure(full_text, re_exp=r'^([^\n\:]+)\:$'):
@@ -275,6 +276,29 @@ def smp_index(patient_id, es, doc_type):
         print '%s indexed' % patient_id
 
 
+def smp_export(patient_id, es, corpus_mapping, output_folder):
+    """
+    structured medical profile extraction
+    :param es: elasticsearch index
+    :param patient_id:
+    :param output_folder:
+    :return:
+    """
+    print 'indexing %s' % patient_id
+    ds_ids = mimicdao.get_summary_doc_by_patient(patient_id)
+    for r in ds_ids:
+        doc = es.get_doc_detail(r['row_id'])
+        profile = parse_discharge_summary(doc['fulltext'], doc['anns'], corpus_mapping)
+        mp = {}
+        for sec in profile:
+            t = sec['section'] if sec['section'] != '' else 'basic'
+            t = t.replace(' ', '_')
+            mp[t] = sec
+        file_name = '%s_%s.json' % (patient_id, r['row_id'])
+        utils.save_json_array(mp, join(output_folder, file_name))
+        print '%s indexed' % file_name
+
+
 def index_mimic_af_cohort_smp():
     med_profile_type = 'medprofile'
     pids = utils.read_text_file('../resources/af_pids.txt')
@@ -405,6 +429,12 @@ def mimic_af_analysis(es):
     utils.save_string(s, '../resources/af_semantic_results.txt')
 
 
+def do_export_smp():
+    corpus_mapping = load_corpus_to_FHIR_mapping('../resources/wrappers/mimic_FHIR_discharge_summary_map.tsv')
+    smp_export('29463', es, corpus_mapping,
+               '/Users/honghan.wu/Documents/UoE/semehr-usecase/mimic_structured_medical_profiles')
+
+
 if __name__ == "__main__":
     # random_select_mimic_patients()
     es_setting = {
@@ -420,4 +450,5 @@ if __name__ == "__main__":
                                           es_setting['es_concept_type'],
                                           es_setting['es_patient_type'])
 
-    mimic_struct_extract_exp(es)
+    # mimic_struct_extract_exp(es)
+    do_export_smp()
