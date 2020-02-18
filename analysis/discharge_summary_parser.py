@@ -5,6 +5,7 @@ from semquery import SemEHRES
 import mimicdao
 from random import randint
 from os.path import join
+import sqldbutils as db
 
 
 def parse_summary_structure(full_text, re_exp=r'^([^\n\:]+)\:$'):
@@ -276,12 +277,13 @@ def smp_index(patient_id, es, doc_type):
         print '%s indexed' % patient_id
 
 
-def smp_export(patient_id, es, corpus_mapping, output_folder):
+def smp_export(patient_id, es, corpus_mapping, sql_temp, db_cnn):
     """
     structured medical profile extraction
     :param es: elasticsearch index
     :param patient_id:
-    :param output_folder:
+    :param sql_temp:
+    :param db_cnn
     :return:
     """
     print 'indexing %s' % patient_id
@@ -295,7 +297,9 @@ def smp_export(patient_id, es, corpus_mapping, output_folder):
             t = t.replace(' ', '_')
             mp[t] = sec
         file_name = '%s_%s.json' % (patient_id, r['row_id'])
-        utils.save_json_array(mp, join(output_folder, file_name))
+        db.query_data(sql_temp.format(**{'patient_id': patient_id, 'doc_id': r['row_id'],
+                                         'smp': db.escape_string(json.dumps(mp))}),
+                      None, dbconn=db.get_db_connection_by_setting(db_cnn))
         print '%s indexed' % file_name
 
 
@@ -429,10 +433,10 @@ def mimic_af_analysis(es):
     utils.save_string(s, '../resources/af_semantic_results.txt')
 
 
-def do_export_smp():
+def do_export_smp(sql_tmp, db_cnn):
     corpus_mapping = load_corpus_to_FHIR_mapping('../resources/wrappers/mimic_FHIR_discharge_summary_map.tsv')
     smp_export('29463', es, corpus_mapping,
-               '/Users/honghan.wu/Documents/UoE/semehr-usecase/mimic_structured_medical_profiles')
+               sql_temp=sql_tmp, db_cnn=db_cnn)
 
 
 if __name__ == "__main__":
@@ -451,4 +455,5 @@ if __name__ == "__main__":
                                           es_setting['es_patient_type'])
 
     # mimic_struct_extract_exp(es)
-    do_export_smp()
+    do_export_smp(sql_tmp="insert into smp (patient_id, doc_id, smp) values ('{patient_id}', '{doc_id}', '{smp}')",
+                  db_cnn='./conf/semdb_cnn.json')
