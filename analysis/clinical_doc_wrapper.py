@@ -3,159 +3,124 @@ import json
 import re
 from elasticsearch import Elasticsearch
 from semquery import SemEHRES
-
-re_exps = {
-    'letter_header_splitter': {
-        'pattern': r'^Dear\s+([A-Z]{1,}[A-Za-z\-])*\s+(.*)$',
-        'flags': ['multiline'],
-        'data_labels': ['title', 'name'],
-        'data_type': 'letter receiver'
-    },
-    'letter_end_splitter': {
-        'pattern': r'^(Yours){0,}\s+(sincerely|faithfully)\,{0,}$',
-        'flags': ['multiline', 'ignorecase'],
-        'data_type': 'letter end text'
-    },
-    'doctor': {
-        'pattern': r' {0,}(Dr|Prof|Professor|Miss|Ms|Mr|Mrs)\.{0,1} +([A-Za-z\-]+( {0,}([A-Za-z\-]*)){0,1})',
-        # r'^ {0,}(Dr|Prof|Professor|Miss|Ms|Mr|Mrs) +([A-Za-z]+ {0,}(.*))$',
-        'flags': ['multiline', 'ignorecase'],
-        'data_labels': ['title', 'name'],
-        'data_type': 'doctor'
-    },
-    'clinic': [{
-        'pattern': r'(([^\s]* {1,}){1,2})(Hospital|surgery|Prim Ctre|Clinic)',
-        'flags': ['multiline', 'ignorecase'],
-        'data_labels': ['name', 'inst_type'],
-        'data_type': 'clinic'
-    }
-    ],
-    'assistant': [{
-        'pattern': r'(.*)(secretary|nurse)',
-        'flags': ['multiline', 'ignorecase'],
-        'data_labels': ['name', 'inst_type'],
-        'data_type': 'assistant'
-    }
-    ],
-    'phone': [{
-        'pattern': r' {0,}(telephone|phone|tel no|Fax No|Fax number|Appointments|Facsimile|fax|tel)\.{0,1}\s{0,1}\:{0,1}\s+((\d{2,}( |\-){0,1}){1,}).*',
-        'flags': ['multiline', 'ignorecase'],
-        'data_labels': ['label', 'number'],
-        'data_type': 'phone'
-    },
-        {
-            'pattern': r'((secretary to|reception)[^\d]+((\d{2,}( |\-){0,1}){1,}))',
-            'flags': ['multiline', 'ignorecase'],
-            'data_labels': ['full', 'label', 'number'],
-            'data_type': 'phone'
-        },
-        {
-            'pattern': r'(\(\d+\) {0,}\d{2,}( |\-){0,}\d{2,})',
-            'flags': ['multiline', 'ignorecase'],
-            'data_labels': ['number'],
-            'data_type': 'phone'
-        }
-    ],
-    'address': [{
-        'pattern': r'((.*\n){3}[^\n]{0,}(([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z]))))\s?[0-9][A-Za-z]{2})))',
-        'flags': ['multiline', 'ignorecase'],
-        'data_labels': ['name', 'partial', 'postcode'],
-        'data_type': 'address'
-    },
-        {
-            'pattern': r'(((flat|room)[^\n]+){0,}\d{1,}[^\n]+(([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z]))))\s?[0-9][A-Za-z]{2})))',
-            'flags': ['multiline', 'ignorecase'],
-            'data_labels': ['name', 'partial', 'postcode'],
-            'data_type': 'address'
-        }
-    ]
-}
+from os.path import isfile, join
+from os import listdir
 
 
-def rul_extraction(full_text, re_objs):
-    results = []
-    for ro in re_objs:
-        flag = 0
-        if 'multiline' in ro['flags']:
-            flag |= re.MULTILINE
-        if 'ignorecase' in ro['flags']:
-            flag |= re.IGNORECASE
-        matches = re.finditer(ro['pattern'], full_text, flag)
-        for m in matches:
-            ret = {'type': ro['data_type'], 'attrs': {}}
-            results.append(ret)
-            ret['attrs']['full_match'] = m.group(0)
-            ret['pos'] = m.span()
-            i = 1
-            if 'data_labels' in ro:
-                for attr in ro['data_labels']:
-                    ret['attrs'][attr] = m.group(i)
-                    i += 1
-    return results
+
+class AnonymiseRule(object):
+    def __init__(self, rule_file):
+        self._rules = utils.load_json_data(rule_file)
+
+    @staticmethod
+    def rul_extraction(full_text, re_objs):
+        results = []
+        for ro in re_objs:
+            if 'disabled' in ro and ro['disabled']:
+                continue
+            flag = 0
+            if 'multiline' in ro['flags']:
+                flag |= re.MULTILINE
+            if 'ignorecase' in ro['flags']:
+                flag |= re.IGNORECASE
+            matches = re.finditer(ro['pattern'], full_text, flag)
+            for m in matches:
+                ret = {'type': ro['data_type'], 'attrs': {}}
+                results.append(ret)
+                ret['attrs']['full_match'] = m.group(0)
+                ret['pos'] = m.span()
+                i = 1
+                if 'data_labels' in ro:
+                    for attr in ro['data_labels']:
+                        ret['attrs'][attr] = m.group(i)
+                        i += 1
+        return results
+
+    def do_letter_parsing(self, full_text):
+        re_exps = self._rules
+        results = []
+        header_pos = -1
+        tail_pos = -1
+        header_result = self.rul_extraction(full_text, [re_exps['letter_header_splitter']])
+        tail_result = self.rul_extraction(full_text, [re_exps['letter_end_splitter']])
+        results += header_result
+        if len(header_result) > 0:
+            header_pos = header_result[0]['pos'][0]
+            header_text = full_text[:header_pos]
+            phone_results = self.rul_extraction(header_text, re_exps['phone'])
+            dr_results = self.rul_extraction(header_text, [re_exps['doctor']])
+            results += phone_results
+            results += dr_results
+        if len(tail_result) > 0:
+            tail_pos = tail_result[0]['pos'][1]
+            tail_text = full_text[tail_pos:]
+            for sent_type in re_exps['sent_rules']:
+                results += self.rul_extraction(tail_text, re_exps[sent_type])
+            # phone_results = self.rul_extraction(tail_text, re_exps['phone'])
+            # dr_results = self.rul_extraction(tail_text, re_exps['doctor'])
+            # addr_results = self.rul_extraction(tail_text, re_exps['address'])
+            # addr_results += self.rul_extraction(tail_text, re_exps['clinic'])
+            # addr_results += self.rul_extraction(tail_text, re_exps['assistant'])
+            # # print tail_text
+            # # print 'addr matched results [%s]' % addr_results
+            # results += dr_results
+            # results += phone_results
+            # results += addr_results
+        return results, header_pos, tail_pos
+
+    def do_full_text_parsing(self, full_text):
+        re_exps = self._rules
+        matched_rets = []
+        for st in re_exps['sent_rules']:
+            rules = re_exps['sent_rules'][st]
+            matched_rets += self.rul_extraction(full_text, rules if type(rules) is list else [rules])
+        return matched_rets, 0, 0
+
+    @staticmethod
+    def do_replace(text, pos, sent_text, replace_char='x'):
+        return text[:pos] + re.sub(r'[^\n\s]', 'x', sent_text) + text[pos+len(sent_text):]
 
 
-def do_letter_parsing(full_text):
-    results = []
-    header_pos = -1
-    tail_pos = -1
-    header_result = rul_extraction(full_text, [re_exps['letter_header_splitter']])
-    tail_result = rul_extraction(full_text, [re_exps['letter_end_splitter']])
-    results += header_result
-    if len(header_result) > 0:
-        header_pos = header_result[0]['pos'][0]
-        header_text = full_text[:header_pos]
-        phone_results = rul_extraction(header_text, re_exps['phone'])
-        dr_results = rul_extraction(header_text, [re_exps['doctor']])
-        results += phone_results
-        results += dr_results
-    if len(tail_result) > 0:
-        tail_pos = tail_result[0]['pos'][1]
-        tail_text = full_text[tail_pos:]
-        phone_results = rul_extraction(tail_text, re_exps['phone'])
-        dr_results = rul_extraction(tail_text, [re_exps['doctor']])
-        addr_results = rul_extraction(tail_text, re_exps['address'])
-        addr_results += rul_extraction(tail_text, re_exps['clinic'])
-        addr_results += rul_extraction(tail_text, re_exps['assistant'])
-        # print tail_text
-        # print 'addr matched results [%s]' % addr_results
-        results += dr_results
-        results += phone_results
-        results += addr_results
-    return results, header_pos, tail_pos
-
-
-def do_full_text_parsing(full_text):
-    matched_rets = []
-    for ptn in re_exps:
-        matched_rets += rul_extraction(full_text, re_exps[ptn] if type(re_exps[ptn]) is list else [re_exps[ptn]])
-    return matched_rets, 0, 0
-
-
-def do_doc_anonymisation(doc, writing_es, writing_index_name, writing_doc_type,
-                         full_text_field, container, failed_docs):
-    print '======working on %s' % doc['_id']
-    text = doc['_source'][full_text_field]
+def anonymise_doc(doc_id, text, failed_docs, anonymis_inst, sent_container):
+    """
+    anonymise a document
+    :param doc_id:
+    :param text:
+    :param failed_docs:
+    :param anonymis_inst: anonymise_rule instance
+    :return:
+    """
     # rets = do_letter_parsing(text)
-    rets = do_full_text_parsing(text)
+    rets = anonymis_inst.do_full_text_parsing(text)
     if rets[1] < 0 or rets[2] < 0:
-        failed_docs.append(doc['_id'])
-        print '````````````` %s failed' % doc['_id']
+        failed_docs.append(doc_id)
+        print '````````````` %s failed' % doc_id
+        return None, None
     else:
-        data = doc['_source']
         sen_data = rets[0]
         # print 'sentdata : [%s]' % sen_data
         anonymised_text = text
         for d in sen_data:
             if 'name' in d['attrs']:
-                print 'removing %s ' % d['attrs']['name']
+                print 'removing %s [%s] ' % (d['attrs']['name'], d['type'])
                 if is_valid_place_holder(d['attrs']['name']):
-                    anonymised_text = anonymised_text.replace(d['attrs']['name'],
-                                                              re.sub(r'[^\n]', 'x', d['attrs']['name']))
+                    anonymised_text = AnonymiseRule.do_replace(anonymised_text, d['pos'][0] + d['attrs']['full_match'].find(d['attrs']['name']), d['attrs']['name'])
                     # 'x' * len(d['attrs']['name']))
+                sent_container.append({'type': d['type'], 'sent': d['attrs']['name']})
             if 'number' in d['attrs']:
                 print 'removing %s ' % d['attrs']['number']
                 if is_valid_place_holder(d['attrs']['number']):
-                    anonymised_text = anonymised_text.replace(d['attrs']['number'], 'x' * len(d['attrs']['number']))
+                    anonymised_text = AnonymiseRule.do_replace(anonymised_text, d['pos'][0], d['attrs']['number'])
+                sent_container.append({'type': d['type'], 'sent': d['attrs']['number']})
+        return anonymised_text, sen_data
+
+
+def do_doc_anonymisation(doc, writing_es, writing_index_name, writing_doc_type,
+                         full_text_field, container, failed_docs, anonymis_inst):
+    print '======working on %s' % doc['_id']
+    anonymised_text, sen_data = anonymise_doc(doc['_id'], doc['_source'][full_text_field], failed_docs, anonymis_inst)
+    if anonymised_text is not None:
+        data = doc['_source']
         data[full_text_field] = anonymised_text
         writing_es.index(index=writing_index_name, doc_type=writing_doc_type,
                          body=data, id=doc['_id'], timeout='30s')
@@ -164,7 +129,7 @@ def do_doc_anonymisation(doc, writing_es, writing_index_name, writing_doc_type,
 
 
 def is_valid_place_holder(s):
-    return len(s) > 2
+    return len(s) >= 2
 
 
 def init_es_inst():
@@ -204,7 +169,11 @@ def parse_es_docs(es, q,
     print 'done'
 
 
-if __name__ == "__main__":
+def es_anonymisation():
+    """
+    query es index to anonymise texts
+    :return:
+    """
     es = init_es_inst()
     writing_es_host = "https://:1@IPADDRESS"
     writing_index_name = "index"
@@ -213,3 +182,47 @@ if __name__ == "__main__":
     full_text_field = "field"
     parse_es_docs(es, 'description:"letter"', writing_es_host, writing_index_name, writing_doc_type, doc_type,
                   full_text_field)
+
+
+def dir_anonymisation(folder, rule_file):
+    anonymis_inst = AnonymiseRule(rule_file)
+    onlyfiles = [f for f in listdir(folder) if isfile(join(folder, f))]
+    container = []
+    sent_data = []
+    for f in onlyfiles:
+        text = utils.read_text_file_as_string(join(folder, f))
+        print anonymise_doc(f, text, container, anonymis_inst, sent_data)
+
+
+def wrap_anonymise_doc(text, failed_docs, anonymis_inst, sent_container):
+    anonymised_text, sen_data = anonymise_doc('id', text, failed_docs, anonymis_inst, sent_container)
+    print(anonymised_text)
+
+
+def mimic_anonymisation(single_file, rule_file):
+    doc = utils.read_text_file_as_string(single_file)
+    arr = re.split(r'START\_OF\_RECORD=\d+\|\|\|\|\d+\|\|\|\|\r{0,1}\n', doc)
+    i = 0
+    texts = []
+    for t in arr:
+        texts.append(t.replace('||||END_OF_RECORD\n', ''))
+
+    anonymis_inst = AnonymiseRule(rule_file)
+    failed_docs = []
+    sent_data = []
+    utils.multi_thread_tasking(texts, 1, wrap_anonymise_doc, args=[failed_docs, anonymis_inst, sent_data])
+    t2sent = {}
+    for s in sent_data:
+        if s['type'] not in t2sent:
+            t2sent[s['type']] = []
+        t2sent[s['type']].append(s['sent'])
+    for t in t2sent:
+        t2sent[t] = list(set(t2sent[t]))
+        print('%s\n======\n%s\n\n' % (t, '\n'.join(t2sent[t])))
+
+
+if __name__ == "__main__":
+    # dir_anonymisation('C:/Users/hwu33/Downloads/research_datasets/deidentified-medical-text-1.0/files',
+    #                   './conf/anonymise_rules.json')
+    mimic_anonymisation('C:/Users/hwu33/Downloads/research_datasets/deidentified-medical-text-1.0/id.text',
+                        './conf/anonymise_rules.json')
