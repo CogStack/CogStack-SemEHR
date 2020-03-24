@@ -268,9 +268,10 @@ def produce_yodie_config(settings, data_rows, docid_path):
     if settings.get_attr(['yodie', 'input_source']) != "files":
         logging.info('doing yodie with %s documents, saved to %s...' %
                      (str(len(data_rows)), docid_path))
-        # save doc ids to text file for input to bioyodie
-        logging.info('saving doc ids to [%s]' % docid_path)
-        utils.save_string('\n'.join([str(r['docid']) for r in data_rows]), docid_path)
+        if len(data_rows) > 0:
+            # save doc ids to text file for input to bioyodie
+            logging.info('saving doc ids to [%s]' % docid_path)
+            utils.save_string('\n'.join([str(r['docid']) for r in data_rows]), docid_path)
         documents = ET.SubElement(batch, "documents")
         documentEnumerator = ET.SubElement(documents, "documentEnumerator")
         documentEnumerator.set('class', 'kcl.iop.brc.core.kconnect.crisfeeder.PlainTextEnumerator')
