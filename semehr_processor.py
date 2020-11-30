@@ -10,9 +10,6 @@ import os
 import sqldbutils
 import xml.etree.ElementTree as ET
 from subprocess import Popen, STDOUT
-from entity_centric_es import EntityCentricES, do_index_100k_anns, do_index_100k_patients, JSONSerializerPython2
-# from elasticsearch import Elasticsearch
-import cohortanalysis as cohort
 import docanalysis
 import logging
 from analysis import cohort_analysis_helper
@@ -117,20 +114,6 @@ def do_copy_doc(src_doc_id, es, src_index, src_doc_type, dest_index, dest_doc_ty
     es.copy_doc(src_index, src_doc_type, str(src_doc_id), dest_index, dest_doc_type)
 
 
-def working_on_docs(index_setting_file, job_file, src_index, src_doc_type, dest_index, dest_doc_type, num_threads=20):
-    job_status = JobStatus(job_file)
-    docs = get_docs_for_processing(job_status)
-    print 'copy docs: [%s]' % docs
-    es = ees.EntityCentricES.get_instance(index_setting_file)
-    try:
-        utils.multi_thread_tasking(docs, num_threads, do_copy_doc,
-                                   args=[es, src_index, src_doc_type, dest_index, dest_doc_type])
-        job_status.set_status(True)
-    except:
-        job_status.set_status(JobStatus.STATUS_FAILURE)
-    job_status.save()
-
-
 def copy_docs_by_patients(index_setting_file, src_index, src_doc_type, entity_id_field_name,
                           dest_index, dest_doc_type, doc_list_file):
     """
@@ -167,19 +150,6 @@ def set_sys_env(settings):
     gcp_home = settings.get_attr(['env', 'gcp_home'])
     if gcp_home is not None and len(gcp_home) > 0 and gcp_home not in os.environ['PATH']:
         os.environ['PATH'] += ':' + gcp_home
-
-
-def actionable_transparise(settings):
-    cohort_name = settings.get_attr(['action_trans', 'cohort_name'])
-    dbcnn_file = settings.get_attr(['action_trans', 'dbconn_setting_file'])
-    sql_cohort_doc = settings.get_attr(['action_trans', 'sql_cohort_doc_template'])
-    sql_doc_anns = settings.get_attr(['action_trans', 'sql_doc_anns_template'])
-    sql_doc_content = settings.get_attr(['action_trans', 'sql_doc_content_template'])
-    sql_action_trans_inert = settings.get_attr(['action_trans', 'sql_action_trans_update_template'])
-    action_trans_model_file = settings.get_attr(['action_trans', 'action_trans_model_file'])
-    cohort.action_transparentise(cohort_name, dbcnn_file,
-                                 sql_cohort_doc, sql_doc_anns, sql_doc_content, sql_action_trans_inert,
-                                 action_trans_model_file)
 
 
 def produce_yodie_config(settings, data_rows, docid_path):
@@ -300,52 +270,6 @@ def clear_folder(folder):
                 os.unlink(file_path)
         except Exception as e:
             print(e)
-
-
-def do_semehr_index(settings, patients, doc_to_patient):
-    """
-    do SemEHR index
-    :param settings:
-    :param patients:
-    :param doc_to_patient:
-    :return:
-    """
-    es = EntityCentricES(settings.get_attr(['semehr', 'es_host']))
-    es.index_name = settings.get_attr(['semehr', 'index'])
-    es.concept_doc_type = settings.get_attr(['semehr', 'concept_doc_type'])
-    es.entity_doc_type = settings.get_attr(['semehr', 'entity_doc_type'])
-    es.doc_level_index = settings.get_attr(['semehr', 'doc_level_index'])
-
-    f_yodie_anns = settings.get_attr(['yodie', 'output_file_path'])
-    ann_files = [f for f in listdir(f_yodie_anns) if isfile(join(f_yodie_anns, f))]
-
-    if settings.get_attr(['job', 'semehr-concept']) == 'yes':
-        logging.info('[SemEHR-step] starting semehr-concept process')
-        logging.debug('working on files : %s' % ann_files)
-        # index concepts
-        concept_index = settings.get_attr(['semehr', 'concept_index'])
-        for ann in ann_files:
-            utils.multi_thread_large_file_tasking(join(f_yodie_anns, ann), 10, do_index_100k_anns,
-                                                  args=[es, doc_to_patient, concept_index])
-        logging.info('[SemEHR-step-end]concept/document level indexing done')
-
-    if settings.get_attr(['job', 'semehr-patients']) == 'yes':
-        logging.info('[SemEHR-step] indexing annotations at patient level')
-        # index patients
-        es_doc_url = settings.get_attr(['semehr', 'es_doc_url'])
-        es_full_text = Elasticsearch([es_doc_url], serializer=JSONSerializerPython2(), verify_certs=False)
-        ft_index_name = settings.get_attr(['semehr', 'full_text_index'])
-        ft_doc_type = settings.get_attr(['semehr', 'full_text_doc_type'])
-        ft_entity_field = settings.get_attr(['semehr', 'full_text_patient_field'])
-        ft_fulltext_field = settings.get_attr(['semehr', 'full_text_text_field'])
-        utils.multi_thread_tasking(patients, 10, do_index_100k_patients,
-                                   args=[es,
-                                         es_full_text,
-                                         ft_index_name,
-                                         ft_doc_type,
-                                         ft_entity_field,
-                                         ft_fulltext_field])
-        logging.info('[SemEHR-step-end]patient level indexing done')
 
 
 def do_semehr_doc_anns_analysis(settings):
@@ -478,73 +402,6 @@ def do_patient_indexing(pid, es, doc_level_index, doc_ann_type,
                      ann_field_name=ann_field_name)
 
 
-def patient_level_indexing(settings, pids):
-    es = SemEHRES.get_instance_by_setting(settings.get_attr(['patient_index', 'es_host']),
-                                          settings.get_attr(['patient_index', 'patient_index']),
-                                          settings.get_attr(['patient_index', 'patient_doct_type']),
-                                          settings.get_attr(['patient_index', 'es_concept_type']),
-                                          settings.get_attr(['patient_index', 'es_patient_type']))
-    doc_level_index = settings.get_attr(['patient_index', 'doc_level_index'])
-    doc_ann_type = settings.get_attr(['patient_index', 'doc_ann_type'])
-    doc_index = settings.get_attr(['patient_index', 'doc_index'])
-    doc_pid_field_name = settings.get_attr(['patient_index', 'doc_pid_field_name'])
-    doc_text_field_name = settings.get_attr(['patient_index', 'doc_text_field_name'])
-    patient_index = settings.get_attr(['patient_index', 'patient_index'])
-    patient_doct_type = settings.get_attr(['patient_index', 'patient_doct_type'])
-    doc_type = settings.get_attr(['patient_index', 'doc_type'])
-    ann_field_name = settings.get_attr(['patient_index', 'ann_field_name'])
-    num_procs = 10 if settings.get_attr(['patient_index', 'num_procs']) is None else \
-        settings.get_attr(['patient_index', 'num_procs'])
-    ignore_exist = True if settings.get_attr(['patient_index', 'ignore_exist']) is None else \
-        settings.get_attr(['patient_index', 'ignore_exist'])
-
-    utils.multi_process_tasking(
-        lst=pids,
-        num_procs=num_procs,
-        process_func=do_patient_indexing,
-        args=[es, doc_level_index, doc_ann_type,
-              doc_index, doc_type, doc_pid_field_name, doc_text_field_name,
-              patient_index, patient_doct_type,
-              ann_field_name, ignore_exist])
-    # for pid in pids:
-    #     es.index_patient(doc_level_index, pid, doc_ann_type,
-    #                      doc_index, doc_type, doc_pid_field_name, doc_text_field_name,
-    #                      patient_index, patient_doct_type,
-    #                      ann_field_name=ann_field_name)
-
-
-def load_document_to_es(settings):
-    """
-    load document to elastic search
-    :param settings:
-    :return:
-    """
-    doc_folder = settings.get_attr(['epr_index', 'doc_folder'])
-    d2p_tsv = settings.get_attr(['epr_index', 'doc2patient_tsv'])
-    es = SemEHRES.get_instance_by_setting(settings.get_attr(['epr_index', 'es_host']),
-                                          settings.get_attr(['epr_index', 'es_index_name']),
-                                          settings.get_attr(['epr_index', 'doc_type']),
-                                          '',
-                                          '')
-    tsv_lines = utils.read_text_file(d2p_tsv)
-    d2p = {}
-    for l in tsv_lines:
-        arr = l.split('\t')
-        if len(arr) > 1:
-            d2p[arr[0]] = arr[1]
-    for f in [f for f in listdir(doc_folder) if isfile(join(doc_folder, f))]:
-        if f in d2p:
-            p = d2p[f]
-            t = utils.read_text_file_as_string(join(doc_folder, f))
-            es.index_new_doc(index=settings.get_attr(['epr_index', 'es_index_name']),
-                             doc_type=settings.get_attr(['epr_index', 'doc_type']),
-                             data={settings.get_attr(['epr_index', 'text_field']): t,
-                                   settings.get_attr(['epr_index', 'patient_id_field']):p,
-                                   "id": f},
-                             doc_id=f)
-
-
-
 def process_semehr(config_file):
     """
     a pipeline to process all SemEHR related processes:
@@ -580,9 +437,7 @@ def process_semehr(config_file):
 
     # preload: load documents to es
     if ps.get_attr(['job', 'epr_index']) == 'yes':
-        logging.info('[SemEHR-step]load documents to elasticsearch...')
-        load_document_to_es(settings=ps)
-        logging.info('[SemEHR-step-end] epr_index step done')
+        raise Exception('epr_index not supported by this version')
 
     data_rows = []
     doc2pid = {}
@@ -601,16 +456,7 @@ def process_semehr(config_file):
     # if True:
         # 0. copy docs
         if ps.get_attr(['job', 'copy_docs']) == 'yes':
-            logging.info('[SemEHR-step] copy docs')
-            docs = [str(r['docid']) for r in data_rows]
-            utils.multi_thread_tasking(docs, ps.get_attr(['doc_copy', 'thread_num']),
-                                       do_copy_doc,
-                                       args=[EntityCentricES(ps.get_attr(['doc_copy', 'es_host'])),
-                                             ps.get_attr(['doc_copy', 'src_index']),
-                                             ps.get_attr(['doc_copy', 'src_doc_type']),
-                                             ps.get_attr(['doc_copy', 'dest_index']),
-                                             ps.get_attr(['doc_copy', 'dest_doc_type'])])
-            logging.info('[SemEHR-step-end]copying docs done')
+            raise Exception('copy_docs not supported in this version')
 
         if ps.get_attr(['job', 'yodie']) == 'yes':
             docid_path = '%s/%s_docids.txt' % (
@@ -672,18 +518,11 @@ def process_semehr(config_file):
 
         # 2. do SemEHR concept/entity indexing
         if ps.get_attr(['job', 'semehr-concept']) == 'yes' or ps.get_attr(['job', 'semehr-patients']) == 'yes':
-            patients = []
-            doc_to_patient = {}
-            for r in data_rows:
-                patients.append(str(r['patientid']))
-                doc_to_patient[str(r['docid'])] = str(r['patientid'])
-            patients = list(set(patients))
-            do_semehr_index(ps, patients, doc_to_patient)
+            raise Exception('semehr-concept indexing not supported by this version')
 
         # 3. do SemEHR actionable transparency
         if ps.get_attr(['job', 'action_trans']) == 'yes':
-            logging.info('[SemEHR-step]doing transparency...')
-            actionable_transparise(settings=ps)
+            raise Exception('action_trans not supported by this version')
 
         # 4. do SemEHR document annotation analysis (post processing)
         if ps.get_attr(['job', 'doc_analysis']) == 'yes':
@@ -693,9 +532,7 @@ def process_semehr(config_file):
 
         # 4.5 do SemEHR patient level index
         if ps.get_attr(['job', 'patient_index']) == 'yes':
-            logging.info('[SemEHR-step]doing patient level indexing...')
-            patient_level_indexing(settings=ps, pids=pids)
-            logging.info('[SemEHR-step-end] patient level indexing done')
+            raise Exception('action_trans not supported by this version')
 
         # 5. do populate results for a research study
         if ps.get_attr(['job', 'populate_cohort_result']) == 'yes':
