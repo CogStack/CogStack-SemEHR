@@ -2,8 +2,6 @@ import docanalysis as da
 import xml.etree.ElementTree as ET
 import datetime
 import utils
-import sqldbutils as dbutils
-import json
 from os.path import join, isfile
 from os import listdir
 import logging
@@ -97,40 +95,11 @@ class AnnConverter(object):
     def convert_text_ann_from_db(sql_temp, pks, db_conn, full_text_folder, ann_folder,
                                  full_text_file_pattern='%s.txt',
                                  ann_file_pattern='%s.txt.knowtator.xml'):
-        sql = sql_temp.format(**pks)
-        results = []
-        logging.info('doing [%s]...' % sql)
-        file_key = '_'.join([pks[k] for k in pks])
-        dbutils.query_data(sql, results, dbutils.get_db_connection_by_setting(db_conn))
-        if len(results) > 0:
-            text = results[0]['text'].replace('\r', '\n')
-            anns = json.loads(results[0]['anns'])
-            xml = AnnConverter.to_eHOST(AnnConverter.load_ann(anns, file_key), full_text=text)
-            utils.save_string(xml, join(ann_folder, ann_file_pattern % file_key))
-            utils.save_string(text, join(full_text_folder, full_text_file_pattern % file_key))
-            logging.info('doc [%s] done' % file_key)
-        else:
-            logging.info('doc/anns [%s] not found' % file_key)
+        raise Exception('convert_text_ann_from_db not supported')
 
     @staticmethod
     def get_db_docs_for_converting(settings):
-        sql = settings['sql']
-        db_conn = settings['db_conn']
-        doc_ann_sql_temp = settings['sql_temp']
-        full_text_folder = settings['full_text_folder']
-        ann_folder = settings['ann_folder']
-        results = []
-        dbutils.query_data(sql, results, dbutils.get_db_connection_by_setting(db_conn))
-        ds = []
-        for r in results:
-            ds.append(r)
-        logging.info('total docs %s' % len(ds))
-        for d in ds:
-            AnnConverter.convert_text_ann_from_db(sql_temp=doc_ann_sql_temp,
-                                                  pks=d,
-                                                  db_conn=db_conn,
-                                                  full_text_folder=full_text_folder,
-                                                  ann_folder=ann_folder)
+        raise Exception('get_db_docs_for_converting not supported')
 
     @staticmethod
     def convert_text_ann_from_files(full_text_folder, ann_folder, output_folder,
@@ -175,10 +144,8 @@ class AnnConverter(object):
 
 
 if __name__ == "__main__":
-    reload(sys)
-    sys.setdefaultencoding('utf-8')
     logging.basicConfig(level='INFO', format='%(name)s %(asctime)s %(levelname)s %(message)s')
     if len(sys.argv) != 2:
-        print 'the syntax is [python ann_converter.py SETTING_FILE_PATH]'
+        print('the syntax is [python ann_converter.py SETTING_FILE_PATH]')
     else:
         AnnConverter.convvert_anns(sys.argv[1])

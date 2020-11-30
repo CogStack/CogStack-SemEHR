@@ -244,8 +244,8 @@ def test_filter_rules():
     # for r in rules:
     #     print r
     #     e.add_filter_rule(r['offset'], r['regs'], case_sensitive=True if 'case' in r and r['case'] is True else False)
-    print 'working on [%s]' % t
-    print e.execute_context_text(t, 'ACaCac', ' clinic', 'clincic')
+    print('working on [%s]' % t)
+    print(e.execute_context_text(t, 'ACaCac', ' clinic', 'clincic'))
 
 
 def test_osf_rules():
@@ -254,7 +254,7 @@ def test_osf_rules():
     e.load_rule_config('./studies/autoimmune.v3/sample_rule_config.json')
     # rules = utils.load_json_data('./studies/rules/osf_acroynm_filters.json')
     # e.add_original_string_filters(rules)
-    print e.execute_original_string_rules(t)
+    print(e.execute_original_string_rules(t))
 
 
 if __name__ == "__main__":

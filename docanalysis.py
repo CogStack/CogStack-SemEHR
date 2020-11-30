@@ -3,21 +3,19 @@ from os.path import join, isfile, split, splitext
 from os import listdir
 import logging
 import study_analyzer
-import sqldbutils as db
 import json
-import random
 import re
 import ann_post_rules
 import multiprocessing
-from analysis.semquery import SemEHRES
 
 
 class BasicAnn(object):
     """
     a simple NLP (Named Entity) annotation class
     """
-    def __init__(self, str, start, end):
-        self._str = str
+
+    def __init__(self, str_, start, end):
+        self._str = str_
         self._start = start
         self._end = end
         self._id = -1
@@ -78,11 +76,12 @@ class ContextedAnn(BasicAnn):
     """
     a contextulised annotation class (negation/tempolarity/experiencer)
     """
-    def __init__(self, str, start, end, negation, temporality, experiencer):
+
+    def __init__(self, str_, start, end, negation, temporality, experiencer):
         self._neg = negation
         self._temp = temporality
         self._exp = experiencer
-        super(ContextedAnn, self).__init__(str, start, end)
+        super(ContextedAnn, self).__init__(str_, start, end)
 
     @property
     def negation(self):
@@ -109,21 +108,22 @@ class ContextedAnn(BasicAnn):
         self._exp = value
 
     def serialise_json(self):
-        dict = super(ContextedAnn, self).serialise_json()
-        dict['negation'] = self.negation
-        dict['temporality'] = self.temporality
-        dict['experiencer'] = self.experiencer
-        return dict
+        dict_obj = super(ContextedAnn, self).serialise_json()
+        dict_obj['negation'] = self.negation
+        dict_obj['temporality'] = self.temporality
+        dict_obj['experiencer'] = self.experiencer
+        return dict_obj
 
 
 class PhenotypeAnn(ContextedAnn):
     """
     a simple customisable phenotype annotation (two attributes for customised attributes)
     """
-    def __init__(self, str, start, end,
+
+    def __init__(self, str_, start, end,
                  negation, temporality, experiencer,
                  major_type, minor_type):
-        super(PhenotypeAnn, self).__init__(str, start, end, negation, temporality, experiencer)
+        super(PhenotypeAnn, self).__init__(str_, start, end, negation, temporality, experiencer)
         self._major_type = major_type
         self._minor_type = minor_type
 
@@ -144,10 +144,10 @@ class PhenotypeAnn(ContextedAnn):
         self._minor_type = value
 
     def serialise_json(self):
-        dict = super(PhenotypeAnn, self).serialise_json()
-        dict['major_type'] = self.major_type
-        dict['minor_type'] = self.minor_type
-        return dict
+        dict_ojb = super(PhenotypeAnn, self).serialise_json()
+        dict_ojb['major_type'] = self.major_type
+        dict_ojb['minor_type'] = self.minor_type
+        return dict_ojb
 
     @staticmethod
     def deserialise(jo):
@@ -161,10 +161,11 @@ class SemEHRAnn(ContextedAnn):
     """
     SemEHR Annotation Class
     """
-    def __init__(self, str, start, end,
+
+    def __init__(self, str_, start, end,
                  negation, temporality, experiencer,
                  cui, sty, pref, ann_type):
-        super(SemEHRAnn, self).__init__(str, start, end, negation, temporality, experiencer)
+        super(SemEHRAnn, self).__init__(str_, start, end, negation, temporality, experiencer)
         self._cui = cui
         self._sty = sty
         self._pref = pref
@@ -225,13 +226,13 @@ class SemEHRAnn(ContextedAnn):
             self._ruled_by.append(rule_name)
 
     def serialise_json(self):
-        dict = super(SemEHRAnn, self).serialise_json()
-        dict['sty'] = self.sty
-        dict['cui'] = self.cui
-        dict['pref'] = self.pref
-        dict['study_concepts'] = self.study_concepts
-        dict['ruled_by'] = self.ruled_by
-        return dict
+        dict_obj = super(SemEHRAnn, self).serialise_json()
+        dict_obj['sty'] = self.sty
+        dict_obj['cui'] = self.cui
+        dict_obj['pref'] = self.pref
+        dict_obj['study_concepts'] = self.study_concepts
+        dict_obj['ruled_by'] = self.ruled_by
+        return dict_obj
 
     @staticmethod
     def deserialise(jo):
@@ -249,12 +250,14 @@ class SemEHRAnnDoc(object):
     """
     SemEHR annotation Doc
     """
+
     def __init__(self, file_key=None):
         self._fk = file_key
         self._anns = []
         self._phenotype_anns = []
         self._sentences = []
         self._others = []
+        self._doc = None
 
     def load(self, json_doc, file_key=None):
         self._doc = json_doc
@@ -308,7 +311,7 @@ class SemEHRAnnDoc(object):
                                      int(ann['startNode']['offset']),
                                      int(ann['endNode']['offset']))
                         self._sentences.append(a)
-                        self._sentences = sorted(self._sentences, key=lambda x:x.start)
+                        self._sentences = sorted(self._sentences, key=lambda x: x.start)
                         a.id = 'sent-%s' % len(self._sentences)
                     else:
                         self._others.append(ann)
@@ -326,25 +329,25 @@ class SemEHRAnnDoc(object):
                 sent = s
                 break
         if sent is None:
-            print 'sentence not found for %s' % ann.__dict__
+            print('sentence not found for %s' % ann.__dict__)
             return None
         return sent
 
     def get_prev_sent(self, s):
-        self._sentences = sorted(self._sentences, key=lambda x:x.start)
-        for idx in xrange(len(self.sentences)):
+        self._sentences = sorted(self._sentences, key=lambda x: x.start)
+        for idx in range(len(self.sentences)):
             if self.sentences[idx] == s:
                 if idx > 0:
-                    return self.sentences[idx-1]
+                    return self.sentences[idx - 1]
                 else:
                     return None
 
     def get_next_sent(self, s):
-        self._sentences = sorted(self._sentences, key=lambda x:x.start)
-        for idx in xrange(len(self.sentences)):
+        self._sentences = sorted(self._sentences, key=lambda x: x.start)
+        for idx in range(len(self.sentences)):
             if self.sentences[idx] == s:
                 if idx < len(self.sentences) - 1:
-                    return self.sentences[idx+1]
+                    return self.sentences[idx + 1]
                 else:
                     return None
 
@@ -377,6 +380,7 @@ class TextReader(object):
 class FileTextReader(TextReader):
 
     def __init__(self, folder, pattern):
+        super().__init__()
         self._folder = folder
         self._pattern = pattern
 
@@ -390,6 +394,7 @@ class FileTextReader(TextReader):
 
 class WrapperTextReader(TextReader):
     def __init__(self, text):
+        super().__init__()
         self._text = text
 
     def read_full_text(self, text_key):
@@ -398,18 +403,18 @@ class WrapperTextReader(TextReader):
 
 class DBTextReader(TextReader):
     def __init__(self, sql_temp, dbcnn_file):
+        super().__init__()
         self._qt = sql_temp
         self._cnn_file = dbcnn_file
+        raise Exception('database reader is not supported')
 
     def read_full_text(self, text_key):
-        sql = self._qt.format(*[k for k in text_key])
-        rets = []
-        db.query_data(sql, rets, db.get_db_connection_by_setting(self._cnn_file))
-        return rets[0]['text']
+        pass
 
 
 class ESTextReader(TextReader):
     def __init__(self, es, full_text_field, patient_id_field=None):
+        super().__init__()
         self._es = es
         self._text_field = full_text_field
         self._pid_field = patient_id_field
@@ -469,8 +474,8 @@ class DocCohort(object):
         logging.info('result collected')
 
     @staticmethod
-    def collect_doc_anns_by_types(doc_tuple, dir, sem_types, container):
-        doc = utils.load_json_data(join(dir, doc_tuple[0]))
+    def collect_doc_anns_by_types(doc_tuple, dir_path, sem_types, container):
+        doc = utils.load_json_data(join(dir_path, doc_tuple[0]))
         ann_doc = SemEHRAnnDoc(file_key=doc_tuple[1])
         ann_doc.load(doc, doc_tuple[1])
         for a in ann_doc.annotations:
@@ -493,10 +498,11 @@ class DocCohort(object):
         return sorted(g, key=lambda x: x[1].lower())
 
 
-def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer, reset_prev_concept=False):
-    study_concepts = study_analyzer.study_concepts if study_analyzer is not None else None
+def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer_inst, reset_prev_concept=False):
+    study_concepts = study_analyzer_inst.study_concepts if study_analyzer_inst is not None else None
     num_concepts = 0
     text = None
+    rule = None
     for ann in ann_doc.annotations:
         is_a_concept = False
         if reset_prev_concept:
@@ -512,7 +518,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer, r
         if is_a_concept:
             # lazy reading to ignore unnecessary full text reading
             if text is None:
-                text = reader.read_full_text(text_key) #.replace('\n', ' ')
+                text = reader.read_full_text(text_key)  # .replace('\n', ' ')
             sent = ann_doc.get_ann_sentence(ann)
             if sent is not None:
                 ruled = False
@@ -527,7 +533,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer, r
                     offset = s - ann.start
                     logging.debug('offset not matching, relocated from %s,%s to %s,%s, offset: %s' %
                                   (ann.start, ann.end, s, e, offset))
-                    context_text = text[sent.start + offset:sent.end+offset]
+                    context_text = text[sent.start + offset:sent.end + offset]
                     logging.debug('context text: %s' % context_text)
                 s_before = context_text[:offset_start]
 
@@ -541,7 +547,7 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer, r
                         s_before = prev_s_text + s_before
                         anchor_sent = prev_s
 
-                if context_text.startswith('s '): # or s_before == '' :
+                if context_text.startswith('s '):  # or s_before == '' :
                     prev_s = ann_doc.get_prev_sent(sent)
                     if prev_s is not None:
                         s_before = text[prev_s.start + offset:prev_s.end + offset] + s_before
@@ -585,89 +591,40 @@ def process_doc_rule(ann_doc, rule_executor, reader, text_key, study_analyzer, r
     return num_concepts
 
 
-def db_doc_process(cnn, row, sql_template, pks, update_template, dbcnn_file, text_reader, sa, ruler, update_status_template):
-    sql = sql_template.format(*[row[k] for k in pks])
-    rets = []
-    db.query_data(sql, rets, db.get_db_connection_by_setting(dbcnn_file))
-    if len(rets) > 0:
-        anns = json.loads(fix_escaped_issue(rets[0]['anns']))
-        ann_doc = SemEHRAnnDoc()
-        ann_doc.load(anns)
-        no_concepts = False
-        if len(ann_doc.annotations) > 0:
-            num_concepts = process_doc_rule(ann_doc, ruler, text_reader, [row[k] for k in pks], sa)
-            if num_concepts > 0:
-                update_query = update_template.format(*([db.escape_string(json.dumps(ann_doc.serialise_json()))] +
-                                                        [row[k] for k in pks]))
-                # logging.debug('update ann: %s' % update_query)
-                db.query_data(update_query, None, dbconn=cnn)
-                logging.info('ann %s updated' % row)
-            else:
-                no_concepts = True
-        else:
-            no_concepts = True
-        if no_concepts and update_status_template is not None:
-            q = update_status_template.format(*[row[k] for k in pks])
-            db.query_data(q, None, dbconn=cnn)
-            logging.debug('no concepts found/update %s' % q)
+def db_doc_process(cnn, row, sql_template, pks, update_template, dbcnn_file, text_reader, sa, ruler,
+                   update_status_template):
+    raise Exception('db_doc_process is not supported')
 
 
 def analyse_db_doc_anns(sql, ann_sql, pks, update_template, full_text_sql, dbcnn_file, rule_config_file,
                         study_folder, thread_num=10, study_config='study.json', update_status_template=None):
-    """
-    do database based annotation post processing
-    :param sql: get a list of annotation primary keys
-    :param ann_sql: a query template to query ann and its doc full text
-    :param pks: an array of primary key columns
-    :param update_template: an update query template to update post-processed ann
-    :param dbcnn_file: database connection file
-    :param thread_num:
-    :param study_folder:
-    :param rule_config_file:
-    :param study_config:
-    :return:
-    """
-    ret = load_study_ruler(study_folder, rule_config_file, study_config)
-    sa = ret['sa']
-    ruler = ret['ruler']
-    rows = []
-    db.query_data(sql, rows, db.get_db_connection_by_setting(dbcnn_file))
-    reader = DBTextReader(full_text_sql, dbcnn_file)
-    cnns = []
-    for i in xrange(thread_num):
-        cnns.append(db.get_db_connection_by_setting(dbcnn_file))
-    utils.multi_process_tasking(rows, db_doc_process, num_procs=thread_num,
-                                args=[ann_sql, pks, update_template, dbcnn_file, reader, sa, ruler,
-                                      update_status_template],
-                                thread_wise_objs=cnns)
-    for i in xrange(thread_num):
-        db.release_db_connection(cnns[i])
+    raise Exception('analyse_db_doc_anns is not supported')
 
 
 def analyse_doc_anns_file(ann_doc_path, rule_executor, text_reader, output_folder,
                           fn_pattern='se_ann_%s.json', es_inst=None, es_output_index=None, es_output_doc='doc',
-                          study_analyzer=None):
+                          study_analyzer_inst=None):
     p, fn = split(ann_doc_path)
     file_key = splitext(fn)[0]
     json_doc = utils.load_json_data(ann_doc_path)
     return analyse_doc_anns(json_doc, file_key, rule_executor, text_reader, output_folder,
                             fn_pattern, es_inst, es_output_index, es_output_doc,
-                            study_analyzer)
+                            study_analyzer_inst)
 
 
 def analyse_doc_anns_line(line, rule_executor, text_reader, output_folder,
                           fn_pattern='se_ann_%s.json', es_inst=None, es_output_index=None, es_output_doc='doc',
-                          study_analyzer=None):
+                          study_analyzer_inst=None):
     json_doc = json.loads(line)
     file_key = json_doc['docId']
     return analyse_doc_anns(json_doc, file_key, rule_executor, text_reader, output_folder,
                             fn_pattern, es_inst, es_output_index, es_output_doc,
-                            study_analyzer)
+                            study_analyzer_inst)
 
 
 def analyse_doc_anns(json_doc, file_key, rule_executor, text_reader, output_folder,
                      fn_pattern='se_ann_%s.json', es_inst=None, es_output_index=None, es_output_doc='doc',
-                     study_analyzer=None, contextualised_concept_index='semehr_ctx_concepts',
+                     study_analyzer_inst=None, contextualised_concept_index='semehr_ctx_concepts',
                      ctx_doc_type='ctx_concept'):
     ann_doc = SemEHRAnnDoc()
     ann_doc.load(json_doc, file_key=file_key)
@@ -682,7 +639,7 @@ def analyse_doc_anns(json_doc, file_key, rule_executor, text_reader, output_fold
         logging.error('file [%s] full text not found' % ann_doc.file_key)
         return
     reader = WrapperTextReader(text)
-    process_doc_rule(ann_doc, rule_executor, reader, None, study_analyzer)
+    process_doc_rule(ann_doc, rule_executor, reader, None, study_analyzer_inst)
     if es_inst is None:
         utils.save_json_array(ann_doc.serialise_json(), join(output_folder, fn_pattern % ann_doc.file_key))
     else:
@@ -700,19 +657,7 @@ def analyse_doc_anns(json_doc, file_key, rule_executor, text_reader, output_fold
 
 
 def index_ctx_concept(ann, concept_index, ctx_doc_type, es_inst):
-    data = {
-        "doc": {
-            "cui": ann['cui'],
-            "negation": ann['negation'],
-            "experiencer": ann['experiencer'],
-            "temporality": ann['temporality'],
-            "prefLabel": ann['pref'],
-            "STY": ann['sty']
-        },
-        "doc_as_upsert": True
-    }
-    ctx_id = SemEHRES.get_ctx_concept_id(ann)
-    es_inst.update_doc(index=concept_index, doc_type=ctx_doc_type, data=data, doc_id=ctx_id)
+    raise Exception('indexing contextualised concepts not supported in this version')
 
 
 def load_study_ruler(study_folder, rule_config_file, study_config='study.json'):
@@ -723,9 +668,12 @@ def load_study_ruler(study_folder, rule_config_file, study_config='study.json'):
         ret = study_analyzer.load_study_settings(study_folder,
                                                  umls_instance=None,
                                                  rule_setting_file=r['rule_setting_file'],
-                                                 concept_filter_file=None if 'concept_filter_file' not in r else r['concept_filter_file'],
-                                                 do_disjoint_computing=True if 'do_disjoint' not in r else r['do_disjoint'],
-                                                 export_study_concept_only=False if 'export_study_concept' not in r else r['export_study_concept']
+                                                 concept_filter_file=None if 'concept_filter_file' not in r else r[
+                                                     'concept_filter_file'],
+                                                 do_disjoint_computing=True if 'do_disjoint' not in r else r[
+                                                     'do_disjoint'],
+                                                 export_study_concept_only=False if 'export_study_concept' not in r else
+                                                 r['export_study_concept']
                                                  )
         sa = ret['study_analyzer']
         ruler = ret['ruler']
@@ -742,6 +690,8 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
                      es_output_index=None, es_output_doc='doc'):
     """
     multiple threading process doc anns
+    :type thread_num: object
+    :param patient_id_field: 
     :param anns_folder:
     :param full_text_folder:
     :param rule_config_file:
@@ -789,63 +739,7 @@ def process_doc_anns(anns_folder, full_text_folder, rule_config_file, output_fol
 def db_populate_patient_result(container, pid, doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list,
                                cui2concept,
                                ontext_filter_fun=None):
-    """
-    populate a row (per patient) in the result table
-    :param pid:
-    :param doc_ann_sql_temp:
-    :param doc_ann_pks:
-    :param dbcnn_file:
-    :param concept_list:
-    :param cui2concept:
-    :param container:
-    :return:
-    """
-    rows = []
-    db.query_data(doc_ann_sql_temp.format(pid), rows, db.get_db_connection_by_setting(dbcnn_file))
-    c2f = {}
-    for c in concept_list:
-        c2f[c] = {'f': 0, 'rf': 0, 'docs': []}
-    logging.debug('pid: %s has %s docs' % (pid, len(rows)))
-    i = 0
-    g2_c2f = {}
-    grp = False
-    for r in rows:
-        try:
-            i += 1
-            if 'grp' in r:
-                grp = True
-                if r['grp'] in g2_c2f:
-                    c2f = g2_c2f[r['grp']]
-                else:
-                    c2f = {}
-                    for c in concept_list:
-                        c2f[c] = {'f': 0, 'rf': 0, 'docs': []}
-                    g2_c2f[r['grp']] = c2f
-            anns = json.loads(fix_escaped_issue(r['anns']))
-            ann_doc = SemEHRAnnDoc()
-            ann_doc.load(anns)
-            for a in ann_doc.annotations:
-                # for c in a.study_concepts:
-                if a.cui in cui2concept:
-                    c = cui2concept[a.cui]
-                    logging.debug('%s found in %s, ruled_by=%s, concepts:%s' % (c, '-'.join([r[k] for k in doc_ann_pks]),
-                                                                   a.ruled_by, a.study_concepts))
-                    if c in c2f:
-                        correct = len(a.ruled_by) == 0
-                        if correct and ontext_filter_fun is not None:
-                            correct = ontext_filter_fun(a)
-                        if not correct:
-                            c2f[c]['rf'] += 1
-                        else:
-                            c2f[c]['f'] += 1
-                            c2f[c]['docs'].append([r[k] for k in doc_ann_pks])
-        except Exception as e:
-            logging.error('parsing anns %s because of %s' % (fix_escaped_issue(r['anns']), str(e)))
-    logging.info('pid %s done' % pid)
-    if not grp:
-        g2_c2f = c2f
-    container.append({'p': pid, 'c2f': g2_c2f, 'grp': grp})
-    logging.debug('pid %s with %s, %s' % (pid, len(c2f), len(container)))
+    raise Exception('db_populate_patient_result is not supported')
 
 
 def positive_patient_filter(ann):
@@ -853,14 +747,15 @@ def positive_patient_filter(ann):
 
 
 def fix_escaped_issue(s):
-    p = re.compile(r'(string_orig":"|pref": "|PREF":"|str": ")(((?!","|"\}|", ").)*)(","|"\}|", ")')
+    p = re.compile(r'(string_orig":"|pref": "|PREF":"|str": ")(((?!","|"}|", ").)*)(","|"}|", ")')
     fiz = []
     for m in p.finditer(s):
         vg = 2
         val = s[m.span(vg)[0]:m.span(vg)[1]]
         if '"' in val:
             new_val = val.replace('\\', '').replace('"', '\\"')
-            fix = {'s': m.span()[0], 'e': m.span()[1], 'mid': s[m.span(1)[0]:m.span(1)[1]] + new_val + s[m.span(4)[0]:m.span(4)[1]]}
+            fix = {'s': m.span()[0], 'e': m.span()[1],
+                   'mid': s[m.span(1)[0]:m.span(1)[1]] + new_val + s[m.span(4)[0]:m.span(4)[1]]}
             fiz.append(fix)
     new_s = s
     if len(fiz) > 0:
@@ -874,62 +769,9 @@ def fix_escaped_issue(s):
     return new_s
 
 
-def extract_sample(pk_vals, concept, cui2concept, sample_sql_temp, dbcnn_file, container, ontext_filter_fun=positive_patient_filter):
-    """
-    extract an sample
-    :param pk_vals:
-    :param concept:
-    :param sample_sql_temp:
-    :param dbcnn_file:
-    :param container:
-    :return:
-    """
-    r = {}
-    if type(sample_sql_temp) is dict:
-        # two separate sqls to avoid join
-        rows = []
-        db.query_data(sample_sql_temp['text_sql'].format(*[v for v in pk_vals]), rows,
-                      db.get_db_connection_by_setting(dbcnn_file))
-        if len(rows) > 0:
-            r['text'] = rows[0]['text']
-        else:
-            r = None
-        if r is not None:
-            rows = []
-            db.query_data(sample_sql_temp['ann_sql'].format(*[v for v in pk_vals]), rows,
-                          db.get_db_connection_by_setting(dbcnn_file))
-            if len(rows) > 0:
-                r['src_table'] = rows[0]['src_table']
-                r['src_col'] = rows[0]['src_col']
-                r['anns'] = rows[0]['anns']
-            else:
-                r = None
-    else:
-        rows = []
-        db.query_data(sample_sql_temp.format(*[v for v in pk_vals]), rows,
-                      db.get_db_connection_by_setting(dbcnn_file))
-        if len(rows) > 0:
-            r = rows[0]
-        else:
-            r = None
-
-    if r is not None:
-        anns = json.loads(r['anns'])
-        ann_doc = SemEHRAnnDoc()
-        ann_doc.load(anns)
-        for a in ann_doc.annotations:
-            if a.cui in cui2concept and concept == cui2concept[a.cui]:
-                correct = len(a.ruled_by) == 0
-                if correct and ontext_filter_fun is not None:
-                    correct = ontext_filter_fun(a)
-                if correct:
-                    container.append({'content': r['text'], 'doc_table': r['src_table'], 'doc_col': r['src_col'],
-                                      'id': '_'.join(pk_vals),
-                                      'annotations': [{'start': a.start,
-                                                       'end': a.end,
-                                                       'concept': a.cui,
-                                                       'string_orig': a.str}]})
-                    break
+def extract_sample(pk_vals, concept, cui2concept, sample_sql_temp, dbcnn_file, container,
+                   ontext_filter_fun=positive_patient_filter):
+    raise Exception('extract_sample is not supported')
 
 
 def proc_init_container():
@@ -947,83 +789,7 @@ def db_populate_study_results(cohort_sql, doc_ann_sql_temp, doc_ann_pks, dbcnn_f
                               study_folder, output_folder, sample_sql_temp,
                               thread_num=10, study_config='study.json',
                               sampling=True, sample_size=20):
-    """
-    populate results for a research study
-    :param cohort_sql: cohort selection query
-    :param doc_ann_sql_temp: query template for getting a doc_anns item
-    :param doc_ann_pks: primary key columns of doc ann table
-    :param dbcnn_file: database connection config file
-    :param study_folder: study folder
-    :param output_folder: where to save the results
-    :param sample_sql_temp: query template for getting a sample item (including full text and doc_anns)
-    :param thread_num:
-    :param study_config:
-    :param sampling: whether sampling is needed
-    :param sample_size: how many samples per study concept
-    :return:
-    """
-    ret = load_study_ruler(study_folder, None, study_config)
-    sa = ret['sa']
-    concept_list = sorted([sc.name for sc in sa.study_concepts])
-    cui2concept = {}
-    for sc in sa.study_concepts:
-        for c in sc.concept_closure:
-            cui2concept[c] = sc.name
-    results = []
-    rows = []
-    db.query_data(cohort_sql, rows, db.get_db_connection_by_setting(dbcnn_file))
-    logging.info('querying results (cohort size:%s)...' % len(rows))
-    utils.multi_process_tasking([r['pid'] for r in rows], db_populate_patient_result, num_procs=thread_num,
-                                args=[doc_ann_sql_temp, doc_ann_pks, dbcnn_file, concept_list,
-                                      cui2concept,
-                                      positive_patient_filter],
-                                thread_init_func=proc_init_container,
-                                thread_end_func=proc_final_collect,
-                                thread_end_args=[results]
-                                )
-    # populate result table
-    c2pks = {}
-    for c in concept_list:
-        c2pks[c] = []
-    if len(results) > 0:
-        head = '\t'.join(['pid'] + concept_list) + '\n'
-        grp2output = {}
-        for r in results:
-            c2f = r['c2f']
-            if r['grp']:
-                for g in r['c2f']:
-                    gen_grouped_output(r['c2f'][g], r['p'], g, grp2output, concept_list, c2pks, head)
-            else:
-                if len(c2f) > 0:
-                    gen_grouped_output(c2f, r['p'], '', grp2output, concept_list, c2pks, head)
-        for grp in grp2output:
-            f = join(output_folder, 'result_%s.tsv' % grp)
-            utils.save_string(grp2output[grp], f)
-            logging.info('result table saved to [%s]' % f)
-    if sampling:
-        logging.info('doing sampling...')
-        sampled_result = {}
-        for c in c2pks:
-            pks = c2pks[c]
-            sample_pks = []
-            logging.info('doc cache size: %s' % len(pks))
-            if len(pks) <= sample_size:
-                sample_pks = pks
-            else:
-                for i in xrange(sample_size):
-                    index = random.randrange(len(pks))
-                    sample_pks.append(pks[index])
-                    del pks[index]
-            samples = []
-            utils.multi_thread_tasking(sample_pks, thread_num, extract_sample,
-                                       args=[c, cui2concept, sample_sql_temp, dbcnn_file, samples])
-            sampled_result[c] = samples
-            logging.info('%s sampled (%s) results' % (c, len(samples)))
-
-        f = join(output_folder, 'sampled_docs.js')
-        utils.save_string('var sample_docs= %s;' % json.dumps(sampled_result), f)
-        logging.info('samples saved to %s' % f)
-    logging.info('all results populated')
+    raise Exception('db_populate_study_results is not supported')
 
 
 def gen_grouped_output(c2f, p, g, grp2output, concept_list, c2pks, head):

@@ -1,19 +1,15 @@
-import entity_centric_es as ees
 import sys
 import urllib3
-from datetime import date, datetime
+from datetime import datetime
 import datetime
 import utils
 from os.path import isfile, join
 from os import listdir
 import os
-import sqldbutils
 import xml.etree.ElementTree as ET
 from subprocess import Popen, STDOUT
 import docanalysis
 import logging
-from analysis import cohort_analysis_helper
-from analysis.semquery import SemEHRES
 
 
 class ProcessSetting(object):
@@ -83,53 +79,6 @@ class JobStatus(object):
             self._end_time_point = dt
         self._last_status = JobStatus.STATUS_WORKING
         return self.get_ser_data()
-
-
-def get_docs_for_processing(job_status, job_sql_template, cnn_conf_file):
-    """
-    retrieve docs to process from a database table/view
-    :param job_status:
-    :return:
-    """
-    job_data = job_status.job_start()
-    print 'working on %s' % job_data
-    container = []
-    sqldbutils.query_data(job_sql_template.format(**job_data), container,
-                          dbconn=sqldbutils.get_db_connection_by_setting(cnn_conf_file))
-    return container
-
-
-def do_copy_doc(src_doc_id, es, src_index, src_doc_type, dest_index, dest_doc_type):
-    """
-    copy a cogstack doc from one index to the other
-    :param src_doc_id:
-    :param es:
-    :param src_index:
-    :param src_doc_type:
-    :param dest_index:
-    :param dest_doc_type:
-    :return:
-    """
-    print 'copy %s ' % src_doc_id
-    es.copy_doc(src_index, src_doc_type, str(src_doc_id), dest_index, dest_doc_type)
-
-
-def copy_docs_by_patients(index_setting_file, src_index, src_doc_type, entity_id_field_name,
-                          dest_index, dest_doc_type, doc_list_file):
-    """
-    copy patient docs from one cogstack index to the other
-    (used when different indices are used for different case studies)
-    :param index_setting_file:
-    :param src_index:
-    :param src_doc_type:
-    :param entity_id_field_name:
-    :param dest_index:
-    :param dest_doc_type:
-    :param doc_list_file:
-    :return:
-    """
-    ees.copy_docs(index_setting_file, src_index, src_doc_type, entity_id_field_name,
-                  dest_index, dest_doc_type, doc_list_file)
 
 
 def set_sys_env(settings):
@@ -289,25 +238,7 @@ def do_semehr_doc_anns_analysis(settings):
     process_mode = settings.get_attr(['doc_ann_analysis', 'process_mode'])
     if process_mode is not None and process_mode != 'sql':
         if settings.get_attr(['doc_ann_analysis', 'es_host']) is not None:
-            es = SemEHRES.get_instance_by_setting(settings.get_attr(['doc_ann_analysis', 'es_host']),
-                                          settings.get_attr(['doc_ann_analysis', 'es_index']),
-                                          settings.get_attr(['doc_ann_analysis', 'es_doc_type']),
-                                          settings.get_attr(['doc_ann_analysis', 'es_concept_type']),
-                                          settings.get_attr(['doc_ann_analysis', 'es_patient_type']))
-            docanalysis.process_doc_anns(anns_folder=anns_folder,
-                                         full_text_folder=text_folder,
-                                         rule_config_file=rule_config,
-                                         output_folder=output_folder,
-                                         study_folder=study_folder,
-                                         full_text_fn_ptn=full_text_file_pattern,
-                                         fn_pattern=output_file_pattern,
-                                         thread_num=thread_num,
-                                         es_inst=es,
-                                         es_text_field=settings.get_attr(['doc_ann_analysis', 'full_text_field']),
-                                         patient_id_field=settings.get_attr(['doc_ann_analysis', 'patielt_id_field']),
-                                         combined_anns=combined_anns,
-                                         es_output_index=es_output_index, es_output_doc=es_output_doc
-                                         )
+            raise Exception('using elasticsearch in this version is not supported')
         else:
             docanalysis.process_doc_anns(anns_folder=anns_folder,
                                          full_text_folder=text_folder,
@@ -345,6 +276,7 @@ def populate_cohort_results(settings):
     sample_sql_temp = settings.get_attr(['populate_cohort_result', 'sample_sql_temp'])
     thread_num = settings.get_attr(['populate_cohort_result', 'thread_num'])
     sampling = settings.get_attr(['populate_cohort_result', 'sampling'])
+    sample_size = None
     if sampling is None:
         sampling = True
     if sampling:
@@ -355,27 +287,6 @@ def populate_cohort_results(settings):
                                           study_folder, output_folder, sample_sql_temp,
                                           thread_num=thread_num, sampling=sampling,
                                           sample_size=sample_size)
-
-
-def es_get_cohort_docs(settings):
-    pids = utils.read_text_file(settings.get_attr(['cohort_docs', 'es_cohort_file']))
-    es = SemEHRES.get_instance_by_setting(settings.get_attr(['cohort_docs', 'es_host']),
-                                          settings.get_attr(['cohort_docs', 'es_index']),
-                                          settings.get_attr(['cohort_docs', 'es_doc_type']),
-                                          settings.get_attr(['cohort_docs', 'es_concept_type']),
-                                          settings.get_attr(['cohort_docs', 'es_patient_type']))
-    patiet_id_field = settings.get_attr(['cohort_docs', 'patiet_id_field'])
-
-    docs = []
-    docs2p = {}
-    for pid in pids:
-        container = []
-        cohort_analysis_helper.query_collect_patient_docs({'_id': pid}, es, '*', patiet_id_field, container)
-        if len(container) > 0:
-            docs += [{'docid': d} for d in container[0]['docs']]
-            for d in container[0]['docs']:
-                docs2p[d] = pid
-    return docs, docs2p, pids
 
 
 def collect_cohort_doc_results(settings, doc2pid):
@@ -443,14 +354,9 @@ def process_semehr(config_file):
     doc2pid = {}
     pids = []
     if ps.get_attr(['job', 'load_docs']) == 'yes':
-        sql_template = ps.get_attr(['new_docs', 'sql_query'])
-        logging.info('[SemEHR-step] retrieving docs by using the template [%s]' % sql_template)
-        data_rows = get_docs_for_processing(job_status, sql_template, ps.get_attr(['new_docs', 'dbconn_setting_file']))
-        logging.info('total docs num is %s' % len(data_rows))
+        raise Exception('load_docs not supported')
     elif ps.get_attr(['job', 'cohort_docs']) == 'yes':
-        logging.info('[SemEHR-step] retrieving docs by cohort [%s]' %  ps.get_attr(['cohort_docs', 'es_cohort_file']))
-        data_rows, doc2pid, pids = es_get_cohort_docs(ps)
-        logging.info('total docs num is %s' % len(data_rows))        
+        raise Exception('cohort_docs not supported in this version')
 
     try:
     # if True:
@@ -556,11 +462,9 @@ def process_semehr(config_file):
 
 
 if __name__ == "__main__":
-    reload(sys)
-    sys.setdefaultencoding('cp1252')
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     if len(sys.argv) != 2:
-        print 'the syntax is [python semehr_processor.py PROCESS_SETTINGS_FILE_PATH]'
+        print('the syntax is [python semehr_processor.py PROCESS_SETTINGS_FILE_PATH]')
     else:
         process_semehr(sys.argv[1])
 

@@ -1,6 +1,6 @@
 from os import listdir
-from os.path import isfile, join, split
-import Queue
+from os.path import isfile, join
+import queue as Queue
 import threading
 import json
 import codecs
@@ -110,8 +110,8 @@ def multi_thread_do(thread_obj, q, func, *args):
                 func(thread_obj, p, *args)
             else:
                 func(p, *args)
-        except Exception, e:
-            print u'error doing {0} on {1} \n{2}'.format(func, p, str(e))
+        except Exception as e:
+            print(u'error doing {0} on {1} \n{2}'.format(func, p, str(e)))
         q.task_done()
 
 
@@ -136,7 +136,7 @@ def http_post_result(url, payload, headers=None, auth=None):
     req = requests.post(
         url, headers=headers,
         data=payload, auth=auth)
-    return unicode(req.content, errors='ignore') # req.content.decode("utf-8")
+    return str(req.content) # req.content.decode("utf-8")
 
 
 def multi_thread_large_file_tasking(large_file, num_threads, process_func,
@@ -203,8 +203,8 @@ def multi_process_do(thread_obj, q, func, *args):
                 func(thread_obj, p, *args)
             else:
                 func(p, *args)
-        except Exception, e:
-            print u'error doing {0} on {1} \n{2}'.format(func, p, str(e))
+        except Exception as e:
+            print(u'error doing {0} on {1} \n{2}'.format(func, p, str(e)))
         q.task_done()
 
 
