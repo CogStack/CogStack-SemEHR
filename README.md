@@ -1,9 +1,5 @@
 # SemEHR
 Surfacing Semantic Data from Clinical Notes in Electronic Health Records for Tailored Care, Trial Recruitment and Clinical Research
-- [Tutorial: use dockerised SemEHR on (dockerised) Elasticsearch (an example on 20 discharge summaries)](https://semehr.cogstack.systems/tutorials.html) 
-- [Dockerised SemEHR](https://github.com/CogStack/CogStack-SemEHR/tree/master/docker)
-- [Documentation on running SemEHR](https://github.com/CogStack/SemEHR/wiki)
-- [Documentation on API calls to SemEHR](https://github.com/CogStack/SemEHR/wiki/API-calls-to-SemEHR-index)
 
 ## updates
 - (30/11/2020) This is minimised version of SemEHR to be run within a constrained environment (e.g. NHS safehaven) where only NLP is needed 
