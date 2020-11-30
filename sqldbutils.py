@@ -1,7 +1,9 @@
 import utils as imutil
-import pyodbc
-import MySQLdb
+# import pyodbc
+# import MySQLdb
 import logging
+import mysql.connector
+from mysql.connector import pooling
 
 
 #SQL db setting
@@ -66,16 +68,37 @@ def get_mysqldb_connection(my_host, my_user, my_pwd, my_db, my_sock='/var/lib/my
     return {'cnxn': db, 'cursor': cursor}
 
 
-def get_mysqldb_host_connection(my_host, my_user, my_pwd, my_db):
-    db = MySQLdb.connect(host=my_host,  # your host, usually localhost
-                         user=my_user,  # your username
-                         passwd=my_pwd, # your password
-                         db=my_db,      # name of the data base
-                         use_unicode=True,
-                         charset='utf8')
-    db.set_character_set('utf8')
+def get_mysqldb_host_connection(my_host, my_user, my_pwd, my_db, mysql_lib='official'):
+    db = None
+    if mysql_lib == 'official':
+        db = mysql.connector.connect(host=my_host,  # your host, usually localhost
+                                     user=my_user,  # your username
+                                     passwd=my_pwd, # your password
+                                     db=my_db,      # name of the data base
+                                     use_unicode=True,
+                                     charset='utf8')
+    else:
+        db = MySQLdb.connect(host=my_host,  # your host, usually localhost
+                             user=my_user,  # your username
+                             passwd=my_pwd, # your password
+                             db=my_db,      # name of the data base
+                             use_unicode=True,
+                             charset='utf8')
+        db.set_character_set('utf8')
     cursor = db.cursor()
     return {'cnxn': db, 'cursor': cursor}
+
+
+def get_mysql_pooling(settings, num):
+    dbconfig = {
+        "host": settings['server'],
+        "user": settings['user'],
+        "password": settings['password'],
+        "database": settings['database']
+    }
+    return mysql.connector.pooling.MySQLConnectionPool(pool_name = "mypool",
+                                                       pool_size = num,
+                                                       **dbconfig)
 
 
 def release_db_connection(cnn_obj):
@@ -84,8 +107,11 @@ def release_db_connection(cnn_obj):
     #cnn_obj['cnxn'].disconnect()
 
 
-def query_data(query, container, dbconn=None):
-    if dbconn is None:
+def query_data(query, container, dbconn=None, pool=None):
+    if pool is not None:
+        cnn = pool.get_connection()
+        conn_dic = {'cnxn': cnn, 'cursor': cnn.cursor()}
+    elif dbconn is None:
         conn_dic = get_db_connection()
     else:
         conn_dic = dbconn
