@@ -1,9 +1,0 @@
-{
-  "dbconn_file": "",
-  "ant_table_map": {
-    "kate.*": {"ann": "kconnect_annotations", "doc_pt": "working_docs"},
-    "dyson\\_ad.*": {"ann": "kconnect_annotations", "doc_pt": "working_docs"}
-  },
-  "ann_sql_template": "",
-  "doc_patient_id_sql_template": ""
-}

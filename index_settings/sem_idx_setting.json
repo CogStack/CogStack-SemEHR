@@ -1,7 +1,0 @@
-{
-  "es_host":"http://10.200.102.23/",
-  "es_index": "mimic",
-  "es_doc_type": "eprdoc",
-  "es_concept_type": "ctx_concept",
-  "es_patient_type": "patient"
-}

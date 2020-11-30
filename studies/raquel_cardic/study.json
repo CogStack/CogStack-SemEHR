@@ -1,9 +1,0 @@
-{
-  "cohort": "raquel_cardic",
-  "sql_config": "./studies/raquel_cardic/cluster_sql_config.xml",
-  "db_conn": "./studies/raquel_cardic/dbcnn_input.json",
-  "umls_key": "./resources/HW_UMLS_KEY.txt",
-  "do_preprocessing": true,
-  "rule_setting_file": "./studies/rules/_default_rule_config.json",
-  "do_one_iter": false
-}
