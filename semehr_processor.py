@@ -11,7 +11,7 @@ import sqldbutils
 import xml.etree.ElementTree as ET
 from subprocess import Popen, STDOUT
 from entity_centric_es import EntityCentricES, do_index_100k_anns, do_index_100k_patients, JSONSerializerPython2
-from elasticsearch import Elasticsearch
+# from elasticsearch import Elasticsearch
 import cohortanalysis as cohort
 import docanalysis
 import logging
