@@ -59,6 +59,41 @@ class CohortHelper(object):
             logging.info('%s docs saved to destination [%s]' % (len(docs), self._dest))
         logging.info('query finished, docs saved to %s' % out_put_folder)
 
+    def extract_cohort_sample_docs(self):
+        db_conf_file = self._cohort_conf
+        db_conf = None
+        if 'linux_dsn_setting' in self._conf and self._conf['linux_dsn_setting']:
+            # need dsn settings
+            db_conf = self.populate_linux_odbc_setting()
+            db_conf_file = None
+            logging.info('using dsn %s' % db_conf['dsn'])
+        query_size = self._conf['query_size'] if 'query_size' in self._conf else 50
+        file_pattern = self._conf['file_pattern'] if 'file_pattern' in self._conf else '%s.txt'
+        out_put_folder = self._conf['out_put_folder']
+        if len(self._patient_ids) == 0:
+            logging.info('cohort is empty, has it been loaded?')
+            return
+        q_temp = self._conf['doc_query_temp']
+        logging.info('working on extraction, cohort size:%s' % len(self._patient_ids))
+        for idx in range(0, len(self._patient_ids), query_size):
+            q = q_temp.format(**{'patient_ids': ",".join(["'%s'" % p for p in self._patient_ids[idx:idx+query_size]])})
+            logging.info('querying batch %s' % (idx + 1))
+            logging.debug(q)
+            docs = []
+            db.query_data(q, docs, db.get_db_connection_by_setting(db_conf_file, db_conf))
+            if self._dest == 'sql':
+                # save docs to database
+                self.save_docs_to_db(docs)
+            else:
+                # save docs to files
+                for d in docs:
+                    if d['doc_content'] is None:
+                        continue
+                    fn = ('%s_%s' % (d['doc_id'], d['patient_id'])) if use_combo_fn_name else ('%s' % d['doc_id'])
+                    utils.save_string(d['doc_content'], join(out_put_folder, file_pattern % fn))
+            logging.info('%s docs saved to destination [%s]' % (len(docs), self._dest))
+        logging.info('query finished, docs saved to %s' % out_put_folder)
+
     def save_docs_to_db(self, docs):
         utils.multi_thread_tasking(docs, process_func=CohortHelper.do_save_doc_to_db,
                                    num_threads=10 if 'threads' not in self._conf else self._conf['threads'],
