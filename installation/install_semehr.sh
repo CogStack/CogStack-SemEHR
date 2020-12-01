@@ -100,5 +100,17 @@ else
  echo "${install_dir}/data/semehr_settings.json exists, skip"
 fi
 
+# install nlp2phenome
+cd "${install_dir}"/semehr
+if [ ! -e "${install_dir}"/semehr/nlp2phenome ]; then
+ git clone https://github.com/CogStack/nlp2phenome.git
+ cd nlp2phenome
+else
+ echo 'nlp2phenome reop exists'
+ cd nlp2phenome
+ git pull
+fi
+pip3 install -r requirements.txt
+
 echo "installation finished at ${install_dir} successfully."
 
