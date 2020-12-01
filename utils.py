@@ -117,7 +117,7 @@ def multi_thread_do(thread_obj, q, func, *args):
 
 def save_json_array(lst, file_path, encoding='utf-8'):
     with codecs.open(file_path, 'w', encoding=encoding) as wf:
-        json.dump(lst, wf, encoding=encoding)
+        json.dump(lst, wf)
 
 
 def save_string(str, file_path, encoding='utf-8'):
@@ -128,7 +128,7 @@ def save_string(str, file_path, encoding='utf-8'):
 def load_json_data(file_path):
     data = None
     with codecs.open(file_path, encoding='utf-8') as rf:
-        data = json.load(rf, encoding='utf-8')
+        data = json.load(rf)
     return data
 
 
