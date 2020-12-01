@@ -65,7 +65,9 @@ sudo apt-get install -y \
     python3-pip \
     python-setuptools \
     python-dev
-    
+
+sudo apt-get install -y python3-testresources
+
 mkdir "${install_dir}"/semehr
 cd "${install_dir}"/semehr
 if [ ! -e "${install_dir}"/semehr/CogStack-SemEHR ]; then
