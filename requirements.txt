@@ -1,0 +1,16 @@
+certifi==2020.4.5.1
+chardet==3.0.4
+idna==2.9
+joblib==0.14.1
+numpy==1.18.4
+pandas==1.0.3
+patsy==0.5.1
+python-dateutil==2.8.1
+pytz==2020.1
+requests==2.23.0
+scikit-learn==0.23.0rc1
+scipy==1.4.1
+six==1.14.0
+statsmodels==0.11.1
+threadpoolctl==2.0.0
+urllib3==1.25.9
