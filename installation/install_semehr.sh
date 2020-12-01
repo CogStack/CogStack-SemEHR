@@ -103,7 +103,7 @@ fi
 # install nlp2phenome
 cd "${install_dir}"/semehr
 if [ ! -e "${install_dir}"/semehr/nlp2phenome ]; then
- git clone https://github.com/CogStack/nlp2phenome.git
+ git clone -b safehaven_mini https://github.com/CogStack/nlp2phenome.git
  cd nlp2phenome
 else
  echo 'nlp2phenome reop exists'
