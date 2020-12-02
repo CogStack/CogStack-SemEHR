@@ -83,6 +83,9 @@ pip3 install -r requirements.txt
 ## mk data folder
 if [ ! -e ${install_dir}/data ]; then
  mkdir ${install_dir}/data
+ mkdir ${install_dir}/data/input_docs
+ mkdir ${install_dir}/data/output_docs
+ mkdir ${install_dir}/data/semehr_results
 fi
 
 ## semehr config 
