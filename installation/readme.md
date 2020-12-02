@@ -27,3 +27,19 @@
         - semehr_results: the semehr post processed results
         - phenome_results: the text phenotyping results
    ```
+
+## run semehr
+1. run nlp
+   ```bash
+   cd $install_path/semehr/CogStack-SemEHR
+   python semehr_processor.py ../../data/semehr_settings.json
+   ```
+results will be saved to ` $install_path/data/semehr_results`
+
+2. [optional] run phenotype computing for stroke, for example
+   ```bash
+   cd $install_path/semehr/nlp2phenome
+   python predict_helper.py ./pretrained_models/stroke_settings/prediction_task.json
+   python doc_inference.py ./pretrained_models/stroke_settings/doc_infer.json
+   ```
+   reulsts will be saved to `$install_path/data/phenome_results`
