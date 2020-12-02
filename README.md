@@ -4,8 +4,10 @@ Surfacing Semantic Data from Clinical Notes in Electronic Health Records for Tai
 - [Dockerised SemEHR](https://github.com/CogStack/CogStack-SemEHR/tree/master/docker)
 - [Documentation on running SemEHR](https://github.com/CogStack/SemEHR/wiki)
 - [Documentation on API calls to SemEHR](https://github.com/CogStack/SemEHR/wiki/API-calls-to-SemEHR-index)
+- [Minimised SemEHR + nlp2phenome bundle installation](https://github.com/CogStack/CogStack-SemEHR/tree/safehaven_mini/installation)
 
 ## updates
+- (02 Dec 2020) Minimised SemEHR / nlp2phenome bundle for restricted safe haven env (no Docker) has been created: https://github.com/CogStack/CogStack-SemEHR/tree/safehaven_mini/installation
 - (03 June 2019) A tutorial to apply SemEHR on 20 discharge summaries and deploy the system on an Elasticsearch Cluster: [Here](https://semehr.cogstack.systems/tutorials.html)
 - (20 Dec 2018) Dead easy to run SemEHR NOW - Docker version of SemEHR released! Check [docker](https://github.com/CogStack/CogStack-SemEHR/tree/master/docker).
 - (26 Feb 2018) An actionable transparency model has been implemented to derive confidence/accuracy value for [each annotation on a cohort basis](https://github.com/CogStack/SemEHR/blob/master/cohortanalysis.py#L334). Such value is based on the syntactic/semantic/contextual characteristics of the containing sentence/document of annotations. (a working paper about this technique will be shared soon.)
