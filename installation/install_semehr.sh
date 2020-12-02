@@ -103,16 +103,30 @@ else
 fi
 
 # install nlp2phenome
+if [ ! -e "${install_dir}"/data/phenome_results ]; then
+ mkdir "${install_dir}"/data/phenome_results
+fi
 cd "${install_dir}"/semehr
 if [ ! -e "${install_dir}"/semehr/nlp2phenome ]; then
  git clone -b safehaven_mini https://github.com/CogStack/nlp2phenome.git
  cd nlp2phenome
+ 
+ # unzip pretrained models
+ cd "${install_dir}"/semehr/nlp2phenome/pretrained_models
+ unzip stroke_settings.zip && unzip stroke_subtype_models.zip && unzip stroke_supplemental-gazetteer.zip
+ # copy supplemental gaz to bio-yodie folder
+ cp supplemental-gazetteer "${install_dir}"/gcp/bio-yodie-1-2-1/finalize -R -f
+ # replace placeholders with installation paths
+ sed -i -e "s@PH_INSTALLATION_PATH@$install_dir@g" ./stroke_settings/prediction_task.json
+ sed -i -e "s@PH_INSTALLATION_PATH@$install_dir@g" ./stroke_settings/doc_infer.json
+ cd "${install_dir}"/semehr/nlp2phenome
 else
  echo 'nlp2phenome reop exists'
  cd nlp2phenome
  git pull
 fi
 pip3 install -r requirements.txt
+python3 -m spacy download en_core_web_sm
 
 echo "installation finished at ${install_dir} successfully."
 
