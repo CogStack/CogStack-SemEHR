@@ -43,3 +43,7 @@ results will be saved to ` $install_path/data/semehr_results`
    python doc_inference.py ./pretrained_models/stroke_settings/doc_infer.json
    ```
    reulsts will be saved to `$install_path/data/phenome_results`
+3. [optional] use customised document level rules
+   - goto `cd $install_path/semehr/nlp2phenome`
+   - edit `./pretrained_models/stroke_settings/prediction_task.json`. Change the `rule_file` to a customised rule file, for example using `$install_path/semehr/nlp2phenome/settings/stroke-subtype-rules-full.json`.
+
