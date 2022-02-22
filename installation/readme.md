@@ -1,6 +1,11 @@
 ## installation of minimised CogStack-SemEHR and nlp2phenome
 **NB: no need to clone repos by yourself, the script will checkout the most relevant branches**
 
+## Prerequisite
+It assumes you have `Java 11+` installed and the `JAVA_HOME` is at `JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/`. If your path is not like this, you can create a soft link. Or, you can modify the `JAVA_HOME` setting in the `install_semehr.sh`
+
+## Install steps
+
 1. download the two files into your computer
    ```bash
    # bash script for installation
