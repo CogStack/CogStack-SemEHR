@@ -12,6 +12,11 @@ else
  exit 1
 fi
 
+if [ ! -e "${install_dir}/gcp/bio-yodie-1-2-1" ]; then
+ echo "please download bio-yodie from the given URL and unzip it to ${install_dir}/gcp/bio-yodie-1-2-1"
+ exit 1
+fi
+
 # install apps
 sudo apt-get install -y \
 	ant \
@@ -25,15 +30,15 @@ sudo apt-get install -y \
 JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
 
 cd ${install_dir}
-mkdir ./gcp
+# mkdir ./gcp
 cd ./gcp
 JAVA_TOOL_OPTIONS='-Dfile.encoding=UTF8'
 
 ## gcp
 if [ ! -e "${install_dir}/gcp/gcp-2.5-18658" ]; then
- curl -L 'https://cogstack.rosalind.kcl.ac.uk/exports/gcp-2.5.hw.tar.gz' > gcp-2.5.hw.tar.gz && tar -xzvf gcp-2.5.hw.tar.gz
+ curl -L 'https://knowlab.github.io/data/gcp-2.5.hw.tar.gz' > gcp-2.5.hw.tar.gz && tar -xzvf gcp-2.5.hw.tar.gz
  cd ${install_dir}/gcp/gcp-2.5-18658/lib
- curl -L 'https://cogstack.rosalind.kcl.ac.uk/exports/customised_handlers.tar.gz' > customised_handlers.tar.gz && tar xzvf customised_handlers.tar.gz && cp customised_handlers/* ./ && rm -fr customised_handlers && rm -f customised_handlers.tar.gz
+ curl -L 'https://knowlab.github.io/data/customised_handlers.tar.gz' > customised_handlers.tar.gz && tar xzvf customised_handlers.tar.gz && cp customised_handlers/* ./ && rm -fr customised_handlers && rm -f customised_handlers.tar.gz
 else
  echo "gcp exists, skip"
 fi
@@ -51,12 +56,12 @@ GATE_HOME="${install_dir}/gcp/gate"
 PATH="$PATH:$GCP_HOME:$GATE_HOME/bin"
 
 ## bioyodie
-cd "${install_dir}/gcp"
-if [ ! -e "${install_dir}/gcp/bio-yodie-1-2-1" ]; then
- curl -L 'https://cogstack.rosalind.kcl.ac.uk/exports/bio-yodie-1.2.1-se.tar.gz' > bio-yodie-1.2.1-se.tar.gz && tar xzvf bio-yodie-1.2.1-se.tar.gz && rm bio-yodie-1.2.1-se.tar.gz && mv bio-yodie-1.2.1 bio-yodie-1-2-1
-else
- echo "bio-yodie exists, skip"
-fi
+# cd "${install_dir}/gcp"
+# if [ ! -e "${install_dir}/gcp/bio-yodie-1-2-1" ]; then
+#  curl -L 'ULR NOT AVAILABLE NOW UNFORTUNATELY' > bio-yodie-1.2.1-se.tar.gz && tar xzvf bio-yodie-1.2.1-se.tar.gz && rm bio-yodie-1.2.1-se.tar.gz && mv bio-yodie-1.2.1 bio-yodie-1-2-1
+# else
+#  echo "bio-yodie exists, skip"
+# fi
 
 
 # install semehr github repo and dependencies
