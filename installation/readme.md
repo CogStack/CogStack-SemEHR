@@ -34,7 +34,7 @@
    ```
 
 4. copy UMLS ontology into the system. 
-   - unzip preprocessed UMLS file
+   - unzip preprocessed UMLS file (please get in touch if you have got your license of using UMLS - a preprocessed copy will be shared with you)
    - copy two subfolders in `output/en/` into `YOUR_INSTALLATION_FOLDER/gcp/bio-yodie-1-2-1/bio-yodie-resources/en`
 
 ## run semehr
