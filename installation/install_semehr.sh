@@ -31,7 +31,7 @@ sudo apt-get install -y \
 JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
 
 cd ${install_dir}
-# mkdir ./gcp
+mkdir ./gcp
 cd ./gcp
 JAVA_TOOL_OPTIONS='-Dfile.encoding=UTF8'
 
