@@ -10,10 +10,10 @@
    https://github.com/CogStack/CogStack-SemEHR/blob/safehaven_mini/installation/semehr_conf_template.json
    ```
 
-   **Extra Step 1.5** 
+<!--    **Extra Step 1.5** 
    manually download `bioyodie`. Due to the unavailability of our hosting server for large files, you now have to download `bioyodie` before running the installation script.  
    - Please download the zipped file from [here](https://drive.google.com/uc?export=download&id=1WMhdBq0pc6uljaDxyyrRYqinTuJVrhex).
-   - In your `installation folder` (the path you will be asked to provide when running the script below), create a subfolder `gcp` and unzip the downloaded file in `gcp` (it will a subfolder there called `bio-yodie-1-2-1`).
+   - In your `installation folder` (the path you will be asked to provide when running the script below), create a subfolder `gcp` and unzip the downloaded file in `gcp` (it will a subfolder there called `bio-yodie-1-2-1`). -->
 
 2. run the downloaded bash script
    ```bash
