@@ -12,10 +12,11 @@ else
  exit 1
 fi
 
-if [ ! -e "${install_dir}/gcp/bio-yodie-1-2-1" ]; then
- echo "please download bio-yodie from the given URL and unzip it to ${install_dir}/gcp/bio-yodie-1-2-1"
- exit 1
-fi
+# ignore this as the cloud storage issue has been resolved
+# if [ ! -e "${install_dir}/gcp/bio-yodie-1-2-1" ]; then
+#  echo "please download bio-yodie from the given URL and unzip it to ${install_dir}/gcp/bio-yodie-1-2-1"
+#  exit 1
+# fi
 
 # install apps
 sudo apt-get install -y \
@@ -56,12 +57,12 @@ GATE_HOME="${install_dir}/gcp/gate"
 PATH="$PATH:$GCP_HOME:$GATE_HOME/bin"
 
 ## bioyodie
-# cd "${install_dir}/gcp"
-# if [ ! -e "${install_dir}/gcp/bio-yodie-1-2-1" ]; then
-#  curl -L 'ULR NOT AVAILABLE NOW UNFORTUNATELY' > bio-yodie-1.2.1-se.tar.gz && tar xzvf bio-yodie-1.2.1-se.tar.gz && rm bio-yodie-1.2.1-se.tar.gz && mv bio-yodie-1.2.1 bio-yodie-1-2-1
-# else
-#  echo "bio-yodie exists, skip"
-# fi
+cd "${install_dir}/gcp"
+if [ ! -e "${install_dir}/gcp/bio-yodie-1-2-1" ]; then
+ curl -L 'https://www.homepages.ucl.ac.uk/~rmhihww/semehr_tools/bio-yodie-1.2.1-se.tar.gz' > bio-yodie-1.2.1-se.tar.gz && tar xzvf bio-yodie-1.2.1-se.tar.gz && rm bio-yodie-1.2.1-se.tar.gz && mv bio-yodie-1.2.1 bio-yodie-1-2-1
+else
+ echo "bio-yodie exists, skip"
+fi
 
 
 # install semehr github repo and dependencies
