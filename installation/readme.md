@@ -33,7 +33,7 @@
         - phenome_results: the text phenotyping results
    ```
 
-4. copy UMLS ontology into the system. 
+4. copy UMLS ontology into the system. (only needed if you would like to identify all UMLS concept mentions from free-text)
    - unzip preprocessed UMLS file (please get in touch if you have got your license of using UMLS - a preprocessed copy will be shared with you)
    - copy two subfolders in `output/en/` into `YOUR_INSTALLATION_FOLDER/gcp/bio-yodie-1-2-1/bio-yodie-resources/en`
 
