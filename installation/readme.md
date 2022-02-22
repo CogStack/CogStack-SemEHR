@@ -10,7 +10,8 @@
    https://github.com/CogStack/CogStack-SemEHR/blob/safehaven_mini/installation/semehr_conf_template.json
    ```
 
-1.5 manually download `bioyodie`. Due to the unavailability of our hosting server for large files, you now have to download `bioyodie` before running the installation script.  
+**Extra Step 1.5** 
+manually download `bioyodie`. Due to the unavailability of our hosting server for large files, you now have to download `bioyodie` before running the installation script.  
    a. Please download the zipped file from [here](https://drive.google.com/uc?export=download&id=1WMhdBq0pc6uljaDxyyrRYqinTuJVrhex).
    b. In your `installation folder` (the path you will be asked to provide when running the script below), create a subfolder `gcp` and unzip the downloaded file in `gcp` (it will a subfolder there called `bio-yodie-1-2-1`).
 
@@ -31,6 +32,10 @@
         - semehr_results: the semehr post processed results
         - phenome_results: the text phenotyping results
    ```
+
+4. copy UMLS ontology into the system. 
+   a. unzip preprocessed UMLS file
+   b. copy two subfolders in `output/en/` into `YOUR_INSTALLATION_FOLDER/gcp/bio-yodie-1-2-1/bio-yodie-resources/en`
 
 ## run semehr
 1. run nlp
