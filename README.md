@@ -1,3 +1,7 @@
+# Archived
+
+This repo is no longer maintained. For questions on this reop please email Honghan directly (honghan.wu@gmail.com), or for broader CogStack enquiries please reach out to contact@cogstack.org
+
 # SemEHR
 Surfacing Semantic Data from Clinical Notes in Electronic Health Records for Tailored Care, Trial Recruitment and Clinical Research
 - [Tutorial: use dockerised SemEHR on (dockerised) Elasticsearch (an example on 20 discharge summaries)](https://semehr.cogstack.systems/tutorials.html) 
